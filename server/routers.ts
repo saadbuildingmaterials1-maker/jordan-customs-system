@@ -22,6 +22,7 @@ import {
 } from "./pdf-extraction-service";
 import { stripeRouter } from "./routers/stripe";
 import { paymentMethodsRouter } from "./routers/payment-methods";
+import { governmentRouter } from "./routers/government";
 
 export const appRouter = router({
   system: systemRouter,
@@ -470,6 +471,7 @@ export const appRouter = router({
    }),
   stripe: stripeRouter,
   paymentMethods: paymentMethodsRouter,
+  government: governmentRouter,
   }),
 });
 export type AppRouter = typeof appRouter;
