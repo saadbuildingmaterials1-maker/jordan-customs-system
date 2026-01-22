@@ -19,6 +19,8 @@ import AdvancedCustomsDeclaration from "@/pages/AdvancedCustomsDeclaration";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { ToastProvider } from "./contexts/ToastContext";
+import { ToastContainer } from "./components/ToastContainer";
 
 function Router() {
   return (
@@ -51,10 +53,13 @@ function App() {
       <ThemeProvider
         defaultTheme="light"
       >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <ToastProvider>
+          <TooltipProvider>
+            <Toaster />
+            <ToastContainer />
+            <Router />
+          </TooltipProvider>
+        </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

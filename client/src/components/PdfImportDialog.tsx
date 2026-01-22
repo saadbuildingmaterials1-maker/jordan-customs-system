@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, AlertCircle, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { ImportSuccessAlert, type ImportSuccessData } from './ImportSuccessAlert';
+import { useToast } from '@/contexts/ToastContext';
 
 // نوع البيانات المستخرجة من PDF
 interface ExtractedData {
@@ -48,6 +49,7 @@ export function PdfImportDialog({
   const [importResult, setImportResult] = useState<any>(null);
   const [successData, setSuccessData] = useState<ImportSuccessData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addToast } = useToast();
 
   const importMutation = trpc.pdfImport.importDeclaration.useMutation();
 
@@ -101,13 +103,32 @@ export function PdfImportDialog({
         };
         setSuccessData(successInfo);
         onDataImported(result.data);
+
+        // إضافة Toast للنجاح
+        addToast({
+          type: 'success',
+          title: '✓ تم استيراد البيان بنجاح',
+          message: `تم استخراج ${successInfo.itemsCount} أصناف من الملف`,
+          duration: 5000,
+        });
       } else {
         setError('فشل استيراد الملف. تحقق من صيغة الملف.');
+        addToast({
+          type: 'error',
+          title: '✗ فشل الاستيراد',
+          message: 'تحقق من صيغة ملف PDF',
+          duration: 4000,
+        });
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'حدث خطأ أثناء استيراد الملف'
-      );
+      const errorMessage = err instanceof Error ? err.message : 'حدث خطأ أثناء استيراد الملف';
+      setError(errorMessage);
+      addToast({
+        type: 'error',
+        title: '✗ خطأ في الاستيراد',
+        message: errorMessage,
+        duration: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
