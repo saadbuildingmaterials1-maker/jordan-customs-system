@@ -10,6 +10,15 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { data: declarations, isLoading } = trpc.customs.listDeclarations.useQuery();
 
+  const handleDownload = () => {
+    const link = document.createElement('a');
+    link.href = '/jordan-customs-system.zip';
+    link.download = 'jordan-customs-system.zip';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -29,7 +38,7 @@ export default function Home() {
                 <Plus className="w-5 h-5" />
                 نموذج متقدم
               </Button>
-              <Button onClick={() => window.open('https://releases.jordancustoms.com/download', '_blank')} className="gap-2 bg-green-600 hover:bg-green-700">
+              <Button onClick={handleDownload} className="gap-2 bg-green-600 hover:bg-green-700">
                 <Download className="w-5 h-5" />
                 تحميل للكمبيوتر
               </Button>
@@ -47,7 +56,7 @@ export default function Home() {
                 <h3 className="font-semibold">تطبيق الويب</h3>
               </div>
               <p className="text-sm text-slate-600 mb-3">استخدم التطبيق مباشرة من المتصفح</p>
-              <Button variant="outline" className="w-full" size="sm">فتح الآن</Button>
+              <Button variant="outline" className="w-full" size="sm" onClick={() => navigate("/")}>فتح الآن</Button>
             </div>
             <div className="p-4 border border-slate-200 rounded-lg hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-3 mb-3">
@@ -66,7 +75,7 @@ export default function Home() {
                 <h3 className="font-semibold">تطبيق سطح المكتب</h3>
               </div>
               <p className="text-sm text-slate-600 mb-3">حمّل التطبيق لـ Windows أو Mac أو Linux</p>
-              <Button className="w-full bg-green-600 hover:bg-green-700" size="sm" onClick={() => window.open('https://releases.jordancustoms.com/download', '_blank')}>
+              <Button className="w-full bg-green-600 hover:bg-green-700" size="sm" onClick={handleDownload}>
                 <Download className="w-4 h-4 mr-2" />
                 تحميل
               </Button>
