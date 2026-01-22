@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Download, FileUp, Printer, BarChart3 } from 'lucide-react';
+import { PdfImportDialog } from '@/components/PdfImportDialog';
 
 interface DeclarationData {
   // معلومات البيان الأساسية
@@ -115,6 +116,7 @@ export default function AdvancedCustomsDeclaration() {
   });
 
   const [activeTab, setActiveTab] = useState('overview');
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // حساب النسب المئوية
   const itemsWithPercentages = useMemo(() => {
@@ -155,7 +157,12 @@ export default function AdvancedCustomsDeclaration() {
                 <Printer className="w-4 h-4" />
                 طباعة
               </Button>
-              <Button variant="outline" size="sm" className="gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setImportDialogOpen(true)}
+              >
                 <FileUp className="w-4 h-4" />
                 استيراد
               </Button>
@@ -463,6 +470,16 @@ export default function AdvancedCustomsDeclaration() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* مربع حوار استيراد PDF */}
+        <PdfImportDialog
+          open={importDialogOpen}
+          onOpenChange={setImportDialogOpen}
+          onDataImported={(data) => {
+            // تحديث البيانات من الملف المستورد
+            console.log('البيانات المستخرجة من PDF:', data);
+          }}
+        />
       </div>
     </div>
   );

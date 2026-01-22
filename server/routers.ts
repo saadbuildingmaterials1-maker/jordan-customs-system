@@ -16,6 +16,10 @@ import {
   distributeValues,
   DEFAULT_EXCHANGE_RATES,
 } from "./customs-analyzer";
+import {
+  extractPdfData,
+  validateExtractedData,
+} from "./pdf-extraction-service";
 
 export const appRouter = router({
   system: systemRouter,
@@ -397,6 +401,33 @@ export const appRouter = router({
    * ===== إجراءات الذكاء الاصطناعي =====
    */
   ai: aiRouter,
+  
+  /**
+   * ===== إجراءات استيراد PDF =====
+   */
+  pdfImport: router({
+    importDeclaration: protectedProcedure
+      .input(
+        z.object({
+          filePath: z.string().min(1, "مسار الملف مطلوب"),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const extractedData = await extractPdfData(input.filePath);
+          const validationErrors = validateExtractedData(extractedData);
+          
+          return {
+            success: extractedData.extractionSuccess,
+            data: extractedData,
+            validationErrors,
+            confidence: extractedData.confidence,
+          };
+        } catch (error) {
+          throw new Error(`خطأ في استيراد الملف: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+        }
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
