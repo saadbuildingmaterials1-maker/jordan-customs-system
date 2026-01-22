@@ -6,8 +6,9 @@ import ItemsTable from "@/components/ItemsTable";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { ArrowRight, Download, FileText, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, BarChart3 } from "lucide-react";
 import { Item } from "@shared/types";
+import ExportButtons from "@/components/ExportButtons";
 
 interface ItemFormData {
   itemName: string;
@@ -154,13 +155,18 @@ export default function DeclarationDetail() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="gap-2">
-              <Download className="w-4 h-4" />
-              تصدير PDF
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <FileText className="w-4 h-4" />
-              تصدير Excel
+            <ExportButtons
+              declaration={declaration}
+              items={items || []}
+              summary={summary}
+            />
+            <Button
+              onClick={() => navigate(`/declarations/${id}/variance`)}
+              className="gap-2"
+              variant="outline"
+            >
+              <BarChart3 className="w-4 h-4" />
+              تحليل الانحرافات
             </Button>
           </div>
         </div>
