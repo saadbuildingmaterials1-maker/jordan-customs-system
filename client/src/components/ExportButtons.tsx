@@ -4,7 +4,7 @@ import { Download, Loader2, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { CustomsDeclaration, Item } from "@shared/types";
 import { exportToExcel } from "@/services/excelExport";
-import { exportToPDF } from "@/services/pdfExport";
+import { exportToPDF, exportToPDFWithDownload } from "@/services/pdfExport";
 
 interface ExportButtonsProps {
   declaration: CustomsDeclaration;
@@ -45,11 +45,22 @@ export default function ExportButtons({
   const handleExportPDF = async () => {
     try {
       setIsExportingPDF(true);
-      await exportToPDF({
-        declaration,
-        items,
-        summary,
-      });
+      // محاولة التحميل المباشر أولاً
+      try {
+        await exportToPDFWithDownload({
+          declaration,
+          items,
+          summary,
+        });
+      } catch (downloadError) {
+        // إذا فشل التحميل المباشر، استخدم الطريقة البديلة
+        console.warn("Direct download failed, trying alternative method", downloadError);
+        await exportToPDF({
+          declaration,
+          items,
+          summary,
+        });
+      }
       toast.success("تم تصدير الملف إلى PDF بنجاح");
     } catch (error) {
       console.error("PDF export error:", error);
