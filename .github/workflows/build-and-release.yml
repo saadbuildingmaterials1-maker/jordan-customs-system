@@ -1,0 +1,178 @@
+name: بناء ونشر التطبيق
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: بناء التطبيق على ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            build_cmd: pnpm run electron:build
+            artifact_path: dist_electron/*.AppImage
+            artifact_name: linux-app
+
+          - os: windows-latest
+            build_cmd: pnpm run electron:build
+            artifact_path: dist_electron/*.exe
+            artifact_name: windows-app
+
+          - os: macos-latest
+            build_cmd: pnpm run electron:build
+            artifact_path: dist_electron/*.dmg
+            artifact_name: macos-app
+
+    steps:
+      - name: 📥 استخراج الكود
+        uses: actions/checkout@v4
+
+      - name: 📦 إعداد Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 📦 إعداد pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: 📦 تثبيت المكتبات
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔨 بناء التطبيق
+        run: ${{ matrix.build_cmd }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📤 رفع الملفات
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_path }}
+          retention-days: 30
+
+  release:
+    name: نشر الإصدار الجديد
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: 📥 استخراج الكود
+        uses: actions/checkout@v4
+
+      - name: 📥 تحميل ملفات Linux
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-app
+          path: ./release
+
+      - name: 📥 تحميل ملفات Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-app
+          path: ./release
+
+      - name: 📥 تحميل ملفات macOS
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-app
+          path: ./release
+
+      - name: 📋 إنشاء ملاحظات الإصدار
+        id: release_notes
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "## نظام إدارة تكاليف الشحن والجمارك الأردنية - الإصدار $VERSION" > release_notes.md
+          echo "" >> release_notes.md
+          echo "### الملفات المتاحة للتنزيل:" >> release_notes.md
+          echo "- **Windows**: نسخة محمولة وملف تثبيت" >> release_notes.md
+          echo "- **macOS**: ملف DMG للتثبيت" >> release_notes.md
+          echo "- **Linux**: ملف AppImage محمول" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### ملاحظات الإصدار:" >> release_notes.md
+          echo "تم تحديث التطبيق بأحدث الميزات والإصلاحات." >> release_notes.md
+          echo "" >> release_notes.md
+          echo "### معلومات التطبيق:" >> release_notes.md
+          echo "- **الاسم**: نظام إدارة تكاليف الشحن والجمارك الأردنية" >> release_notes.md
+          echo "- **الإصدار**: $VERSION" >> release_notes.md
+          echo "- **صانع التطبيق**: Manus Development Team" >> release_notes.md
+          echo "- **البريد الإلكتروني**: support@manus.im" >> release_notes.md
+
+      - name: 🚀 نشر الإصدار
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📧 إرسال إشعار البريد الإلكتروني
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.MAIL_SERVER }}
+          server_port: ${{ secrets.MAIL_PORT }}
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: 🎉 إصدار جديد من نظام إدارة تكاليف الشحن والجمارك
+          to: support@manus.im
+          from: releases@manus.im
+          body: |
+            تم نشر إصدار جديد من التطبيق بنجاح!
+            
+            الإصدار: ${{ steps.release_notes.outputs.version }}
+            الرابط: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ steps.release_notes.outputs.version }}
+            
+            الملفات المتاحة:
+            - Windows (EXE و Portable)
+            - macOS (DMG)
+            - Linux (AppImage)
+            
+            شكراً لاستخدام التطبيق!
+        continue-on-error: true
+
+  notify:
+    name: إرسال الإشعارات
+    needs: release
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: 📢 إشعار Slack
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK }}
+          payload: |
+            {
+              "text": "🎉 تم نشر إصدار جديد من نظام إدارة تكاليف الشحن والجمارك",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*نظام إدارة تكاليف الشحن والجمارك الأردنية*\n\nتم نشر إصدار جديد بنجاح!\n\n*الإصدار:* ${{ github.ref_name }}\n*الرابط:* ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
+                  }
+                }
+              ]
+            }
+        continue-on-error: true
+
+      - name: 📢 إشعار Discord
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook_url: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: 🎉 إصدار جديد من التطبيق
+          description: تم نشر الإصدار ${{ github.ref_name }} بنجاح
+          url: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+        continue-on-error: true
