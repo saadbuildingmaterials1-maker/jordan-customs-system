@@ -1,0 +1,77 @@
+appId: com.manus.customs-system
+productName: نظام إدارة تكاليف الشحن والجمارك
+directories:
+  buildResources: assets
+  output: dist_electron
+
+files:
+  - from: dist
+    to: .
+  - from: electron
+    to: .
+    filter:
+      - '!*.ts'
+      - '!*.map'
+
+win:
+  target:
+    - nsis
+    - portable
+  certificateFile: null
+  certificatePassword: null
+  signingHashAlgorithms:
+    - sha256
+  sign: null
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: نظام إدارة تكاليف الشحن والجمارك
+  installerIcon: assets/icon.ico
+  uninstallerIcon: assets/icon.ico
+  installerHeaderIcon: assets/icon.ico
+
+portable:
+  artifactName: ${productName}-${version}.exe
+
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.business
+  icon: assets/icon.icns
+  certificateFile: null
+  certificatePassword: null
+  signingIdentity: null
+  notarize: false
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+      type: file
+    - x: 438
+      y: 220
+      type: link
+      path: /Applications
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Office
+  icon: assets/icon.png
+
+appImage:
+  artifactName: ${productName}-${version}.AppImage
+
+deb:
+  artifactName: ${productName}-${version}.deb
+
+publish:
+  provider: github
+  owner: manus-dev
+  repo: jordan-customs-system
+  releaseType: release

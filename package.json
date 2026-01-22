@@ -3,14 +3,22 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
+  "main": "dist_electron/main.js",
+  "homepage": "./",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch server/_core/index.ts",
+    "dev:electron": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
+    "build:electron": "npm run build && electron-builder",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "db:push": "drizzle-kit generate && drizzle-kit migrate"
+    "db:push": "drizzle-kit generate && drizzle-kit migrate",
+    "electron": "electron .",
+    "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder --publish never",
+    "electron:build:publish": "npm run build && electron-builder --publish always"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
@@ -58,7 +66,6 @@
     "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "framer-motion": "^12.23.22",
-    "html2canvas": "^1.4.1",
     "input-otp": "^1.4.2",
     "jose": "6.1.0",
     "jspdf": "^4.0.0",
@@ -94,7 +101,13 @@
     "@vitejs/plugin-react": "^5.0.4",
     "add": "^2.0.6",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.4",
+    "electron": "^40.0.0",
+    "electron-builder": "^26.4.0",
+    "electron-is-dev": "^3.0.1",
+    "electron-updater": "^6.7.3",
     "esbuild": "^0.25.0",
     "pnpm": "^10.15.1",
     "postcss": "^8.4.47",
@@ -105,7 +118,8 @@
     "typescript": "5.9.3",
     "vite": "^7.1.7",
     "vite-plugin-manus-runtime": "^0.0.57",
-    "vitest": "^2.1.4"
+    "vitest": "^2.1.4",
+    "wait-on": "^7.2.0"
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af",
   "pnpm": {
