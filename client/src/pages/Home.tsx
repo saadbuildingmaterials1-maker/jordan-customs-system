@@ -61,7 +61,31 @@ export default function Home() {
                 variant="outline"
               >
                 <Plus className="w-5 h-5" />
-                نموذج متقدم (كامل التفاصيل)
+                نموذج متقدم
+              </Button>
+              <Button
+                onClick={() => navigate("/supplier-invoice")}
+                className="gap-2"
+                variant="outline"
+              >
+                <DollarSign className="w-5 h-5" />
+                فاتورة المورد
+              </Button>
+              <Button
+                onClick={() => navigate("/shipping")}
+                className="gap-2"
+                variant="outline"
+              >
+                <FileText className="w-5 h-5" />
+                الشحن
+              </Button>
+              <Button
+                onClick={() => navigate("/expenses")}
+                className="gap-2"
+                variant="outline"
+              >
+                <TrendingUp className="w-5 h-5" />
+                المصاريف
               </Button>
             </div>
           </div>
@@ -158,30 +182,44 @@ export default function Home() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="card-elegant hover:shadow-lg transition-shadow cursor-pointer">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="card-elegant hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/declarations")}>
             <div className="flex items-center gap-4">
               <div className="p-3 bg-blue-100 rounded-lg">
                 <FileText className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">إدارة البيانات الجمركية</h3>
+                <h3 className="font-semibold text-foreground">البيانات الجمركية</h3>
                 <p className="text-sm text-muted-foreground">
-                  عرض وتعديل وحذف البيانات الجمركية
+                  عرض وتعديل البيانات
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="card-elegant hover:shadow-lg transition-shadow cursor-pointer">
+          <div className="card-elegant hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/supplier-invoice")}>
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <DollarSign className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-foreground">فاتورة المورد</h3>
+                <p className="text-sm text-muted-foreground">
+                  إدارة فواتير المورد
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="card-elegant hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate("/reports")}>
             <div className="flex items-center gap-4">
               <div className="p-3 bg-green-100 rounded-lg">
                 <TrendingUp className="w-6 h-6 text-green-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-foreground">التقارير والتحليلات</h3>
+                <h3 className="font-semibold text-foreground">التقارير</h3>
                 <p className="text-sm text-muted-foreground">
-                  عرض التقارير والإحصائيات المالية
+                  التقارير والإحصائيات
                 </p>
               </div>
             </div>
