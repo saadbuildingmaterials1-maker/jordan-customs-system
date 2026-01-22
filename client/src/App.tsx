@@ -31,6 +31,8 @@ import ExpensesManagement from '@/pages/ExpensesManagement';
 import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPage';
 import DownloadPage from '@/pages/DownloadPage';
 import About from '@/pages/About';
+import PrivacyPolicy from '@/pages/PrivacyPolicy';
+import TermsOfUse from '@/pages/TermsOfUse';
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -70,6 +72,8 @@ function Router() {
       <Route path="/advanced-customs" component={AdvancedCustomsDeclarationPage} />
       <Route path="/download" component={DownloadPage} />
       <Route path="/about" component={About} />
+      <Route path="/privacy" component={PrivacyPolicy} />
+      <Route path="/terms" component={TermsOfUse} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
