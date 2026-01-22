@@ -427,6 +427,45 @@ export const appRouter = router({
           throw new Error(`خطأ في استيراد الملف: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
         }
       }),
+
+  /**
+   * ===== إجراءات الإشعارات =====
+   */
+  notifications: router({
+    getNotifications: protectedProcedure
+      .input(
+        z.object({
+          limit: z.number().int().positive().default(50),
+          offset: z.number().int().nonnegative().default(0),
+        })
+      )
+      .query(async ({ ctx, input }) => {
+        return await db.getNotificationsByUserId(ctx.user.id, input.limit, input.offset);
+      }),
+
+    getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getUnreadNotificationCount(ctx.user.id);
+    }),
+
+    markAsRead: protectedProcedure
+      .input(z.object({ notificationId: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        await db.markNotificationAsRead(input.notificationId);
+        return { success: true };
+      }),
+
+    markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+      await db.markAllNotificationsAsRead(ctx.user.id);
+      return { success: true };
+    }),
+
+    delete: protectedProcedure
+      .input(z.object({ notificationId: z.number().int().positive() }))
+      .mutation(async ({ input }) => {
+        await db.deleteNotification(input.notificationId);
+        return { success: true };
+      }),
+  }),
   }),
 });
 

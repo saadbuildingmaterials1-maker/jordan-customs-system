@@ -1,4 +1,3 @@
-import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, 
@@ -14,9 +13,13 @@ import {
   variances,
   FinancialSummary,
   InsertFinancialSummary,
-  financialSummaries
+  financialSummaries,
+  Notification,
+  InsertNotification,
+  notifications
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { eq, desc, and, lt } from "drizzle-orm";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -340,4 +343,96 @@ export async function getFinancialSummaryByDeclarationId(
     .limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * ===== عمليات الإشعارات =====
+ */
+
+export async function createNotification(
+  data: InsertNotification
+): Promise<Notification> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.insert(notifications).values(data);
+
+  const result = await db
+    .select()
+    .from(notifications)
+    .orderBy(desc(notifications.createdAt))
+    .limit(1);
+
+  if (!result.length) throw new Error("Failed to create notification");
+  return result[0];
+}
+
+export async function getNotificationsByUserId(
+  userId: number,
+  limit: number = 50,
+  offset: number = 0
+): Promise<Notification[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  return await db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit)
+    .offset(offset);
+}
+
+export async function getUnreadNotificationCount(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+
+  const result = await db
+    .select()
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+
+  return result.length;
+}
+
+export async function markNotificationAsRead(notificationId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(eq(notifications.id, notificationId));
+}
+
+export async function markAllNotificationsAsRead(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .update(notifications)
+    .set({ isRead: true })
+    .where(eq(notifications.userId, userId));
+}
+
+export async function deleteNotification(notificationId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .delete(notifications)
+    .where(eq(notifications.id, notificationId));
+}
+
+export async function deleteOldNotifications(userId: number, daysOld: number = 30): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+  await db
+    .delete(notifications)
+    .where(and(eq(notifications.userId, userId), lt(notifications.createdAt, cutoffDate)));
 }

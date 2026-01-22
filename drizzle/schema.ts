@@ -309,3 +309,32 @@ export * from './accounting-schema';
 // ============================================
 // استيراد جداول المحاسبة الكاملة
 // ============================================
+
+/**
+ * جدول الإشعارات (Notifications)
+ * يحتوي على سجل تاريخي لجميع إشعارات النظام
+ */
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // معلومات الإشعار
+  type: mysqlEnum("type", ["success", "error", "warning", "info"]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  
+  // معلومات العملية المرتبطة
+  operationType: varchar("operationType", { length: 100 }), // مثل: delete_declaration, update_item, etc
+  relatedEntityType: varchar("relatedEntityType", { length: 100 }), // مثل: declaration, item, invoice
+  relatedEntityId: int("relatedEntityId"), // معرّف الكيان المرتبط
+  
+  // معلومات إضافية
+  metadata: text("metadata"), // JSON string للبيانات الإضافية
+  isRead: boolean("isRead").default(false).notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

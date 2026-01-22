@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useCallback, useState } from 'react';
+import React, { createContext, useCallback, useState, useEffect } from 'react';
+import { trpc } from '@/lib/trpc';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
