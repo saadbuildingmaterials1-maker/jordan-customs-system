@@ -302,3 +302,6 @@ export const invoiceItems = mysqlTable("invoice_items", {
 
 export type InvoiceItem = typeof invoiceItems.$inferSelect;
 export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
+
+// استيراد جداول المحاسبة
+export * from './accounting-schema';
