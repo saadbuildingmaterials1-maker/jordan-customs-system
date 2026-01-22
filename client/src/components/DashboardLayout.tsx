@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { getLoginUrl } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { LayoutDashboard, LogOut, PanelLeft, Users, Info, Shield, Scale } from "lucide-react";
+import { LayoutDashboard, LogOut, PanelLeft, Users, Info, Shield, Scale, Bell } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -32,6 +32,7 @@ const menuItems = [
   { icon: Users, label: "البيانات الجمركية", path: "/declarations" },
   { icon: Users, label: "التقارير", path: "/reports" },
   { icon: Users, label: "الإعدادات", path: "/settings" },
+  { icon: Bell, label: "الإشعارات", path: "/notifications-center" },
   { icon: Info, label: "معلومات عنا", path: "/about" },
   { icon: Shield, label: "سياسة الخصوصية", path: "/privacy" },
   { icon: Scale, label: "شروط الاستخدام", path: "/terms" },
