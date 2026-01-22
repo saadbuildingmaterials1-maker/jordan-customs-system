@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import html2canvas from "html2canvas";
+// import html2canvas from "html2canvas"; // تم تعطيل المكتبة غير المثبتة
 import { CustomsDeclaration, Item } from "@shared/types";
 
 interface ExportData {
