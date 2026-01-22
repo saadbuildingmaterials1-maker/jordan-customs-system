@@ -10,6 +10,7 @@ import {
   calculateVariance,
   calculateVariancePercentage,
 } from "@shared/calculations";
+import { aiRouter } from "./ai-router";
 
 export const appRouter = router({
   system: systemRouter,
@@ -386,6 +387,11 @@ export const appRouter = router({
         return await db.getFinancialSummaryByDeclarationId(input.declarationId);
       }),
   }),
+
+  /**
+   * ===== إجراءات الذكاء الاصطناعي =====
+   */
+  ai: aiRouter,
 });
 
 export type AppRouter = typeof appRouter;
