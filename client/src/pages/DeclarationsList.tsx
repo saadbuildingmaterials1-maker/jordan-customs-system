@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { useToast } from "@/contexts/ToastContext";
 import { Loader2, Plus, Trash2, Eye, Edit2, Search } from "lucide-react";
 import { CustomsDeclaration } from "@shared/types";
 
@@ -20,6 +21,7 @@ export default function DeclarationsList() {
   const [, navigate] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const { addToast } = useToast();
 
   // Queries
   const { data: declarations, isLoading, refetch } =

@@ -10,6 +10,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Plus, Search, Edit2, Trash2, Loader2, Copy, Check } from "lucide-react";
 import { formatCurrency, formatArabicNumber } from "@/lib/formatting";
+import { useToast } from "@/contexts/ToastContext";
 
 interface ItemFormData {
   itemName: string;
@@ -22,6 +23,7 @@ interface ItemFormData {
 
 export default function ItemsManagement() {
   const { id } = useParams<{ id: string }>();
+  const { addToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -111,7 +113,12 @@ export default function ItemsManagement() {
   const handleSubmit = async () => {
     try {
       if (!formData.itemName || !formData.itemCode) {
-        toast.error("يرجى ملء جميع الحقول المطلوبة");
+        addToast({
+        type: 'warning',
+        title: '⚠ حقول مطلوبة',
+        message: 'يرجى ملء جميع الحقول المطلوبة',
+        duration: 3000,
+      });
         return;
       }
 
@@ -125,7 +132,12 @@ export default function ItemsManagement() {
           description: formData.description,
           customsCode: formData.customsCode,
         });
-        toast.success("تم تحديث الصنف بنجاح");
+        addToast({
+        type: 'success',
+        title: '✓ تم التحديث بنجاح',
+        message: 'تم تحديث بيانات الصنف بنجاح',
+        duration: 4000,
+      });
       } else {
         await addItemMutation.mutateAsync({
           declarationId: parseInt(id!),
@@ -136,13 +148,23 @@ export default function ItemsManagement() {
           description: formData.description,
           customsCode: formData.customsCode,
         });
-        toast.success("تم إضافة الصنف بنجاح");
+        addToast({
+        type: 'success',
+        title: '✓ تم الإضافة بنجاح',
+        message: 'تم إضافة الصنف الجديد بنجاح',
+        duration: 4000,
+      });
       }
 
       setIsModalOpen(false);
       refetchItems();
     } catch (error) {
-      toast.error("حدث خطأ أثناء حفظ الصنف");
+      addToast({
+        type: 'error',
+        title: '✗ خطأ في الحفظ',
+        message: 'حدث خطأ أثناء حفظ الصنف',
+        duration: 4000,
+      });
     }
   };
 
@@ -150,10 +172,20 @@ export default function ItemsManagement() {
     if (confirm("هل أنت متأكد من حذف هذا الصنف؟")) {
       try {
         await deleteItemMutation.mutateAsync({ id: itemId });
-        toast.success("تم حذف الصنف بنجاح");
+        addToast({
+        type: 'success',
+        title: '✓ تم الحذف بنجاح',
+        message: 'تم حذف الصنف بنجاح من البيان',
+        duration: 4000,
+      });
         refetchItems();
       } catch (error) {
-        toast.error("حدث خطأ أثناء حذف الصنف");
+        addToast({
+        type: 'error',
+        title: '✗ خطأ في الحذف',
+        message: 'حدث خطأ أثناء حذف الصنف',
+        duration: 4000,
+      });
       }
     }
   };
