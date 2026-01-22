@@ -16,6 +16,8 @@ import SupplierInvoice from "@/pages/SupplierInvoice";
 import ShippingPage from "@/pages/ShippingPage";
 import ExpensesPage from "@/pages/ExpensesPage";
 import AdvancedCustomsDeclaration from "@/pages/AdvancedCustomsDeclaration";
+import Dashboard from "@/pages/Dashboard";
+import NotificationCenter from "@/pages/NotificationCenter";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -40,6 +42,8 @@ function Router() {
       <Route path={"/shipping"} component={ShippingPage} />
       <Route path={"/expenses"} component={ExpensesPage} />
       <Route path={"/:id/customs-declaration"} component={AdvancedCustomsDeclaration} />
+      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/notifications"} component={NotificationCenter} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
