@@ -20,6 +20,12 @@ import Dashboard from "@/pages/Dashboard";
 import NotificationCenter from "@/pages/NotificationCenter";
 import { PaymentsManagement } from "@/pages/PaymentsManagement";
 import Checkout from "@/pages/Checkout";
+import SmartDashboard from "@/pages/SmartDashboard";
+import FactoriesAndInvoices from "@/pages/FactoriesAndInvoices";
+import ReportsAndExports from "@/pages/ReportsAndExports";
+import AlertsAndNotifications from "@/pages/AlertsAndNotifications";
+import UsersAndRoles from "@/pages/UsersAndRoles";
+import SettingsAndSecurity from "@/pages/SettingsAndSecurity";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -48,6 +54,12 @@ function Router() {
       <Route path={"/notifications"} component={NotificationCenter} />
       <Route path={"/payments"} component={PaymentsManagement} />
       <Route path={"/checkout"} component={Checkout} />
+      <Route path={"/smart-dashboard"} component={SmartDashboard} />
+      <Route path={"/factories-invoices"} component={FactoriesAndInvoices} />
+      <Route path={"/reports-exports"} component={ReportsAndExports} />
+      <Route path={"/alerts-notifications"} component={AlertsAndNotifications} />
+      <Route path={"/users-roles"} component={UsersAndRoles} />
+      <Route path={"/settings-security"} component={SettingsAndSecurity} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
