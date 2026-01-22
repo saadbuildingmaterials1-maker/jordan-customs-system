@@ -20,6 +20,7 @@ import {
   extractPdfData,
   validateExtractedData,
 } from "./pdf-extraction-service";
+import { stripeRouter } from "./routers/stripe";
 
 export const appRouter = router({
   system: systemRouter,
@@ -465,8 +466,8 @@ export const appRouter = router({
         await db.deleteNotification(input.notificationId);
         return { success: true };
       }),
-  }),
+   }),
+  stripe: stripeRouter,
   }),
 });
-
 export type AppRouter = typeof appRouter;

@@ -338,3 +338,177 @@ export const notifications = mysqlTable("notifications", {
 
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = typeof notifications.$inferInsert;
+
+/**
+ * جدول الدفعات (Payments)
+ * يحتوي على معلومات جميع الدفعات عبر Stripe
+ */
+export const payments = mysqlTable("payments", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  declarationId: int("declarationId"),
+  
+  // معرّفات Stripe
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }).notNull().unique(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeChargeId: varchar("stripeChargeId", { length: 255 }),
+  
+  // معلومات الدفع
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD").notNull(),
+  status: mysqlEnum("status", ["pending", "processing", "succeeded", "failed", "canceled", "refunded"]).default("pending").notNull(),
+  
+  // معلومات إضافية
+  description: text("description"),
+  metadata: text("metadata"),
+  paymentMethod: varchar("paymentMethod", { length: 50 }),
+  
+  // تفاصيل البطاقة
+  cardBrand: varchar("cardBrand", { length: 50 }),
+  cardLast4: varchar("cardLast4", { length: 4 }),
+  
+  // التواريخ
+  paidAt: timestamp("paidAt"),
+  failedAt: timestamp("failedAt"),
+  refundedAt: timestamp("refundedAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;
+
+/**
+ * جدول الفواتير (Invoices)
+ * يحتوي على معلومات الفواتير من Stripe
+ */
+export const stripeInvoices = mysqlTable("stripe_invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  paymentId: int("paymentId"),
+  
+  // معرّفات Stripe
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }).notNull().unique(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }).notNull(),
+  
+  // معلومات الفاتورة
+  invoiceNumber: varchar("invoiceNumber", { length: 50 }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD").notNull(),
+  status: mysqlEnum("status", ["draft", "open", "paid", "void", "uncollectible"]).default("draft").notNull(),
+  
+  // معلومات إضافية
+  description: text("description"),
+  pdfUrl: text("pdfUrl"),
+  hostedInvoiceUrl: text("hostedInvoiceUrl"),
+  
+  // التواريخ
+  dueDate: date("dueDate"),
+  paidAt: timestamp("paidAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type StripeInvoice = typeof stripeInvoices.$inferSelect;
+export type InsertStripeInvoice = typeof stripeInvoices.$inferInsert;
+
+/**
+ * جدول المبالغ المسترجعة (Refunds)
+ * يحتوي على معلومات المبالغ المسترجعة
+ */
+export const refunds = mysqlTable("refunds", {
+  id: int("id").autoincrement().primaryKey(),
+  paymentId: int("paymentId").notNull(),
+  userId: int("userId").notNull(),
+  
+  // معرّفات Stripe
+  stripeRefundId: varchar("stripeRefundId", { length: 255 }).notNull().unique(),
+  stripeChargeId: varchar("stripeChargeId", { length: 255 }).notNull(),
+  
+  // معلومات المبلغ المسترجع
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD").notNull(),
+  status: mysqlEnum("status", ["pending", "succeeded", "failed", "canceled"]).default("pending").notNull(),
+  
+  // معلومات إضافية
+  reason: varchar("reason", { length: 100 }),
+  notes: text("notes"),
+  
+  // التواريخ
+  refundedAt: timestamp("refundedAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Refund = typeof refunds.$inferSelect;
+export type InsertRefund = typeof refunds.$inferInsert;
+
+/**
+ * جدول الاشتراكات (Subscriptions)
+ * يحتوي على معلومات الاشتراكات الدورية
+ */
+export const subscriptions = mysqlTable("subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // معرّفات Stripe
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }).notNull().unique(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }).notNull(),
+  stripePriceId: varchar("stripePriceId", { length: 255 }).notNull(),
+  
+  // معلومات الاشتراك
+  planName: varchar("planName", { length: 100 }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD").notNull(),
+  interval: mysqlEnum("interval", ["day", "week", "month", "year"]).notNull(),
+  status: mysqlEnum("status", ["active", "past_due", "canceled", "unpaid"]).default("active").notNull(),
+  
+  // معلومات الفترة
+  currentPeriodStart: date("currentPeriodStart").notNull(),
+  currentPeriodEnd: date("currentPeriodEnd").notNull(),
+  canceledAt: timestamp("canceledAt"),
+  cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+
+/**
+ * جدول الفواتير الدورية (Subscription Invoices)
+ * يحتوي على معلومات الفواتير المرتبطة بالاشتراكات
+ */
+export const subscriptionInvoices = mysqlTable("subscription_invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  subscriptionId: int("subscriptionId").notNull(),
+  userId: int("userId").notNull(),
+  
+  // معرّفات Stripe
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }).notNull().unique(),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }).notNull(),
+  
+  // معلومات الفاتورة
+  invoiceNumber: varchar("invoiceNumber", { length: 50 }).notNull(),
+  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD").notNull(),
+  status: mysqlEnum("status", ["draft", "open", "paid", "void", "uncollectible"]).default("draft").notNull(),
+  
+  // معلومات إضافية
+  pdfUrl: text("pdfUrl"),
+  hostedInvoiceUrl: text("hostedInvoiceUrl"),
+  
+  // التواريخ
+  paidAt: timestamp("paidAt"),
+  dueDate: date("dueDate"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SubscriptionInvoice = typeof subscriptionInvoices.$inferSelect;
+export type InsertSubscriptionInvoice = typeof subscriptionInvoices.$inferInsert;

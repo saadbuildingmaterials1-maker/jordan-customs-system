@@ -57,6 +57,13 @@
       "when": 1769109662480,
       "tag": "0007_clean_ulik",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1769114150802,
+      "tag": "0008_stormy_the_stranger",
+      "breakpoints": true
     }
   ]
 }
