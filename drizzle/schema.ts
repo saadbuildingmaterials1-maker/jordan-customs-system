@@ -194,3 +194,111 @@ export const financialSummaries = mysqlTable("financial_summaries", {
 
 export type FinancialSummary = typeof financialSummaries.$inferSelect;
 export type InsertFinancialSummary = typeof financialSummaries.$inferInsert;
+
+
+/**
+ * جدول المصانع (Factories)
+ * يحتوي على معلومات المصانع المختلفة
+ */
+export const factories = mysqlTable("factories", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // معلومات المصنع
+  factoryName: varchar("factoryName", { length: 255 }).notNull(),
+  factoryCode: varchar("factoryCode", { length: 50 }).notNull().unique(),
+  country: varchar("country", { length: 100 }).notNull(),
+  contactPerson: varchar("contactPerson", { length: 255 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 20 }),
+  address: text("address"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Factory = typeof factories.$inferSelect;
+export type InsertFactory = typeof factories.$inferInsert;
+
+/**
+ * جدول الفواتير (Invoices)
+ * يحتوي على معلومات فواتير المصانع
+ */
+export const invoices = mysqlTable("invoices", {
+  id: int("id").autoincrement().primaryKey(),
+  declarationId: int("declarationId").notNull(),
+  factoryId: int("factoryId").notNull(),
+  userId: int("userId").notNull(),
+  
+  // معلومات الفاتورة
+  invoiceNumber: varchar("invoiceNumber", { length: 50 }).notNull(),
+  invoiceDate: date("invoiceDate").notNull(),
+  
+  // التكاليف الخارجية (External Costs)
+  freightCost: decimal("freightCost", { precision: 12, scale: 3 }).notNull().default("0"),
+  insuranceCost: decimal("insuranceCost", { precision: 12, scale: 3 }).notNull().default("0"),
+  otherExternalCosts: decimal("otherExternalCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  
+  // التكاليف الداخلية (Internal Costs)
+  localHandlingCosts: decimal("localHandlingCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  storageAndWarehouseCosts: decimal("storageAndWarehouseCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  customsClearanceCosts: decimal("customsClearanceCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  otherInternalCosts: decimal("otherInternalCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  
+  // الإجماليات
+  totalExternalCosts: decimal("totalExternalCosts", { precision: 12, scale: 3 }).notNull(),
+  totalInternalCosts: decimal("totalInternalCosts", { precision: 12, scale: 3 }).notNull(),
+  totalCosts: decimal("totalCosts", { precision: 15, scale: 3 }).notNull(),
+  
+  // معلومات إضافية
+  notes: text("notes"),
+  status: mysqlEnum("status", ["draft", "confirmed", "completed"]).default("draft").notNull(),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = typeof invoices.$inferInsert;
+
+/**
+ * جدول تفاصيل الفواتير (Invoice Items)
+ * يحتوي على تفاصيل كل منتج في الفاتورة
+ */
+export const invoiceItems = mysqlTable("invoice_items", {
+  id: int("id").autoincrement().primaryKey(),
+  invoiceId: int("invoiceId").notNull(),
+  itemId: int("itemId").notNull(),
+  
+  // معلومات المنتج الأساسية
+  productName: varchar("productName", { length: 255 }).notNull(),
+  quantity: decimal("quantity", { precision: 12, scale: 3 }).notNull(),
+  unitPrice: decimal("unitPrice", { precision: 12, scale: 3 }).notNull(),
+  totalPrice: decimal("totalPrice", { precision: 15, scale: 3 }).notNull(),
+  
+  // معلومات جمركية
+  customsCode: varchar("customsCode", { length: 50 }), // الكود الجمركي (HS Code)
+  harmonizedCode: varchar("harmonizedCode", { length: 50 }), // الرمز المنسق
+  tarifBand: varchar("tarifBand", { length: 50 }), // بند التعرفة
+  dutyRate: decimal("dutyRate", { precision: 5, scale: 2 }).notNull().default("0"), // نسبة الرسم الجمركي
+  salesTaxRate: decimal("salesTaxRate", { precision: 5, scale: 2 }).notNull().default("16"), // نسبة ضريبة المبيعات
+  
+  // التكاليف والسعر النهائي
+  customsDuty: decimal("customsDuty", { precision: 12, scale: 3 }).notNull().default("0"),
+  salesTax: decimal("salesTax", { precision: 12, scale: 3 }).notNull().default("0"),
+  allocatedExternalCosts: decimal("allocatedExternalCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  allocatedInternalCosts: decimal("allocatedInternalCosts", { precision: 12, scale: 3 }).notNull().default("0"),
+  
+  // السعر النهائي
+  finalUnitPrice: decimal("finalUnitPrice", { precision: 12, scale: 3 }).notNull(),
+  finalTotalPrice: decimal("finalTotalPrice", { precision: 15, scale: 3 }).notNull(),
+  
+  // معلومات إضافية
+  description: text("description"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type InvoiceItem = typeof invoiceItems.$inferSelect;
+export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
