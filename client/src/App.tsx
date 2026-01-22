@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import Home from "@/pages/Home";
 import DeclarationForm from "@/pages/DeclarationForm";
+import DeclarationDetail from "@/pages/DeclarationDetail";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -12,7 +13,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/declarations/new"} component={DeclarationForm} />
-      <Route path={"/declarations/:id"} component={DeclarationForm} />
+      <Route path={"/declarations/:id"} component={DeclarationDetail} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
