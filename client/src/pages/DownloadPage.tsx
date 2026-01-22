@@ -125,14 +125,25 @@ export default function DownloadPage() {
         return;
       }
 
-      // للتطبيقات الأخرى
+      // للتطبيقات الأخرى - التحقق من وجود الملف أولاً
       const response = await fetch(downloadItem.downloadUrl);
 
       if (!response.ok) {
-        throw new Error("فشل التنزيل");
+        throw new Error(`خطأ في التنزيل: ${response.status} ${response.statusText}`);
       }
 
       const blob = await response.blob();
+      
+      // التحقق من أن الملف ليس فارغاً
+      if (blob.size === 0) {
+        throw new Error("الملف المحمل فارغ. يرجى المحاولة لاحقاً");
+      }
+
+      // التحقق من أن الملف هو ZIP
+      if (!blob.type.includes('zip') && !downloadItem.downloadUrl.endsWith('.zip')) {
+        throw new Error("الملف المحمل ليس بصيغة ZIP صحيحة");
+      }
+
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -160,19 +171,21 @@ export default function DownloadPage() {
         )
       );
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "حدث خطأ أثناء التنزيل. يرجى المحاولة لاحقاً";
       setDownloads((prev) =>
         prev.map((d) =>
           d.id === id
             ? {
                 ...d,
                 isDownloading: false,
-                error: "حدث خطأ أثناء التنزيل. يرجى المحاولة لاحقاً",
+                error: errorMessage,
               }
             : d
         )
       );
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-12 px-4">
