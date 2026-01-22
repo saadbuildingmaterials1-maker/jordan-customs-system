@@ -12,9 +12,23 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Upload, AlertCircle, CheckCircle, FileText } from 'lucide-react';
+
+import { Upload, AlertCircle, FileText } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
+import { ImportSuccessAlert, type ImportSuccessData } from './ImportSuccessAlert';
+
+// نوع البيانات المستخرجة من PDF
+interface ExtractedData {
+  declarationNumber?: string;
+  date?: string;
+  importerName?: string;
+  items?: any[];
+  totalValue?: number;
+  currency?: string;
+  customsDuty?: number;
+  tax?: number;
+  totalAmount?: number;
+}
 
 export interface PdfImportDialogProps {
   open: boolean;
@@ -32,6 +46,7 @@ export function PdfImportDialog({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [importResult, setImportResult] = useState<any>(null);
+  const [successData, setSuccessData] = useState<ImportSuccessData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const importMutation = trpc.pdfImport.importDeclaration.useMutation();
@@ -62,10 +77,6 @@ export function PdfImportDialog({
     setError(null);
 
     try {
-      // في التطبيق الحقيقي، يتم رفع الملف إلى الخادم أولاً
-      // ثم استدعاء API الاستيراد
-      // هنا نستخدم مسار الملف المحلي كمثال
-      
       const result = await importMutation.mutateAsync({
         filePath: file.name,
       });
@@ -73,6 +84,22 @@ export function PdfImportDialog({
       if (result.success) {
         setSuccess(true);
         setImportResult(result);
+
+        // تحضير بيانات رسالة النجاح
+        const extractedData = result.data as ExtractedData;
+        const successInfo: ImportSuccessData = {
+          declarationNumber: extractedData?.declarationNumber || 'غير متوفر',
+          date: extractedData?.date || new Date().toLocaleDateString('ar-JO'),
+          importerName: extractedData?.importerName || 'غير متوفر',
+          itemsCount: extractedData?.items?.length || 0,
+          totalValue: extractedData?.totalValue || 0,
+          currency: extractedData?.currency || 'JOD',
+          confidence: result.confidence || 85,
+          customsDuty: extractedData?.customsDuty,
+          tax: extractedData?.tax,
+          totalAmount: extractedData?.totalAmount,
+        };
+        setSuccessData(successInfo);
         onDataImported(result.data);
       } else {
         setError('فشل استيراد الملف. تحقق من صيغة الملف.');
@@ -91,6 +118,7 @@ export function PdfImportDialog({
     setError(null);
     setSuccess(false);
     setImportResult(null);
+    setSuccessData(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -103,38 +131,42 @@ export function PdfImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className={success ? 'max-w-2xl' : 'max-w-md'}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            استيراد بيان جمركي من PDF
+            {success ? 'تم الاستيراد بنجاح' : 'استيراد بيان جمركي من PDF'}
           </DialogTitle>
           <DialogDescription>
-            قم برفع ملف البيان الجمركي لاستخراج البيانات تلقائياً
+            {success
+              ? 'تم استخراج جميع البيانات بنجاح'
+              : 'قم برفع ملف البيان الجمركي لاستخراج البيانات تلقائياً'}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* منطقة رفع الملف */}
-          <div
-            className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-            <p className="text-sm font-medium text-gray-700">
-              {file ? file.name : 'اضغط لاختيار ملف PDF'}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              أو اسحب الملف هنا (الحد الأقصى 10 MB)
-            </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-          </div>
+        <div className={success ? 'space-y-4 max-h-[60vh] overflow-y-auto' : 'space-y-4'}>
+          {/* منطقة رفع الملف - تظهر فقط قبل الاستيراد */}
+          {!success && (
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+              <p className="text-sm font-medium text-gray-700">
+                {file ? file.name : 'اضغط لاختيار ملف PDF'}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                أو اسحب الملف هنا (الحد الأقصى 10 MB)
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+          )}
 
           {/* رسائل الخطأ */}
           {error && (
@@ -144,70 +176,13 @@ export function PdfImportDialog({
             </Alert>
           )}
 
-          {/* رسالة النجاح */}
-          {success && importResult && (
-            <div className="space-y-2">
-              <Alert>
-                <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
-                  تم استيراد الملف بنجاح!
-                </AlertDescription>
-              </Alert>
-
-              {/* عرض درجة الثقة */}
-              <div className="bg-blue-50 p-3 rounded">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">درجة الثقة:</span>
-                  <span className="text-sm font-bold text-blue-600">
-                    {importResult.confidence}%
-                  </span>
-                </div>
-                <Progress value={importResult.confidence} className="h-2" />
-              </div>
-
-              {/* عرض الأخطاء في التحقق */}
-              {importResult.validationErrors.length > 0 && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
-                    <p className="font-medium mb-1">تحذيرات:</p>
-                    <ul className="text-sm space-y-1">
-                      {importResult.validationErrors.map(
-                        (error: string, index: number) => (
-                          <li key={index}>• {error}</li>
-                        )
-                      )}
-                    </ul>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {/* عرض ملخص البيانات المستخرجة */}
-              {importResult.data && (
-                <div className="bg-gray-50 p-3 rounded text-sm space-y-1">
-                  <p>
-                    <strong>رقم البيان:</strong>{' '}
-                    {importResult.data.declarationNumber || 'غير متوفر'}
-                  </p>
-                  <p>
-                    <strong>المستورد:</strong>{' '}
-                    {importResult.data.importerName || 'غير متوفر'}
-                  </p>
-                  <p>
-                    <strong>عدد الأصناف:</strong>{' '}
-                    {importResult.data.items?.length || 0}
-                  </p>
-                  <p>
-                    <strong>إجمالي القيمة:</strong>{' '}
-                    {importResult.data.totalValue || 'غير متوفر'}
-                  </p>
-                </div>
-              )}
-            </div>
+          {/* رسالة النجاح مع التفاصيل الشاملة */}
+          {success && successData && (
+            <ImportSuccessAlert data={successData} />
           )}
 
           {/* مؤشر التحميل */}
-          {isLoading && (
+          {isLoading && !success && (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               <span className="ml-2 text-sm text-gray-600">
@@ -223,14 +198,14 @@ export function PdfImportDialog({
             onClick={handleClose}
             disabled={isLoading}
           >
-            إلغاء
+            {success ? 'إغلاق' : 'إلغاء'}
           </Button>
           {success ? (
             <Button
               onClick={handleClose}
               className="bg-green-600 hover:bg-green-700"
             >
-              تم
+              ✓ تم
             </Button>
           ) : (
             <Button
