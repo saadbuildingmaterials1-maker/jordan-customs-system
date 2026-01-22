@@ -9,6 +9,7 @@ import ItemsManagement from "@/pages/ItemsManagement";
 import VarianceAnalysis from "@/pages/VarianceAnalysis";
 import AdminPanel from "@/pages/AdminPanel";
 import AccountingDashboard from "@/pages/AccountingDashboard";
+import AdvancedReports from "@/pages/AdvancedReports";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -24,6 +25,7 @@ function Router() {
       <Route path={"/declarations/:id/variance"} component={VarianceAnalysis} />
       <Route path={"/admin"} component={AdminPanel} />
       <Route path={"/accounting"} component={AccountingDashboard} />
+      <Route path={"/reports"} component={AdvancedReports} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
