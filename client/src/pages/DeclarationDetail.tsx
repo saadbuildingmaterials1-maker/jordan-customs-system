@@ -63,10 +63,9 @@ export default function DeclarationDetail() {
     try {
       await updateItemMutation.mutateAsync({
         id: editingItem.id,
-        declarationId: parseInt(id!),
         quantity: data.quantity,
         unitPriceForeign: data.unitPriceForeign,
-      });
+      } as any);
       toast.success("تم تحديث الصنف بنجاح");
       setEditingItem(null);
       await refetchItems();
@@ -79,8 +78,7 @@ export default function DeclarationDetail() {
     try {
       await deleteItemMutation.mutateAsync({
         id: itemId,
-        declarationId: parseInt(id!),
-      });
+      } as any);
       toast.success("تم حذف الصنف بنجاح");
       await refetchItems();
     } catch (error) {

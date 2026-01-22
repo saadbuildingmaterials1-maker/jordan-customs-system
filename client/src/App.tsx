@@ -5,6 +5,7 @@ import Home from "@/pages/Home";
 import DeclarationForm from "@/pages/DeclarationForm";
 import DeclarationFormAdvanced from "@/pages/DeclarationFormAdvanced";
 import DeclarationDetail from "@/pages/DeclarationDetail";
+import ItemsManagement from "@/pages/ItemsManagement";
 import VarianceAnalysis from "@/pages/VarianceAnalysis";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -17,6 +18,7 @@ function Router() {
       <Route path={"/declarations/new"} component={DeclarationForm} />
       <Route path={"/declarations/new/advanced"} component={DeclarationFormAdvanced} />
       <Route path={"/declarations/:id"} component={DeclarationDetail} />
+      <Route path={"/declarations/:id/items"} component={ItemsManagement} />
       <Route path={"/declarations/:id/variance"} component={VarianceAnalysis} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}

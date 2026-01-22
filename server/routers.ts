@@ -243,24 +243,32 @@ export const appRouter = router({
       .input(
         z.object({
           id: z.number(),
-          declarationId: z.number(),
+          itemName: z.string().optional(),
+          itemCode: z.string().optional(),
           quantity: z.number().positive().optional(),
           unitPriceForeign: z.number().positive().optional(),
+          description: z.string().optional(),
+          customsCode: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        const item = await db.getItemById(input.id);
+        if (!item) {
+          throw new Error("الصنف غير موجود");
+        }
+
+        const declaration = await db.getCustomsDeclarationById(item.declarationId);
         if (!declaration || declaration.userId !== ctx.user.id) {
           throw new Error("البيان الجمركي غير موجود");
         }
 
         const updateData: Record<string, string> = {};
-        if (input.quantity) {
-          updateData.quantity = input.quantity.toString();
-        }
-        if (input.unitPriceForeign) {
-          updateData.unitPriceForeign = input.unitPriceForeign.toString();
-        }
+        if (input.itemName) updateData.itemName = input.itemName;
+        if (input.itemCode) updateData.itemCode = input.itemCode;
+        if (input.quantity) updateData.quantity = input.quantity.toString();
+        if (input.unitPriceForeign) updateData.unitPriceForeign = input.unitPriceForeign.toString();
+        if (input.description) updateData.description = input.description;
+        if (input.customsCode) updateData.customsCode = input.customsCode;
 
         return await db.updateItem(input.id, updateData);
       }),
@@ -269,9 +277,14 @@ export const appRouter = router({
      * حذف صنف
      */
     deleteItem: protectedProcedure
-      .input(z.object({ id: z.number(), declarationId: z.number() }))
+      .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        const item = await db.getItemById(input.id);
+        if (!item) {
+          throw new Error("الصنف غير موجود");
+        }
+
+        const declaration = await db.getCustomsDeclarationById(item.declarationId);
         if (!declaration || declaration.userId !== ctx.user.id) {
           throw new Error("البيان الجمركي غير موجود");
         }

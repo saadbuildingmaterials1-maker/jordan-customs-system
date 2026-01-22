@@ -198,6 +198,18 @@ export async function createItem(data: InsertItem): Promise<Item> {
   return item[0];
 }
 
+export async function getItemById(id: number): Promise<Item | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+
+  const result = await db
+    .select()
+    .from(items)
+    .where(eq(items.id, id))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
 export async function getItemsByDeclarationId(declarationId: number): Promise<Item[]> {
   const db = await getDb();
   if (!db) return [];
