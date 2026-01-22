@@ -19,6 +19,7 @@ import AdvancedCustomsDeclaration from "@/pages/AdvancedCustomsDeclaration";
 import Dashboard from "@/pages/Dashboard";
 import NotificationCenter from "@/pages/NotificationCenter";
 import { PaymentsManagement } from "@/pages/PaymentsManagement";
+import Checkout from "@/pages/Checkout";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -46,6 +47,7 @@ function Router() {
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/notifications"} component={NotificationCenter} />
       <Route path={"/payments"} component={PaymentsManagement} />
+      <Route path={"/checkout"} component={Checkout} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

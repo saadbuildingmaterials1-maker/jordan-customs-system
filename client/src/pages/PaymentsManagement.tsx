@@ -9,9 +9,9 @@ import { CreditCard, Download, RefreshCw } from 'lucide-react';
 export function PaymentsManagement() {
   const [activeTab, setActiveTab] = useState<'payments' | 'invoices' | 'subscriptions'>('payments');
   
-  const paymentsQuery = trpc.stripe.getPayments.useQuery();
-  const invoicesQuery = trpc.stripe.getInvoices.useQuery();
-  const subscriptionsQuery = trpc.stripe.getSubscriptions.useQuery();
+  const paymentsQuery = (trpc as any).stripe.getPayments.useQuery();
+  const invoicesQuery = (trpc as any).stripe.getInvoices.useQuery();
+  const subscriptionsQuery = (trpc as any).stripe.getSubscriptions.useQuery();
 
   const getStatusColor = (status: string) => {
     switch (status) {
