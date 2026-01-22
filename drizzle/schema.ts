@@ -305,3 +305,7 @@ export type InsertInvoiceItem = typeof invoiceItems.$inferInsert;
 
 // استيراد جداول المحاسبة
 export * from './accounting-schema';
+
+// ============================================
+// استيراد جداول المحاسبة الكاملة
+// ============================================
