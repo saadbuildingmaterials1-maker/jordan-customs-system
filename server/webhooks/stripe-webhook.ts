@@ -4,8 +4,12 @@ import { getDb } from '../db';
 import { payments, stripeInvoices, refunds, subscriptions } from '../../drizzle/schema';
 import { eq } from 'drizzle-orm';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-12-15.clover' as any,
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+if (!stripeSecretKey) {
+  console.error('⚠️ تحذير: مفتاح Stripe السري غير مضبوط.');
+}
+const stripe = new Stripe(stripeSecretKey || 'sk_test_placeholder', {
+  apiVersion: '2024-12-15' as any,
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
