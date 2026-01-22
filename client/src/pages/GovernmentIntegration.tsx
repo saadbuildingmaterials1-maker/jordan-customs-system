@@ -17,13 +17,13 @@ export default function GovernmentIntegration() {
   const [trackingNumber, setTrackingNumber] = useState('');
 
   // استدعاء الـ APIs
-  const testConnection = trpc.government.testConnection.useQuery();
-  const getTariffCodes = trpc.government.getTariffCodes.useQuery({ searchTerm });
-  const trackShipment = trpc.government.trackShipment.useQuery(
+  const testConnection = (trpc as any).government?.testConnection?.useQuery();
+  const getTariffCodes = (trpc as any).government?.getTariffCodes?.useQuery({ searchTerm });
+  const trackShipment = (trpc as any).government?.trackShipment?.useQuery(
     { trackingNumber },
     { enabled: !!trackingNumber }
   );
-  const getStats = trpc.government.getIntegrationStats.useQuery();
+  const getStats = (trpc as any).government?.getIntegrationStats?.useQuery();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">

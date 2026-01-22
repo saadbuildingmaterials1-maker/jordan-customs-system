@@ -2,17 +2,18 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useLocation } from "wouter";
-import { Plus, Download, Smartphone, Monitor } from "lucide-react";
+import { Plus, FileText, TrendingUp, DollarSign, Download, Smartphone, Monitor } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function Home() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
-  const { data: declarations } = trpc.customs.listDeclarations.useQuery();
+  const { data: declarations, isLoading } = trpc.customs.listDeclarations.useQuery();
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
+        {/* Welcome Section */}
         <div className="card-elegant bg-gradient-to-r from-accent/10 to-accent/5">
           <div className="flex items-center justify-between">
             <div>
@@ -36,6 +37,7 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Download Apps Section */}
         <div className="card-elegant">
           <h2 className="section-title mb-6">تحميل التطبيقات</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -71,6 +73,75 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Features Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="card-elegant">
+            <div className="flex items-center gap-3 mb-4">
+              <FileText className="w-6 h-6 text-blue-600" />
+              <h3 className="font-semibold text-lg">البيانات الجمركية</h3>
+            </div>
+            <p className="text-slate-600 mb-4">إدارة شاملة للبيانات الجمركية مع حساب الرسوم والضرائب تلقائياً</p>
+            <Button onClick={() => navigate("/declarations")} variant="outline" className="w-full">
+              عرض البيانات
+            </Button>
+          </div>
+
+          <div className="card-elegant">
+            <div className="flex items-center gap-3 mb-4">
+              <TrendingUp className="w-6 h-6 text-green-600" />
+              <h3 className="font-semibold text-lg">التقارير والتحليلات</h3>
+            </div>
+            <p className="text-slate-600 mb-4">تقارير شاملة مع رسوم بيانية متقدمة وتحليل البيانات</p>
+            <Button onClick={() => navigate("/reports")} variant="outline" className="w-full">
+              عرض التقارير
+            </Button>
+          </div>
+
+          <div className="card-elegant">
+            <div className="flex items-center gap-3 mb-4">
+              <DollarSign className="w-6 h-6 text-purple-600" />
+              <h3 className="font-semibold text-lg">الدفع والفواتير</h3>
+            </div>
+            <p className="text-slate-600 mb-4">نظام دفع متكامل مع Stripe وإدارة الفواتير</p>
+            <Button onClick={() => navigate("/payments")} variant="outline" className="w-full">
+              إدارة الدفعات
+            </Button>
+          </div>
+
+          <div className="card-elegant">
+            <div className="flex items-center gap-3 mb-4">
+              <TrendingUp className="w-6 h-6 text-orange-600" />
+              <h3 className="font-semibold text-lg">لوحة التحكم</h3>
+            </div>
+            <p className="text-slate-600 mb-4">لوحة تحكم ذكية مع رسوم بيانية وإحصائيات فورية</p>
+            <Button onClick={() => navigate("/dashboard")} variant="outline" className="w-full">
+              فتح لوحة التحكم
+            </Button>
+          </div>
+        </div>
+
+        {/* Statistics */}
+        {declarations && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="card-elegant text-center">
+              <div className="text-3xl font-bold text-blue-600">{declarations.length}</div>
+              <p className="text-slate-600">إجمالي البيانات</p>
+            </div>
+            <div className="card-elegant text-center">
+              <div className="text-3xl font-bold text-green-600">0</div>
+              <p className="text-slate-600">الدفعات الناجحة</p>
+            </div>
+            <div className="card-elegant text-center">
+              <div className="text-3xl font-bold text-orange-600">0</div>
+              <p className="text-slate-600">الدفعات المعلقة</p>
+            </div>
+            <div className="card-elegant text-center">
+              <div className="text-3xl font-bold text-purple-600">0</div>
+              <p className="text-slate-600">التقارير</p>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
