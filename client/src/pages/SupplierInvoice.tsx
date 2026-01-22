@@ -1,292 +1,259 @@
 'use client';
-
-import { useState, useMemo } from 'react';
+import React from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Search, Trash2, Edit2 } from 'lucide-react';
-import { trpc } from '@/lib/trpc';
 
 interface InvoiceItem {
-  id?: string;
+  id: string;
   hsCode: string;
   description: string;
   quantity: number;
   unitPrice: number;
   currency: 'USD' | 'EGP' | 'JOD';
   piecesPerBox: number;
-  boxesCount: number;
+  boxCount: number;
   totalPrice: number;
 }
-
-const CURRENCIES = [
-  { value: 'USD', label: 'دولار أمريكي' },
-  { value: 'EGP', label: 'جنيه مصري' },
-  { value: 'JOD', label: 'دينار أردني' }
-];
-
-const EXCHANGE_RATES = {
-  USD: 0.708,
-  EGP: 0.0225,
-  JOD: 1
-};
-
-const HS_CODES = [
-  { code: '8704', description: 'Motor vehicles for transport of goods' },
-  { code: '8703', description: 'Motor cars and other motor vehicles' },
-  { code: '8708', description: 'Parts and accessories of motor vehicles' },
-  { code: '6204', description: 'Women\'s or girls\' suits, jackets, dresses' },
-  { code: '6203', description: 'Men\'s or boys\' suits, jackets, trousers' },
-  { code: '6109', description: 'T-shirts, singlets and other vests' },
-];
 
 export default function SupplierInvoice() {
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState<Partial<InvoiceItem>>({
-    currency: 'USD',
+  const [formData, setFormData] = useState({
+    hsCode: '',
+    description: '',
+    quantity: 1,
+    unitPrice: 0,
+    currency: 'USD' as 'USD' | 'EGP' | 'JOD',
     piecesPerBox: 1,
-    boxesCount: 1
+    boxCount: 1,
   });
 
-  const filteredHSCodes = useMemo(() => {
-    return HS_CODES.filter(item =>
-      item.code.includes(searchTerm) || item.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm]);
-
   const handleAddItem = () => {
-    if (!formData.hsCode || !formData.description || !formData.quantity || !formData.unitPrice) {
+    if (!formData.hsCode || !formData.description) {
       alert('الرجاء ملء جميع الحقول المطلوبة');
       return;
     }
 
-    const exchangeRate = EXCHANGE_RATES[formData.currency as keyof typeof EXCHANGE_RATES] || 1;
-    const totalPrice = (formData.quantity || 0) * (formData.unitPrice || 0) * exchangeRate;
-
     const newItem: InvoiceItem = {
-      id: Math.random().toString(),
-      hsCode: formData.hsCode || '',
-      description: formData.description || '',
-      quantity: formData.quantity || 0,
-      unitPrice: formData.unitPrice || 0,
-      currency: formData.currency as 'USD' | 'EGP' | 'JOD',
-      piecesPerBox: formData.piecesPerBox || 1,
-      boxesCount: formData.boxesCount || 1,
-      totalPrice
+      id: Date.now().toString(),
+      hsCode: formData.hsCode,
+      description: formData.description,
+      quantity: formData.quantity,
+      unitPrice: formData.unitPrice,
+      currency: formData.currency,
+      piecesPerBox: formData.piecesPerBox,
+      boxCount: formData.boxCount,
+      totalPrice: formData.quantity * formData.unitPrice,
     };
 
     setItems([...items, newItem]);
-    setFormData({ currency: 'USD', piecesPerBox: 1, boxesCount: 1 });
+    setFormData({
+      hsCode: '',
+      description: '',
+      quantity: 1,
+      unitPrice: 0,
+      currency: 'USD',
+      piecesPerBox: 1,
+      boxCount: 1,
+    });
     setIsDialogOpen(false);
   };
 
-  const handleDeleteItem = (id: string | undefined) => {
-    if (id) {
-      setItems(items.filter(item => item.id !== id));
-    }
+  const handleDeleteItem = (id: string) => {
+    setItems(items.filter(item => item.id !== id));
   };
 
-  const totalInvoiceAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  const totalPrice = items.reduce((sum, item) => sum + item.totalPrice, 0);
+
+  const filteredItems = items.filter(item =>
+    item.hsCode.includes(searchTerm) || item.description.includes(searchTerm)
+  );
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">فاتورة المورد</h1>
-        <p className="text-gray-600 mt-2">إدارة فواتير المورد وتفاصيل الأصناف</p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* رأس الصفحة */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">فاتورة المورد</h1>
+          <p className="text-slate-600">إدارة فواتير الموردين وتتبع الأصناف والأسعار</p>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>الأصناف المضافة</CardTitle>
-          <CardDescription>قائمة الأصناف في الفاتورة</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              إضافة صنف جديد
-            </Button>
+        {/* شريط الأدوات */}
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+            <Input
+              placeholder="ابحث عن رمز HS أو الوصف..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
+          <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+            <Plus className="w-4 h-4" />
+            إضافة صنف جديد
+          </Button>
+        </div>
 
-          {items.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              لا توجد أصناف مضافة حالياً
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>الرمز الجمركي</TableHead>
-                    <TableHead>الوصف</TableHead>
-                    <TableHead>الكمية</TableHead>
-                    <TableHead>السعر/الوحدة</TableHead>
-                    <TableHead>العملة</TableHead>
-                    <TableHead>السعر الإجمالي</TableHead>
-                    <TableHead>الإجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map(item => (
-                    <TableRow key={item.id}>
-                      <TableCell>{item.hsCode}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell>{item.quantity}</TableCell>
-                      <TableCell>{item.unitPrice}</TableCell>
-                      <TableCell>{item.currency}</TableCell>
-                      <TableCell>{item.totalPrice.toFixed(2)} د.أ</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
+        {/* جدول الأصناف */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>الأصناف المضافة</CardTitle>
+            <CardDescription>
+              {filteredItems.length} صنف - الإجمالي: {totalPrice.toFixed(2)}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-slate-500">لا توجد أصناف مضافة حالياً</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-slate-100">
+                      <TableHead className="text-right">رمز HS</TableHead>
+                      <TableHead className="text-right">الوصف</TableHead>
+                      <TableHead className="text-center">الكمية</TableHead>
+                      <TableHead className="text-center">سعر الوحدة</TableHead>
+                      <TableHead className="text-center">العملة</TableHead>
+                      <TableHead className="text-center">القطع/الكرتون</TableHead>
+                      <TableHead className="text-center">عدد الكراتين</TableHead>
+                      <TableHead className="text-left">الإجمالي</TableHead>
+                      <TableHead className="text-center">الإجراءات</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-
-          <div className="border-t pt-4">
-            <div className="flex justify-between items-center">
-              <span className="text-lg font-semibold">إجمالي الفاتورة:</span>
-              <span className="text-2xl font-bold text-blue-600">{totalInvoiceAmount.toFixed(2)} د.أ</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>إضافة صنف جديد</DialogTitle>
-            <DialogDescription>أدخل تفاصيل الصنف الجديد</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">البحث عن الرمز الجمركي</label>
-              <Input
-                placeholder="ابحث عن الرمز أو الوصف..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {searchTerm && filteredHSCodes.length > 0 && (
-              <div className="border rounded-lg p-2 max-h-40 overflow-y-auto">
-                {filteredHSCodes.map(item => (
-                  <div
-                    key={item.code}
-                    className="p-2 hover:bg-gray-100 cursor-pointer rounded"
-                    onClick={() => {
-                      setFormData({ ...formData, hsCode: item.code, description: item.description });
-                      setSearchTerm('');
-                    }}
-                  >
-                    <div className="font-semibold">{item.code}</div>
-                    <div className="text-sm text-gray-600">{item.description}</div>
-                  </div>
-                ))}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredItems.map((item) => (
+                      <TableRow key={item.id} className="hover:bg-slate-50">
+                        <TableCell className="text-right font-medium">{item.hsCode}</TableCell>
+                        <TableCell className="text-right">{item.description}</TableCell>
+                        <TableCell className="text-center">{item.quantity}</TableCell>
+                        <TableCell className="text-center">{item.unitPrice.toFixed(2)}</TableCell>
+                        <TableCell className="text-center">{item.currency}</TableCell>
+                        <TableCell className="text-center">{item.piecesPerBox}</TableCell>
+                        <TableCell className="text-center">{item.boxCount}</TableCell>
+                        <TableCell className="text-left font-semibold">{item.totalPrice.toFixed(2)}</TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex gap-2 justify-center">
+                            <Button variant="ghost" size="sm" className="gap-1">
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="gap-1 text-red-600 hover:text-red-700"
+                              onClick={() => handleDeleteItem(item.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    <TableRow className="bg-slate-100 font-bold">
+                      <TableCell colSpan={7} className="text-right">الإجمالي</TableCell>
+                      <TableCell className="text-left text-lg">{totalPrice.toFixed(2)}</TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
             )}
+          </CardContent>
+        </Card>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">الرمز الجمركي</label>
-              <Input
-                value={formData.hsCode || ''}
-                onChange={(e) => setFormData({ ...formData, hsCode: e.target.value })}
-                placeholder="مثال: 8704"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">الوصف</label>
-              <Input
-                value={formData.description || ''}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="وصف الصنف"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+        {/* نموذج إضافة صنف */}
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>إضافة صنف جديد</DialogTitle>
+              <DialogDescription>أدخل تفاصيل الصنف الجديد</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">الكمية</label>
+                <label className="text-sm font-medium">رمز HS *</label>
                 <Input
-                  type="number"
-                  value={formData.quantity || ''}
-                  onChange={(e) => setFormData({ ...formData, quantity: parseFloat(e.target.value) })}
-                  placeholder="0"
+                  value={formData.hsCode}
+                  onChange={(e) => setFormData({ ...formData, hsCode: e.target.value })}
+                  placeholder="مثال: 8704"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">السعر/الوحدة</label>
+                <label className="text-sm font-medium">الوصف *</label>
                 <Input
-                  type="number"
-                  value={formData.unitPrice || ''}
-                  onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) })}
-                  placeholder="0"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="وصف المنتج"
                 />
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2">العملة</label>
-              <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value as 'USD' | 'EGP' | 'JOD' })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CURRENCIES.map(curr => (
-                    <SelectItem key={curr.value} value={curr.value}>
-                      {curr.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">الكمية</label>
+                  <Input
+                    type="number"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">سعر الوحدة</label>
+                  <Input
+                    type="number"
+                    value={formData.unitPrice}
+                    onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">القطع/الكرتون</label>
+                  <Input
+                    type="number"
+                    value={formData.piecesPerBox}
+                    onChange={(e) => setFormData({ ...formData, piecesPerBox: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">عدد الكراتين</label>
+                  <Input
+                    type="number"
+                    value={formData.boxCount}
+                    onChange={(e) => setFormData({ ...formData, boxCount: parseInt(e.target.value) || 1 })}
+                  />
+                </div>
+              </div>
               <div>
-                <label className="block text-sm font-medium mb-2">عدد القطع بالكرتون</label>
-                <Input
-                  type="number"
-                  value={formData.piecesPerBox || ''}
-                  onChange={(e) => setFormData({ ...formData, piecesPerBox: parseInt(e.target.value) })}
-                  placeholder="1"
-                />
+                <label className="text-sm font-medium">العملة</label>
+                <select
+                  value={formData.currency}
+                  onChange={(e) => setFormData({ ...formData, currency: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
+                >
+                  <option value="USD">دولار أمريكي (USD)</option>
+                  <option value="EGP">جنيه مصري (EGP)</option>
+                  <option value="JOD">دينار أردني (JOD)</option>
+                </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">عدد الكراتين</label>
-                <Input
-                  type="number"
-                  value={formData.boxesCount || ''}
-                  onChange={(e) => setFormData({ ...formData, boxesCount: parseInt(e.target.value) })}
-                  placeholder="1"
-                />
+              <div className="flex gap-2 justify-end pt-4">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  إلغاء
+                </Button>
+                <Button onClick={handleAddItem}>
+                  إضافة الصنف
+                </Button>
               </div>
             </div>
-
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                إلغاء
-              </Button>
-              <Button onClick={handleAddItem}>
-                إضافة الصنف
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
