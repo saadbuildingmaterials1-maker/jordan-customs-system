@@ -25,7 +25,10 @@ import FactoriesAndInvoices from "@/pages/FactoriesAndInvoices";
 import ReportsAndExports from "@/pages/ReportsAndExports";
 import AlertsAndNotifications from "@/pages/AlertsAndNotifications";
 import UsersAndRoles from "@/pages/UsersAndRoles";
-import SettingsAndSecurity from "@/pages/SettingsAndSecurity";
+import SettingsAndSecurity from '@/pages/SettingsAndSecurity';
+import ShippingManagement from '@/pages/ShippingManagement';
+import ExpensesManagement from '@/pages/ExpensesManagement';
+import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPage';
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -59,7 +62,10 @@ function Router() {
       <Route path={"/reports-exports"} component={ReportsAndExports} />
       <Route path={"/alerts-notifications"} component={AlertsAndNotifications} />
       <Route path={"/users-roles"} component={UsersAndRoles} />
-      <Route path={"/settings-security"} component={SettingsAndSecurity} />
+      <Route path="/settings" component={SettingsAndSecurity} />
+      <Route path="/shipping" component={ShippingManagement} />
+      <Route path="/expenses" component={ExpensesManagement} />
+      <Route path="/advanced-customs" component={AdvancedCustomsDeclarationPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
