@@ -1,13 +1,20 @@
+import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
+import * as db from "./db";
+import {
+  calculateAllCosts,
+  calculateItemCosts,
+  calculateVariance,
+  calculateVariancePercentage,
+} from "@shared/calculations";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -17,12 +24,355 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  /**
+   * ===== إجراءات البيانات الجمركية =====
+   */
+  customs: router({
+    /**
+     * إنشاء بيان جمركي جديد
+     */
+    createDeclaration: protectedProcedure
+      .input(
+        z.object({
+          declarationNumber: z.string().min(1, "رقم البيان مطلوب"),
+          registrationDate: z.string().refine((date) => !isNaN(Date.parse(date)), "تاريخ غير صحيح"),
+          clearanceCenter: z.string().min(1, "مركز التخليص مطلوب"),
+          exchangeRate: z.number().positive("سعر التعادل يجب أن يكون موجباً"),
+          exportCountry: z.string().min(1, "بلد التصدير مطلوب"),
+          billOfLadingNumber: z.string().min(1, "رقم بوليصة الشحن مطلوب"),
+          grossWeight: z.number().positive("الوزن القائم يجب أن يكون موجباً"),
+          netWeight: z.number().positive("الوزن الصافي يجب أن يكون موجباً"),
+          numberOfPackages: z.number().int().positive("عدد الطرود يجب أن يكون موجباً"),
+          packageType: z.string().min(1, "نوع الطرود مطلوب"),
+          fobValue: z.number().positive("قيمة البضاعة يجب أن تكون موجبة"),
+          freightCost: z.number().nonnegative("أجور الشحن لا يمكن أن تكون سالبة"),
+          insuranceCost: z.number().nonnegative("التأمين لا يمكن أن يكون سالباً"),
+          customsDuty: z.number().nonnegative("الرسوم الجمركية لا يمكن أن تكون سالبة"),
+          additionalFees: z.number().nonnegative().optional().default(0),
+          customsServiceFee: z.number().nonnegative().optional().default(0),
+          penalties: z.number().nonnegative().optional().default(0),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        // حساب جميع التكاليف
+        const calculations = calculateAllCosts({
+          fobValueForeign: input.fobValue,
+          exchangeRate: input.exchangeRate,
+          freightCost: input.freightCost,
+          insuranceCost: input.insuranceCost,
+          customsDuty: input.customsDuty,
+          additionalFees: input.additionalFees,
+          customsServiceFee: input.customsServiceFee,
+          penalties: input.penalties,
+        });
+
+        // إنشاء البيان الجمركي
+        const declaration = await db.createCustomsDeclaration(ctx.user.id, {
+          declarationNumber: input.declarationNumber,
+          registrationDate: new Date(input.registrationDate),
+          clearanceCenter: input.clearanceCenter,
+          exchangeRate: input.exchangeRate.toString(),
+          exportCountry: input.exportCountry,
+          billOfLadingNumber: input.billOfLadingNumber,
+          grossWeight: input.grossWeight.toString(),
+          netWeight: input.netWeight.toString(),
+          numberOfPackages: input.numberOfPackages,
+          packageType: input.packageType,
+          fobValue: input.fobValue.toString(),
+          fobValueJod: calculations.fobValueJod.toString(),
+          freightCost: input.freightCost.toString(),
+          insuranceCost: input.insuranceCost.toString(),
+          customsDuty: input.customsDuty.toString(),
+          salesTax: calculations.salesTax.toString(),
+          additionalFees: input.additionalFees.toString(),
+          customsServiceFee: input.customsServiceFee.toString(),
+          penalties: input.penalties.toString(),
+          totalLandedCost: calculations.totalLandedCost.toString(),
+          additionalExpensesRatio: calculations.additionalExpensesRatio.toString(),
+          status: "draft",
+        });
+
+        // إنشاء الملخص المالي
+        await db.createOrUpdateFinancialSummary({
+          declarationId: declaration.id,
+          totalFobValue: calculations.fobValueJod.toString(),
+          totalFreightAndInsurance: calculations.freightAndInsurance.toString(),
+          totalCustomsAndTaxes: calculations.totalCustomsAndTaxes.toString(),
+          totalLandedCost: calculations.totalLandedCost.toString(),
+          additionalExpensesRatio: calculations.additionalExpensesRatio.toString(),
+        });
+
+        return declaration;
+      }),
+
+    /**
+     * الحصول على بيان جمركي
+     */
+    getDeclaration: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.id);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود أو ليس لديك صلاحية الوصول إليه");
+        }
+        return declaration;
+      }),
+
+    /**
+     * الحصول على قائمة البيانات الجمركية للمستخدم
+     */
+    listDeclarations: protectedProcedure.query(async ({ ctx }) => {
+      return await db.getCustomsDeclarationsByUserId(ctx.user.id);
+    }),
+
+    /**
+     * تحديث بيان جمركي
+     */
+    updateDeclaration: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          data: z.object({
+            status: z.enum(["draft", "submitted", "approved", "cleared"]).optional(),
+            notes: z.string().optional(),
+          }),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.id);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود أو ليس لديك صلاحية تعديله");
+        }
+        return await db.updateCustomsDeclaration(input.id, input.data);
+      }),
+
+    /**
+     * حذف بيان جمركي
+     */
+    deleteDeclaration: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.id);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود أو ليس لديك صلاحية حذفه");
+        }
+        await db.deleteItemsByDeclarationId(input.id);
+        return await db.deleteCustomsDeclaration(input.id);
+      }),
+  }),
+
+  /**
+   * ===== إجراءات الأصناف =====
+   */
+  items: router({
+    /**
+     * إضافة صنف جديد
+     */
+    createItem: protectedProcedure
+      .input(
+        z.object({
+          declarationId: z.number(),
+          itemName: z.string().min(1, "اسم الصنف مطلوب"),
+          quantity: z.number().positive("الكمية يجب أن تكون موجبة"),
+          unitPriceForeign: z.number().positive("سعر الوحدة يجب أن يكون موجباً"),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        // التحقق من أن البيان الجمركي ينتمي للمستخدم
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+
+        // حساب الأسعار
+        const totalPriceForeign = input.quantity * input.unitPriceForeign;
+        const totalPriceJod = totalPriceForeign * Number(declaration.exchangeRate);
+
+        // الحصول على الملخص المالي لحساب النسبة والحصة
+        const summary = await db.getFinancialSummaryByDeclarationId(input.declarationId);
+        if (!summary) {
+          throw new Error("الملخص المالي غير موجود");
+        }
+
+        const totalFobValueJod = Number(summary.totalFobValue);
+        const totalCustomsAndTaxes = Number(summary.totalCustomsAndTaxes);
+
+        // حساب تكاليف الصنف
+        const itemCalculations = calculateItemCosts({
+          itemFobValueForeign: totalPriceForeign,
+          exchangeRate: Number(declaration.exchangeRate),
+          quantity: input.quantity,
+          totalFobValueJod,
+          totalCustomsAndTaxes,
+        });
+
+        // إنشاء الصنف
+        const item = await db.createItem({
+          declarationId: input.declarationId,
+          itemName: input.itemName,
+          quantity: input.quantity.toString(),
+          unitPriceForeign: input.unitPriceForeign.toString(),
+          totalPriceForeign: totalPriceForeign.toString(),
+          totalPriceJod: totalPriceJod.toString(),
+          valuePercentage: itemCalculations.itemValuePercentage.toString(),
+          itemExpensesShare: itemCalculations.itemExpensesShare.toString(),
+          totalItemCostJod: itemCalculations.itemTotalCost.toString(),
+          unitCostJod: itemCalculations.unitCost.toString(),
+        });
+
+        return item;
+      }),
+
+    /**
+     * الحصول على أصناف البيان الجمركي
+     */
+    getItems: protectedProcedure
+      .input(z.object({ declarationId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+        return await db.getItemsByDeclarationId(input.declarationId);
+      }),
+
+    /**
+     * تحديث صنف
+     */
+    updateItem: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          declarationId: z.number(),
+          quantity: z.number().positive().optional(),
+          unitPriceForeign: z.number().positive().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+
+        const updateData: Record<string, string> = {};
+        if (input.quantity) {
+          updateData.quantity = input.quantity.toString();
+        }
+        if (input.unitPriceForeign) {
+          updateData.unitPriceForeign = input.unitPriceForeign.toString();
+        }
+
+        return await db.updateItem(input.id, updateData);
+      }),
+
+    /**
+     * حذف صنف
+     */
+    deleteItem: protectedProcedure
+      .input(z.object({ id: z.number(), declarationId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+        return await db.deleteItem(input.id);
+      }),
+  }),
+
+  /**
+   * ===== إجراءات الانحرافات والمقارنات =====
+   */
+  variances: router({
+    /**
+     * حساب وحفظ الانحرافات
+     */
+    calculateVariances: protectedProcedure
+      .input(
+        z.object({
+          declarationId: z.number(),
+          estimatedFobValue: z.number().nonnegative(),
+          estimatedFreight: z.number().nonnegative(),
+          estimatedInsurance: z.number().nonnegative(),
+          estimatedCustomsDuty: z.number().nonnegative(),
+          estimatedSalesTax: z.number().nonnegative(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+
+        const fobVariance = calculateVariance(
+          Number(declaration.fobValueJod),
+          input.estimatedFobValue
+        );
+        const freightVariance = calculateVariance(
+          Number(declaration.freightCost),
+          input.estimatedFreight
+        );
+        const insuranceVariance = calculateVariance(
+          Number(declaration.insuranceCost),
+          input.estimatedInsurance
+        );
+        const customsDutyVariance = calculateVariance(
+          Number(declaration.customsDuty),
+          input.estimatedCustomsDuty
+        );
+        const salesTaxVariance = calculateVariance(
+          Number(declaration.salesTax),
+          input.estimatedSalesTax
+        );
+        const totalVariance = fobVariance + freightVariance + insuranceVariance + customsDutyVariance + salesTaxVariance;
+
+        return await db.createOrUpdateVariance({
+          declarationId: input.declarationId,
+          fobVariance: fobVariance.toString(),
+          freightVariance: freightVariance.toString(),
+          insuranceVariance: insuranceVariance.toString(),
+          customsDutyVariance: customsDutyVariance.toString(),
+          salesTaxVariance: salesTaxVariance.toString(),
+          totalVariance: totalVariance.toString(),
+          fobVariancePercent: calculateVariancePercentage(fobVariance, input.estimatedFobValue).toString(),
+          freightVariancePercent: calculateVariancePercentage(freightVariance, input.estimatedFreight).toString(),
+          insuranceVariancePercent: calculateVariancePercentage(insuranceVariance, input.estimatedInsurance).toString(),
+          customsDutyVariancePercent: calculateVariancePercentage(customsDutyVariance, input.estimatedCustomsDuty).toString(),
+          salesTaxVariancePercent: calculateVariancePercentage(salesTaxVariance, input.estimatedSalesTax).toString(),
+          totalVariancePercent: calculateVariancePercentage(totalVariance, input.estimatedFobValue + input.estimatedFreight + input.estimatedInsurance + input.estimatedCustomsDuty + input.estimatedSalesTax).toString(),
+        });
+      }),
+
+    /**
+     * الحصول على الانحرافات
+     */
+    getVariances: protectedProcedure
+      .input(z.object({ declarationId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+        return await db.getVarianceByDeclarationId(input.declarationId);
+      }),
+  }),
+
+  /**
+   * ===== إجراءات الملخصات المالية =====
+   */
+  financialSummary: router({
+    /**
+     * الحصول على الملخص المالي
+     */
+    getSummary: protectedProcedure
+      .input(z.object({ declarationId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const declaration = await db.getCustomsDeclarationById(input.declarationId);
+        if (!declaration || declaration.userId !== ctx.user.id) {
+          throw new Error("البيان الجمركي غير موجود");
+        }
+        return await db.getFinancialSummaryByDeclarationId(input.declarationId);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
