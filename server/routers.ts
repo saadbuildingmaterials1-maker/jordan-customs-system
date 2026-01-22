@@ -11,6 +11,11 @@ import {
   calculateVariancePercentage,
 } from "@shared/calculations";
 import { aiRouter } from "./ai-router";
+import {
+  analyzeCustomsDeclaration,
+  distributeValues,
+  DEFAULT_EXCHANGE_RATES,
+} from "./customs-analyzer";
 
 export const appRouter = router({
   system: systemRouter,
