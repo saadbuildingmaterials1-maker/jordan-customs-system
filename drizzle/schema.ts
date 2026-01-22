@@ -74,6 +74,20 @@ export const customsDeclarations = mysqlTable("customs_declarations", {
   totalLandedCost: decimal("totalLandedCost", { precision: 15, scale: 3 }).notNull(), // التكلفة الكلية النهائية
   additionalExpensesRatio: decimal("additionalExpensesRatio", { precision: 5, scale: 2 }).notNull(), // نسبة المصاريف الإضافية
   
+  // معلومات إضافية متقدمة
+  barcodeNumber: varchar("barcodeNumber", { length: 50 }),
+  egyptianReferenceNumber: varchar("egyptianReferenceNumber", { length: 50 }),
+  importerLicenseNumber: varchar("importerLicenseNumber", { length: 50 }),
+  importerTaxNumber: varchar("importerTaxNumber", { length: 50 }),
+  importerSequentialNumber: varchar("importerSequentialNumber", { length: 50 }),
+  importerName: varchar("importerName", { length: 200 }),
+  exporterLicenseNumber: varchar("exporterLicenseNumber", { length: 50 }),
+  exporterName: varchar("exporterName", { length: 200 }),
+  certificateNumber: varchar("certificateNumber", { length: 50 }),
+  transactionNumber: varchar("transactionNumber", { length: 50 }),
+  volumeCbm: decimal("volumeCbm", { precision: 10, scale: 3 }), // الحجم بالمتر المكعب
+  customsCode: varchar("customsCode", { length: 50 }), // الكود الجمركي
+  
   // الحالة والملاحظات
   status: mysqlEnum("status", ["draft", "submitted", "approved", "cleared"]).default("draft"),
   notes: text("notes"),
@@ -104,9 +118,14 @@ export const items = mysqlTable("items", {
   valuePercentage: decimal("valuePercentage", { precision: 5, scale: 2 }).notNull(), // نسبة القيمة من الشحنة
   itemExpensesShare: decimal("itemExpensesShare", { precision: 15, scale: 3 }).notNull(), // حصة الصنف من المصاريف
   
-  // التكاليف النهائية
+   // التكاليف النهاية
   totalItemCostJod: decimal("totalItemCostJod", { precision: 15, scale: 3 }).notNull(), // إجمالي تكلفة الصنف واصل
   unitCostJod: decimal("unitCostJod", { precision: 12, scale: 3 }).notNull(), // تكلفة الوحدة الواحدة (JOD)
+  
+  // معلومات إضافية للأصناف
+  customsCode: varchar("customsCode", { length: 50 }), // الكود الجمركي للصنف
+  itemNumber: varchar("itemNumber", { length: 50 }), // رقم الصنف
+  description: text("description"), // وصف تفصيلي للصنف
   
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import Home from "@/pages/Home";
 import DeclarationForm from "@/pages/DeclarationForm";
+import DeclarationFormAdvanced from "@/pages/DeclarationFormAdvanced";
 import DeclarationDetail from "@/pages/DeclarationDetail";
 import VarianceAnalysis from "@/pages/VarianceAnalysis";
 import { Route, Switch } from "wouter";
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/declarations/new"} component={DeclarationForm} />
+      <Route path={"/declarations/new/advanced"} component={DeclarationFormAdvanced} />
       <Route path={"/declarations/:id"} component={DeclarationDetail} />
       <Route path={"/declarations/:id/variance"} component={VarianceAnalysis} />
       <Route path={"/404"} component={NotFound} />

@@ -15,6 +15,13 @@
       "when": 1769099114496,
       "tag": "0001_easy_boomer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1769101060286,
+      "tag": "0002_sharp_sinister_six",
+      "breakpoints": true
     }
   ]
 }

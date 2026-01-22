@@ -47,13 +47,23 @@ export default function Home() {
                 نظام إدارة تكاليف الشحن والجمارك الأردنية
               </p>
             </div>
-            <Button
-              onClick={() => navigate("/declarations/new")}
-              className="btn-primary gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              بيان جمركي جديد
-            </Button>
+            <div className="flex gap-3 flex-wrap">
+              <Button
+                onClick={() => navigate("/declarations/new")}
+                className="btn-primary gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                نموذج بسيط
+              </Button>
+              <Button
+                onClick={() => navigate("/declarations/new/advanced")}
+                className="gap-2"
+                variant="outline"
+              >
+                <Plus className="w-5 h-5" />
+                نموذج متقدم (كامل التفاصيل)
+              </Button>
+            </div>
           </div>
         </div>
 
