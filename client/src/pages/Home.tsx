@@ -10,14 +10,7 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { data: declarations, isLoading } = trpc.customs.listDeclarations.useQuery();
 
-  const handleDownload = () => {
-    const link = document.createElement('a');
-    link.href = '/jordan-customs-system.zip';
-    link.download = 'jordan-customs-system.zip';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+
 
   return (
     <DashboardLayout>
@@ -38,7 +31,7 @@ export default function Home() {
                 <Plus className="w-5 h-5" />
                 نموذج متقدم
               </Button>
-              <Button onClick={handleDownload} className="gap-2 bg-green-600 hover:bg-green-700">
+              <Button onClick={() => navigate("/download")} className="gap-2 bg-green-600 hover:bg-green-700">
                 <Download className="w-5 h-5" />
                 تحميل للكمبيوتر
               </Button>
@@ -75,7 +68,7 @@ export default function Home() {
                 <h3 className="font-semibold">تطبيق سطح المكتب</h3>
               </div>
               <p className="text-sm text-slate-600 mb-3">حمّل التطبيق لـ Windows أو Mac أو Linux</p>
-              <Button className="w-full bg-green-600 hover:bg-green-700" size="sm" onClick={handleDownload}>
+              <Button className="w-full bg-green-600 hover:bg-green-700" size="sm" onClick={() => navigate("/download")}>
                 <Download className="w-4 h-4 mr-2" />
                 تحميل
               </Button>

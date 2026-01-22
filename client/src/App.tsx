@@ -29,6 +29,7 @@ import SettingsAndSecurity from '@/pages/SettingsAndSecurity';
 import ShippingManagement from '@/pages/ShippingManagement';
 import ExpensesManagement from '@/pages/ExpensesManagement';
 import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPage';
+import DownloadPage from '@/pages/DownloadPage';
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/shipping" component={ShippingManagement} />
       <Route path="/expenses" component={ExpensesManagement} />
       <Route path="/advanced-customs" component={AdvancedCustomsDeclarationPage} />
+      <Route path="/download" component={DownloadPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
