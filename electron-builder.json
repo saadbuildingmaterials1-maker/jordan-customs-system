@@ -1,0 +1,31 @@
+{
+  "productName": "Jordan Customs System",
+  "appId": "com.jordancustoms.system",
+  "icon": "./public/icons/icon.png",
+  "files": [
+    "dist/**/*",
+    "node_modules/**/*",
+    "public/**/*"
+  ],
+  "win": {
+    "icon": "./public/icons/icon.ico",
+    "target": [
+      "nsis",
+      "portable"
+    ]
+  },
+  "mac": {
+    "icon": "./public/icons/icon.icns",
+    "target": [
+      "dmg",
+      "zip"
+    ]
+  },
+  "linux": {
+    "icon": "./public/icons/icon.png",
+    "target": [
+      "AppImage",
+      "deb"
+    ]
+  }
+}
