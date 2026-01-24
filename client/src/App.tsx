@@ -29,6 +29,7 @@ import SettingsAndSecurity from '@/pages/SettingsAndSecurity';
 import ShippingManagement from '@/pages/ShippingManagement';
 import ExpensesManagement from '@/pages/ExpensesManagement';
 import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPage';
+import ReportsPage from '@/pages/ReportsPage';
 import DownloadPage from '@/pages/DownloadPage';
 import About from '@/pages/About';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
@@ -72,6 +73,7 @@ function Router() {
       <Route path="/shipping" component={ShippingManagement} />
       <Route path="/expenses" component={ExpensesManagement} />
       <Route path="/advanced-customs" component={AdvancedCustomsDeclarationPage} />
+      <Route path="/reports-page" component={ReportsPage} />
       <Route path="/download" component={DownloadPage} />
       <Route path="/about" component={About} />
       <Route path="/privacy" component={PrivacyPolicy} />
