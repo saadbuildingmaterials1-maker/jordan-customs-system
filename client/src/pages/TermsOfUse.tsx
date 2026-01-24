@@ -224,9 +224,8 @@ export default function TermsOfUse() {
                 للأسئلة حول شروط الاستخدام:
               </p>
               <div className="bg-amber-50 p-4 rounded-lg space-y-2">
-                <p className="text-gray-700"><strong>البريد الإلكتروني:</strong> support@jordancustoms.com</p>
-                <p className="text-gray-700"><strong>الهاتف:</strong> +962 6 1234 5678</p>
-                <p className="text-gray-700"><strong>ساعات العمل:</strong> السبت - الخميس، 8 صباحاً - 6 مساءً</p>
+                <p className="text-gray-700"><strong>البريد الإلكتروني:</strong> saad.building.materials1@gmail.com</p>
+                <p className="text-gray-700"><strong>الهاتف:</strong> 00962795917424</p>
               </div>
             </CardContent>
           </Card>

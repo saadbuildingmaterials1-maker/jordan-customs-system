@@ -40,10 +40,10 @@ export default function DownloadPage() {
       name: "تطبيق Windows",
       platform: "Windows",
       icon: "🪟",
-      size: "4 KB",
+      size: "2.1 MB",
       version: "2.5.0",
-      description: "تطبيق سطح المكتب حقيقي لنظام Windows (مُجمَّع من C#/.NET)",
-      downloadUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663107576035/wyMqCbIpTJmrpqxV.exe",
+      description: "تطبيق سطح مكتب حقيقي standalone - لا يحتاج أي متطلبات (مُجمَّع من Go)",
+      downloadUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663107576035/mNVLZDmJnEXzsWik.exe",
       isDownloading: false,
       progress: 0,
       isCompleted: false,
@@ -423,7 +423,7 @@ export default function DownloadPage() {
           <div className="flex gap-4 justify-center flex-wrap">
             <Button
               variant="outline"
-              onClick={() => window.open("mailto:support@jordancustoms.com")}
+              onClick={() => window.open("mailto:saad.building.materials1@gmail.com")}
             >
               البريد الإلكتروني
             </Button>

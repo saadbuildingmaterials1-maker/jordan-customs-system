@@ -165,9 +165,8 @@ export default function PrivacyPolicy() {
                 إذا كان لديك أسئلة حول سياسة الخصوصية أو كيفية التعامل مع بيانات الشركة، يرجى التواصل معنا:
               </p>
               <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                <p className="text-gray-700"><strong>البريد الإلكتروني:</strong> privacy@jordancustoms.com</p>
-                <p className="text-gray-700"><strong>الهاتف:</strong> +962 6 1234 5678</p>
-                <p className="text-gray-700"><strong>العنوان:</strong> عمّان، الأردن</p>
+                <p className="text-gray-700"><strong>البريد الإلكتروني:</strong> saad.building.materials1@gmail.com</p>
+                <p className="text-gray-700"><strong>الهاتف:</strong> 00962795917424</p>
               </div>
             </CardContent>
           </Card>
