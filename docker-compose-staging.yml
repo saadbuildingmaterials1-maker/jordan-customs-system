@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # Staging Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customs-system-staging
+    environment:
+      NODE_ENV: staging
+      DATABASE_URL: mysql://staging_user:${STAGING_DB_PASSWORD}@db:3306/customs_staging
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${STAGING_JWT_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3001:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - customs-staging
+    volumes:
+      - ./logs/staging:/var/log/customs-system
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Staging Database
+  db:
+    image: mysql:8.0-alpine
+    container_name: customs-db-staging
+    environment:
+      MYSQL_ROOT_PASSWORD: ${STAGING_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: customs_staging
+      MYSQL_USER: staging_user
+      MYSQL_PASSWORD: ${STAGING_DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    networks:
+      - customs-staging
+    volumes:
+      - staging-db-data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Staging Redis
+  redis:
+    image: redis:7-alpine
+    container_name: customs-redis-staging
+    ports:
+      - "6380:6379"
+    networks:
+      - customs-staging
+    volumes:
+      - staging-redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Staging Adminer (Database UI)
+  adminer:
+    image: adminer:latest
+    container_name: customs-adminer-staging
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - customs-staging
+    restart: unless-stopped
+
+  # Staging Redis Commander
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: customs-redis-commander-staging
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    networks:
+      - customs-staging
+    restart: unless-stopped
+
+networks:
+  customs-staging:
+    driver: bridge
+
+volumes:
+  staging-db-data:
+  staging-redis-data:
