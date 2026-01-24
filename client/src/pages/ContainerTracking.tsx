@@ -11,7 +11,8 @@ import { MapView } from '@/components/Map';
 export default function ContainerTracking() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContainer, setSelectedContainer] = useState<number | null>(null);
-  const [containers] = useState([
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [containers] = useState<any[]>([
     {
       id: 1,
       containerNumber: 'EMIVCHXINX006881',
@@ -42,7 +43,7 @@ export default function ContainerTracking() {
     },
   ]);
 
-  const [trackingHistory] = useState([
+  const [trackingHistory] = useState<any[]>([
     {
       id: 1,
       event: 'Container Loaded',
