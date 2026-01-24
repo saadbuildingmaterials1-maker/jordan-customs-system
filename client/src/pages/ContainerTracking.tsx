@@ -6,9 +6,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Plus, MapPin, Clock, Package, Truck } from 'lucide-react';
+import { MapView } from '@/components/Map';
 
 export default function ContainerTracking() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedContainer, setSelectedContainer] = useState<number | null>(null);
   const [containers] = useState([
     {
       id: 1,
@@ -269,6 +271,34 @@ export default function ContainerTracking() {
           </div>
         </CardContent>
       </Card>
+
+      {/* خريطة Google لتتبع الشحنة */}
+      {selectedContainer && (
+        <Card>
+          <CardHeader>
+            <CardTitle>خريطة تتبع الشحنة</CardTitle>
+            <CardDescription>موقع الشحنة الحالي على الخريطة</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-96 rounded-lg overflow-hidden border border-slate-200">
+              <MapView
+                onMapReady={(map) => {
+                  // إضافة علامة على الخريطة
+                  const marker = new (window as any).google.maps.Marker({
+                    position: { lat: 29.3759, lng: 47.9774 }, // موقع ميناء العقبة
+                    map: map,
+                    title: 'موقع الشحنة الحالي',
+                  });
+                  
+                  // توسيط الخريطة على العلامة
+                  map.setCenter({ lat: 29.3759, lng: 47.9774 });
+                  map.setZoom(10);
+                }}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

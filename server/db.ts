@@ -623,3 +623,106 @@ export async function getShipmentDetail(containerId: number) {
   
   return result[0] || null;
 }
+
+
+/**
+ * ===== دوال التنبيهات التلقائية =====
+ */
+
+export async function sendShipmentStatusNotification(
+  userId: number,
+  containerId: number,
+  status: string,
+  message: string
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(notifications).values({
+    userId,
+    title: `تحديث حالة الشحنة - ${status}`,
+    message,
+    type: "info",
+    relatedEntityType: "container",
+    relatedEntityId: containerId,
+    isRead: false,
+  });
+
+  return result;
+}
+
+export async function sendDelayedShipmentAlert(
+  userId: number,
+  containerId: number,
+  containerNumber: string,
+  estimatedDate: Date
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(notifications).values({
+    userId,
+    title: `تنبيه: تأخر في الشحنة ${containerNumber}`,
+    message: `الحاوية ${containerNumber} تأخرت عن موعد الوصول المتوقع (${estimatedDate.toLocaleDateString("ar-JO")})`,
+    type: "warning",
+    relatedEntityType: "container",
+    relatedEntityId: containerId,
+    isRead: false,
+  });
+
+  return result;
+}
+
+export async function sendCustomsClearanceNotification(
+  userId: number,
+  containerId: number,
+  containerNumber: string
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(notifications).values({
+    userId,
+    title: `تخليص جمركي - ${containerNumber}`,
+    message: `تم تخليص الحاوية ${containerNumber} جمركياً بنجاح`,
+    type: "success",
+    relatedEntityType: "container",
+    relatedEntityId: containerId,
+    isRead: false,
+  });
+
+  return result;
+}
+
+export async function sendDeliveryNotification(
+  userId: number,
+  containerId: number,
+  containerNumber: string,
+  deliveryDate: Date
+) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db.insert(notifications).values({
+    userId,
+    title: `تسليم الشحنة - ${containerNumber}`,
+    message: `تم تسليم الحاوية ${containerNumber} بنجاح في ${deliveryDate.toLocaleDateString("ar-JO")}`,
+    type: "success",
+    relatedEntityType: "container",
+    relatedEntityId: containerId,
+    isRead: false,
+  });
+
+  return result;
+}
+
+export async function getContainerNotifications(containerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+
+  const result = await db.select().from(notifications).where(
+    eq(notifications.relatedEntityId, containerId)
+  ).orderBy(desc(notifications.createdAt));
+
+  return result;
+}

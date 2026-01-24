@@ -472,6 +472,167 @@ export const appRouter = router({
   stripe: stripeRouter,
   paymentMethods: paymentMethodsRouter,
   government: governmentRouter,
+
+  /**
+   * ===== إجراءات تتبع الحاويات =====
+   */
+  tracking: router({
+    createContainer: protectedProcedure
+      .input(
+        z.object({
+          containerNumber: z.string().min(1, "رقم الحاوية مطلوب"),
+          containerType: z.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
+          shippingCompany: z.string().min(1, "شركة الشحن مطلوبة"),
+          billOfLadingNumber: z.string().min(1, "بوليصة الشحن مطلوبة"),
+          portOfLoading: z.string().min(1, "ميناء الشحن مطلوب"),
+          portOfDischarge: z.string().min(1, "ميناء التفريغ مطلوب"),
+          sealNumber: z.string().optional(),
+          loadingDate: z.string().optional(),
+          estimatedArrivalDate: z.string().optional(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const result = await db.createContainer({
+            userId: ctx.user.id,
+            ...input,
+          });
+          return { success: true };
+        } catch (error) {
+          throw new Error("فشل في إنشاء الحاوية");
+        }
+      }),
+
+    getContainers: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const containers = await db.getUserContainers(ctx.user.id);
+        return containers;
+      } catch (error) {
+        throw new Error("فشل في جلب الحاويات");
+      }
+    }),
+
+    searchContainers: protectedProcedure
+      .input(z.object({ query: z.string().min(1) }))
+      .query(async ({ input, ctx }) => {
+        try {
+          const results = await db.searchContainers(ctx.user.id, input.query);
+          return results;
+        } catch (error) {
+          throw new Error("فشل في البحث عن الحاويات");
+        }
+      }),
+
+    getContainerByNumber: protectedProcedure
+      .input(z.object({ containerNumber: z.string().min(1) }))
+      .query(async ({ input }) => {
+        try {
+          const container = await db.getContainerByNumber(input.containerNumber);
+          return container;
+        } catch (error) {
+          throw new Error("فشل في جلب بيانات الحاوية");
+        }
+      }),
+
+    addTrackingEvent: protectedProcedure
+      .input(
+        z.object({
+          containerId: z.number().int().positive(),
+          eventType: z.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
+          eventLocation: z.string().optional(),
+          eventDescription: z.string().optional(),
+          eventDateTime: z.string(),
+          documentUrl: z.string().optional(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const result = await db.addTrackingEvent({
+            containerId: input.containerId,
+            userId: ctx.user.id,
+            eventType: input.eventType,
+            eventLocation: input.eventLocation,
+            eventDescription: input.eventDescription,
+            eventDateTime: new Date(input.eventDateTime),
+            documentUrl: input.documentUrl,
+            notes: input.notes,
+          });
+          return { success: true };
+        } catch (error) {
+          throw new Error("فشل في إضافة حدث التتبع");
+        }
+      }),
+
+    getTrackingHistory: protectedProcedure
+      .input(z.object({ containerId: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        try {
+          const history = await db.getContainerTrackingHistory(input.containerId);
+          return history;
+        } catch (error) {
+          throw new Error("فشل في جلب سجل التتبع");
+        }
+      }),
+
+    updateContainerStatus: protectedProcedure
+      .input(
+        z.object({
+          containerId: z.number().int().positive(),
+          status: z.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"]),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          await db.updateContainerStatus(input.containerId, input.status);
+          return { success: true };
+        } catch (error) {
+          throw new Error("فشل في تحديث حالة الحاوية");
+        }
+      }),
+
+    createShipmentDetail: protectedProcedure
+      .input(
+        z.object({
+          containerId: z.number().int().positive(),
+          shipmentNumber: z.string().min(1),
+          totalWeight: z.number().positive(),
+          totalVolume: z.number().optional(),
+          numberOfPackages: z.number().int().positive(),
+          packageType: z.string().optional(),
+          shipper: z.string().min(1),
+          consignee: z.string().min(1),
+          freightCharges: z.number().optional(),
+          insuranceCharges: z.number().optional(),
+          handlingCharges: z.number().optional(),
+          otherCharges: z.number().optional(),
+          notes: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        try {
+          const result = await db.createShipmentDetail({
+            userId: ctx.user.id,
+            ...input,
+          });
+          return { success: true };
+        } catch (error) {
+          throw new Error("فشل في إنشاء تفاصيل الشحنة");
+        }
+      }),
+
+    getShipmentDetail: protectedProcedure
+      .input(z.object({ shipmentContainerId: z.number().int().positive() }))
+      .query(async ({ input }) => {
+        try {
+          const detail = await db.getShipmentDetail(input.shipmentContainerId);
+          return detail;
+        } catch (error) {
+          throw new Error("فشل في جلب تفاصيل الشحنة");
+        }
+      }),
+  }),
   }),
 });
 export type AppRouter = typeof appRouter;
