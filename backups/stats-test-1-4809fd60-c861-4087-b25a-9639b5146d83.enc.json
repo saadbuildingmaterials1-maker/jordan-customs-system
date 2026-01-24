@@ -1,0 +1,7 @@
+{
+  "iv": "288c6fdceb61d1ca1d1d54a8894af4a2",
+  "authTag": "beda803f0e7449dac40f0e5ac9b0cf35",
+  "encryptedData": "9833bfe06bcbfd1b5bc3a0b59d706a6a47f022c5ed29b34d9a78e418c30d9f864ac508a3ce0bc7870fe9a603356fc1b0c03b36985b61074561a203ce48cc2885aa0d867b031b4fa9c0d7d132c3f0b5ecc63f6817b913a8c79eaa0e2112708b89e3b37cceb2e44bd2b700886d7aea6aa9",
+  "timestamp": 1769290828891,
+  "version": "1.0.0"
+}

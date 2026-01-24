@@ -38,7 +38,7 @@ export const analyticsMetrics = mysqlTable('analytics_metrics', {
 
 export const analyticsDashboard = mysqlTable('analytics_dashboard', {
   id: varchar('id', { length: 36 }).primaryKey(),
-  userId: text('user_id').references(() => users.id).notNull(),
+  userId: varchar('user_id', { length: 64 }).references(() => users.openId).notNull(),
   dashboardName: text('dashboard_name').notNull(),
   dashboardConfig: text('dashboard_config'), // JSON string with widget configuration
   isDefault: boolean('is_default').default(false),
@@ -810,3 +810,37 @@ export const notificationPreferences = mysqlTable("notification_preferences", {
 
 export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
 export type InsertNotificationPreferences = typeof notificationPreferences.$inferInsert;
+
+
+/**
+ * جدول أنواع المصاريف
+ */
+export const expenseTypes = mysqlTable("expense_types", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ExpenseType = typeof expenseTypes.$inferSelect;
+export type InsertExpenseType = typeof expenseTypes.$inferInsert;
+
+/**
+ * جدول المصاريف
+ */
+export const expenses = mysqlTable("expenses", {
+  id: int("id").autoincrement().primaryKey(),
+  billId: int("billId").notNull().references(() => customsDeclarations.id),
+  typeId: int("typeId").notNull().references(() => expenseTypes.id),
+  amount: decimal("amount", { precision: 12, scale: 3 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD").notNull(),
+  description: text("description"),
+  date: date("date").notNull(),
+  category: varchar("category", { length: 50 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Expense = typeof expenses.$inferSelect;
+export type InsertExpense = typeof expenses.$inferInsert;
