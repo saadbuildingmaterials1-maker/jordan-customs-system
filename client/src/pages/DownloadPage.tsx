@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, AlertCircle, Loader } from "lucide-react";
 import { useLocation } from "wouter";
@@ -43,7 +43,7 @@ export default function DownloadPage() {
       size: "2.1 MB",
       version: "2.5.0",
       description: "تطبيق سطح مكتب حقيقي standalone - لا يحتاج أي متطلبات (مُجمَّع من Go)",
-      downloadUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663107576035/mNVLZDmJnEXzsWik.exe",
+      downloadUrl: "/api/download/hIeCZCAhnROWvLTy.exe",
       isDownloading: false,
       progress: 0,
       isCompleted: false,
@@ -57,7 +57,7 @@ export default function DownloadPage() {
       size: "851 MB",
       version: "2.5.0",
       description: "تطبيق سطح المكتب لنظام macOS 10.12 أو أحدث",
-      downloadUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663107576035/SzMTpfuxgBvWylQX.zip",
+      downloadUrl: "/api/download/YHrUZMmxWRZHDRks.zip",
       isDownloading: false,
       progress: 0,
       isCompleted: false,
@@ -71,7 +71,7 @@ export default function DownloadPage() {
       size: "851 MB",
       version: "2.5.0",
       description: "تطبيق سطح المكتب لنظام Linux (Ubuntu 16.04+)",
-      downloadUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663107576035/VoDOEmsXUIZhAikk.zip",
+      downloadUrl: "/api/download/EUkTCsIpEdMieWWN.zip",
       isDownloading: false,
       progress: 0,
       isCompleted: false,
@@ -107,83 +107,27 @@ export default function DownloadPage() {
     },
   ]);
 
-  const handleDownload = async (id: string) => {
+  const handleDownload = (id: string) => {
     const downloadItem = downloads.find((d) => d.id === id);
     if (!downloadItem) return;
 
-    // بدء التنزيل
+    // تحميل مباشر للويب
+    if (id === "web") {
+      navigate("/");
+      return;
+    }
+
+    // فتح الرابط في نافذة جديدة للتحميل المباشر
+    window.open(downloadItem.downloadUrl, "_blank");
+
+    // تحديث الحالة
     setDownloads((prev) =>
       prev.map((d) =>
-        d.id === id ? { ...d, isDownloading: true, progress: 0, error: null } : d
+        d.id === id
+          ? { ...d, isDownloading: false, progress: 100, isCompleted: true }
+          : d
       )
     );
-
-    try {
-      // محاكاة التنزيل
-      if (id === "web") {
-        navigate("/");
-        return;
-      }
-
-      // للتطبيقات الأخرى - التحقق من وجود الملف أولاً
-      const response = await fetch(downloadItem.downloadUrl);
-
-      if (!response.ok) {
-        throw new Error(`خطأ في التنزيل: ${response.status} ${response.statusText}`);
-      }
-
-      const blob = await response.blob();
-      
-      // التحقق من أن الملف ليس فارغاً
-      if (blob.size === 0) {
-        throw new Error("الملف المحمل فارغ. يرجى المحاولة لاحقاً");
-      }
-
-      // التحقق من أن الملف هو ZIP
-      if (!blob.type.includes('zip') && !downloadItem.downloadUrl.endsWith('.zip')) {
-        throw new Error("الملف المحمل ليس بصيغة ZIP صحيحة");
-      }
-
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `jordan-customs-${id}.zip`;
-
-      // محاكاة شريط التقدم
-      for (let i = 0; i <= 100; i += 10) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        setDownloads((prev) =>
-          prev.map((d) => (d.id === id ? { ...d, progress: i } : d))
-        );
-      }
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      // تحديث الحالة
-      setDownloads((prev) =>
-        prev.map((d) =>
-          d.id === id
-            ? { ...d, isDownloading: false, progress: 100, isCompleted: true }
-            : d
-        )
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "حدث خطأ أثناء التنزيل. يرجى المحاولة لاحقاً";
-      setDownloads((prev) =>
-        prev.map((d) =>
-          d.id === id
-            ? {
-                ...d,
-                isDownloading: false,
-                error: errorMessage,
-              }
-            : d
-        )
-      );
-    }
   };
 
 
