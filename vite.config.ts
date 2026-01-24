@@ -167,13 +167,72 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
+    minify: "esbuild",
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-ui': ['@radix-ui/react-dialog'],
+        manualChunks: (id) => {
+          // Vendor chunks - React
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+            return "vendor-react";
+          }
+
+          // Vendor chunks - UI Library
+          if (id.includes("node_modules/@radix-ui")) {
+            return "vendor-ui";
+          }
+
+          // Vendor chunks - Stripe
+          if (id.includes("node_modules/stripe")) {
+            return "vendor-stripe";
+          }
+
+          // Vendor chunks - Charts
+          if (id.includes("node_modules/recharts")) {
+            return "vendor-charts";
+          }
+
+          // Vendor chunks - PDF
+          if (id.includes("node_modules/pdfjs") || id.includes("node_modules/pdf")) {
+            return "vendor-pdf";
+          }
+
+          // Vendor chunks - Other utilities
+          if (id.includes("node_modules")) {
+            return "vendor-utils";
+          }
+
+          // Page chunks
+          if (id.includes("client/src/pages/")) {
+            const match = id.match(/pages\/([^/]+)/);
+            if (match) {
+              return `page-${match[1].replace(".tsx", "")}`;
+            }
+          }
+
+          // Component chunks
+          if (id.includes("client/src/components/")) {
+            return "components";
+          }
+
+          // Hook chunks
+          if (id.includes("client/src/hooks/")) {
+            return "hooks";
+          }
+
+          // Context chunks
+          if (id.includes("client/src/contexts/")) {
+            return "contexts";
+          }
+
+          // Lib chunks
+          if (id.includes("client/src/lib/")) {
+            return "lib";
+          }
         },
+        entryFileNames: "assets/[name]-[hash].js",
+        chunkFileNames: "assets/[name]-[hash].js",
+        assetFileNames: "assets/[name]-[hash][extname]",
       },
     },
   },
