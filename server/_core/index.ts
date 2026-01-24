@@ -9,6 +9,8 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { resourceMonitor } from "./resource-monitor";
+import { healthChecker } from "./health-check";
 import {
   generalLimiter,
   authLimiter,
@@ -128,6 +130,24 @@ async function startServer() {
     })
   );
   
+  // ========== HEALTH CHECK ROUTE ==========
+  // Health check endpoint
+  app.get("/api/health", (req, res) => {
+    const health = healthChecker.performCheck();
+    const statusCode = health.status === "healthy" ? 200 : health.status === "degraded" ? 202 : 503;
+    res.status(statusCode).json(health);
+  });
+
+  // Resource stats endpoint
+  app.get("/api/stats", (req, res) => {
+    const stats = resourceMonitor.getStats();
+    const health = healthChecker.performCheck();
+    res.json({
+      stats,
+      health,
+    });
+  });
+
   // ========== ERROR HANDLING ==========
   // معالج الأخطاء الأمنية
   app.use(securityErrorHandler);
@@ -149,6 +169,37 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    
+    // Start resource monitoring
+    resourceMonitor.start((stats) => {
+      // Optional: Send stats to monitoring service
+    });
+    
+    // Start health checks
+    healthChecker.start((result) => {
+      // Optional: Send health status to monitoring service
+    });
+    
+    // Graceful shutdown
+    process.on("SIGTERM", () => {
+      console.log("[Server] SIGTERM received, shutting down gracefully...");
+      resourceMonitor.stop();
+      healthChecker.stop();
+      server.close(() => {
+        console.log("[Server] Server closed");
+        process.exit(0);
+      });
+    });
+    
+    process.on("SIGINT", () => {
+      console.log("[Server] SIGINT received, shutting down gracefully...");
+      resourceMonitor.stop();
+      healthChecker.stop();
+      server.close(() => {
+        console.log("[Server] Server closed");
+        process.exit(0);
+      });
+    });
   });
 }
 
