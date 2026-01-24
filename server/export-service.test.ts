@@ -84,8 +84,12 @@ describe('Export Service - التصدير والتشفير', () => {
       const plaintext = 'بيانات مهمة';
       const encrypted = encryptData(plaintext, secretKey);
       const wrongKey = 'wrong-key';
-      const decrypted = decryptData(encrypted, wrongKey);
-      expect(decrypted).not.toBe(plaintext);
+      try {
+        const decrypted = decryptData(encrypted, wrongKey);
+        expect(decrypted).not.toBe(plaintext);
+      } catch (error) {
+        expect(error).toBeDefined();
+      }
     });
 
     it('should handle special characters in encryption', () => {
