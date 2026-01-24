@@ -39,7 +39,8 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import NotificationsCenter from '@/pages/NotificationsCenter';
 import ContainerTracking from '@/pages/ContainerTracking';
-import BackupAndNotifications from '@/pages/BackupAndNotifications';
+import BackupAndNotifications from './pages/BackupAndNotifications';
+import PaymentPage from './pages/PaymentPage';
 import BankAccountManagement from '@/pages/BankAccountManagement';
 import NotificationsManagement from '@/pages/NotificationsManagement';
 import { Route, Switch } from "wouter";
@@ -89,7 +90,8 @@ function Router() {
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/notifications-center" component={NotificationsCenter} />
       <Route path="/tracking" component={ContainerTracking} />
-      <Route path="/backup-notifications" component={BackupAndNotifications} />
+        <Route path="/backup-notifications" component={BackupAndNotifications} />
+        <Route path="/payments" component={PaymentPage} />
       <Route path="/bank-accounts" component={BankAccountManagement} />
       <Route path="/notifications-management" component={NotificationsManagement} />
       <Route path={"/404"} component={NotFound} />

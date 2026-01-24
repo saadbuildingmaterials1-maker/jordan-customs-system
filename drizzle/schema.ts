@@ -1,4 +1,4 @@
-import { 
+import {
   int, 
   mysqlEnum, 
   mysqlTable, 
@@ -7,13 +7,46 @@ import {
   varchar,
   decimal,
   date,
-  boolean
+  boolean,
+  real
 } from "drizzle-orm/mysql-core";
+import { sql } from "drizzle-orm";
 
 /**
  * جدول المستخدمين - الأساس للمصادقة
- */
-export const users = mysqlTable("users", {
+ */// Analytics Tables
+export const analyticsEvents = mysqlTable('analytics_events', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: text('user_id').references(() => users.id),
+  eventType: text('event_type').notNull(), // 'view', 'create', 'update', 'delete', 'export'
+  eventName: text('event_name').notNull(),
+  eventData: text('event_data'), // JSON string
+  timestamp: timestamp('timestamp').notNull().defaultNow(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const analyticsMetrics = mysqlTable('analytics_metrics', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  metricType: text('metric_type').notNull(), // 'revenue', 'customs', 'users', 'transactions'
+  metricName: text('metric_name').notNull(),
+  metricValue: real('metric_value').notNull(),
+  metricUnit: text('metric_unit'), // 'JOD', 'USD', 'count'
+  period: text('period').notNull(), // 'daily', 'weekly', 'monthly', 'yearly'
+  periodDate: timestamp('period_date').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+export const analyticsDashboard = mysqlTable('analytics_dashboard', {
+  id: varchar('id', { length: 36 }).primaryKey(),
+  userId: text('user_id').references(() => users.id).notNull(),
+  dashboardName: text('dashboard_name').notNull(),
+  dashboardConfig: text('dashboard_config'), // JSON string with widget configuration
+  isDefault: boolean('is_default').default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+export const users = mysqlTable('users', {
   id: int("id").autoincrement().primaryKey(),
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
