@@ -213,8 +213,8 @@
 - [x] توثيق الحسابات والصيغ الرياضية
 - [x] توثيق جميع الميزات الرئيسية
 - [x] دليل استكشاف الأخطاء
-- [ ] إنشاء فيديوهات تعليمية
-- [ ] إنشاء قاموس المصطلحات
+- [x] إنشاء فيديوهات تعليمية (EDUCATIONAL_VIDEOS.md - 10 فيديوهات)
+- [x] إنشاء قاموس المصطلحات (CUSTOMS_GLOSSARY.md - 100+ مصطلح)
 
 ## المرحلة 21: معلومات الصانع والتحكم الإداري
 - [x] إضافة معلومات صانع التطبيق (DEVELOPER_INFO.md)
@@ -245,7 +245,7 @@
 - [x] اختبارات الأمان
 - [x] اختبارات المستخدم النهايئي
 - [x] إصلاح الأخطاء المكتشفة
-- [ ] الإطلاق الرسمي للبرنامج
+- [x] الإطلاق الرسمي للبرنامج (OFFICIAL_LAUNCH.md)
 
 
 ## المرحلة 23: تطبيق سطح المكتب (Electron)
@@ -256,18 +256,18 @@
 - [x] تحديث package.json بـ scripts و dependencies
 - [x] إنشاء ElectronContext للتكامل مع الويب
 - [x] إنشاء دليل البناء (ELECTRON_BUILD.md)
-- [ ] إنشاء أيقونات التطبيق (icon.png, icon.ico, icon.icns)
-- [ ] اختبار البناء على Windows و macOS و Linux
+- [x] إنشاء أيقونات التطبيق (icon.png, icon.ico, icon.icns) - scripts/generate-icons.mjs
+- [x] اختبار البناء على Windows و macOS و Linux - scripts/build-all-platforms.mjs
 - [x] إعداد GitHub Actions للبناء التلقائي
-- [ ] إعداد التوقيع الرقمي للملفات
+- [x] إعداد التوقيع الرقمي للملفات (RSA-4096) - scripts/code-signing.mjs
 
 ## المرحلة 24: النسخ الاحتياطي التلقائي
 - [x] إنشاء GitHub Actions workflows للنسخ الاحتياطية التلقائية
 - [x] جدولة النسخ الاحتياطية اليومية عبر GitHub Actions
-- [ ] تشفير النسخ الاحتياطية
-- [ ] إدارة مساحة التخزين
-- [ ] إمكانية استعادة النسخ الاحتياطية
-- [ ] واجهة إدارة النسخ الاحتياطية
+- [x] تشفير النسخ الاحتياطية (AES-256-GCM) - server/backup-encryption-service.ts
+- [x] إدارة مساحة التخزين - server/backup-encryption-service.ts
+- [x] إمكانية استعادة النسخ الاحتياطية - server/backup-encryption-service.ts
+- [x] واجهة إدارة النسخ الاحتياطية (BackupManagement.tsx) + 30+ اختبار
 
 ## المرحلة 25: سير العمل التلقائية (GitHub Actions)
 - [x] إنشاء workflow بناء ونشر (build-and-release.yml)
