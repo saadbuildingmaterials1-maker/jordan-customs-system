@@ -1,0 +1,60 @@
+CREATE TABLE `containers` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`declarationId` int,
+	`containerNumber` varchar(50) NOT NULL,
+	`containerType` enum('20ft','40ft','40ftHC','45ft','other') NOT NULL,
+	`sealNumber` varchar(50),
+	`shippingCompany` varchar(100) NOT NULL,
+	`billOfLadingNumber` varchar(50) NOT NULL,
+	`portOfLoading` varchar(100) NOT NULL,
+	`portOfDischarge` varchar(100) NOT NULL,
+	`loadingDate` date,
+	`estimatedArrivalDate` date,
+	`actualArrivalDate` date,
+	`status` enum('pending','in_transit','arrived','cleared','delivered','delayed') NOT NULL DEFAULT 'pending',
+	`notes` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `containers_id` PRIMARY KEY(`id`),
+	CONSTRAINT `containers_containerNumber_unique` UNIQUE(`containerNumber`)
+);
+--> statement-breakpoint
+CREATE TABLE `shipment_details` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`containerId` int NOT NULL,
+	`userId` int NOT NULL,
+	`shipmentNumber` varchar(50) NOT NULL,
+	`totalWeight` decimal(12,3) NOT NULL,
+	`totalVolume` decimal(12,3),
+	`numberOfPackages` int NOT NULL,
+	`packageType` varchar(50),
+	`shipper` varchar(200) NOT NULL,
+	`consignee` varchar(200) NOT NULL,
+	`freightCharges` decimal(12,2),
+	`insuranceCharges` decimal(12,2),
+	`handlingCharges` decimal(12,2),
+	`otherCharges` decimal(12,2),
+	`invoiceUrl` text,
+	`packingListUrl` text,
+	`certificateOfOriginUrl` text,
+	`notes` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `shipment_details_id` PRIMARY KEY(`id`),
+	CONSTRAINT `shipment_details_shipmentNumber_unique` UNIQUE(`shipmentNumber`)
+);
+--> statement-breakpoint
+CREATE TABLE `tracking_events` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`containerId` int NOT NULL,
+	`userId` int NOT NULL,
+	`eventType` enum('booking_confirmed','container_loaded','departed_port','in_transit','arrived_port','customs_clearance_started','customs_clearance_completed','delivered','delayed','damaged','lost','other') NOT NULL,
+	`eventLocation` varchar(200),
+	`eventDescription` text,
+	`eventDateTime` timestamp NOT NULL,
+	`documentUrl` text,
+	`notes` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `tracking_events_id` PRIMARY KEY(`id`)
+);

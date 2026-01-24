@@ -512,3 +512,124 @@ export const subscriptionInvoices = mysqlTable("subscription_invoices", {
 
 export type SubscriptionInvoice = typeof subscriptionInvoices.$inferSelect;
 export type InsertSubscriptionInvoice = typeof subscriptionInvoices.$inferInsert;
+
+
+/**
+ * جدول الحاويات (Containers)
+ * يحتوي على معلومات الحاويات والشحنات
+ */
+export const containers = mysqlTable("containers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  declarationId: int("declarationId"),
+  
+  // معلومات الحاوية
+  containerNumber: varchar("containerNumber", { length: 50 }).notNull().unique(),
+  containerType: mysqlEnum("containerType", ["20ft", "40ft", "40ftHC", "45ft", "other"]).notNull(),
+  sealNumber: varchar("sealNumber", { length: 50 }),
+  
+  // معلومات الشحن
+  shippingCompany: varchar("shippingCompany", { length: 100 }).notNull(),
+  billOfLadingNumber: varchar("billOfLadingNumber", { length: 50 }).notNull(),
+  portOfLoading: varchar("portOfLoading", { length: 100 }).notNull(),
+  portOfDischarge: varchar("portOfDischarge", { length: 100 }).notNull(),
+  
+  // التواريخ
+  loadingDate: date("loadingDate"),
+  estimatedArrivalDate: date("estimatedArrivalDate"),
+  actualArrivalDate: date("actualArrivalDate"),
+  
+  // الحالة
+  status: mysqlEnum("status", ["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"]).default("pending").notNull(),
+  
+  // معلومات إضافية
+  notes: text("notes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Container = typeof containers.$inferSelect;
+export type InsertContainer = typeof containers.$inferInsert;
+
+/**
+ * جدول أحداث التتبع (Tracking Events)
+ * يحتوي على سجل الأحداث المختلفة للشحنة
+ */
+export const trackingEvents = mysqlTable("tracking_events", {
+  id: int("id").autoincrement().primaryKey(),
+  containerId: int("containerId").notNull(),
+  userId: int("userId").notNull(),
+  
+  // معلومات الحدث
+  eventType: mysqlEnum("eventType", [
+    "booking_confirmed",
+    "container_loaded",
+    "departed_port",
+    "in_transit",
+    "arrived_port",
+    "customs_clearance_started",
+    "customs_clearance_completed",
+    "delivered",
+    "delayed",
+    "damaged",
+    "lost",
+    "other"
+  ]).notNull(),
+  
+  eventLocation: varchar("eventLocation", { length: 200 }),
+  eventDescription: text("eventDescription"),
+  
+  // التاريخ والوقت
+  eventDateTime: timestamp("eventDateTime").notNull(),
+  
+  // معلومات إضافية
+  documentUrl: text("documentUrl"),
+  notes: text("notes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type TrackingEvent = typeof trackingEvents.$inferSelect;
+export type InsertTrackingEvent = typeof trackingEvents.$inferInsert;
+
+/**
+ * جدول معلومات الشحن المتقدمة (Shipment Details)
+ * يحتوي على تفاصيل متقدمة عن الشحنة
+ */
+export const shipmentDetails = mysqlTable("shipment_details", {
+  id: int("id").autoincrement().primaryKey(),
+  containerId: int("containerId").notNull(),
+  userId: int("userId").notNull(),
+  
+  // معلومات الشحنة
+  shipmentNumber: varchar("shipmentNumber", { length: 50 }).notNull().unique(),
+  totalWeight: decimal("totalWeight", { precision: 12, scale: 3 }).notNull(),
+  totalVolume: decimal("totalVolume", { precision: 12, scale: 3 }),
+  numberOfPackages: int("numberOfPackages").notNull(),
+  packageType: varchar("packageType", { length: 50 }),
+  
+  // معلومات الشاحن والمستقبل
+  shipper: varchar("shipper", { length: 200 }).notNull(),
+  consignee: varchar("consignee", { length: 200 }).notNull(),
+  
+  // معلومات الرسوم
+  freightCharges: decimal("freightCharges", { precision: 12, scale: 2 }),
+  insuranceCharges: decimal("insuranceCharges", { precision: 12, scale: 2 }),
+  handlingCharges: decimal("handlingCharges", { precision: 12, scale: 2 }),
+  otherCharges: decimal("otherCharges", { precision: 12, scale: 2 }),
+  
+  // المستندات
+  invoiceUrl: text("invoiceUrl"),
+  packingListUrl: text("packingListUrl"),
+  certificateOfOriginUrl: text("certificateOfOriginUrl"),
+  
+  // ملاحظات
+  notes: text("notes"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ShipmentDetail = typeof shipmentDetails.$inferSelect;
+export type InsertShipmentDetail = typeof shipmentDetails.$inferInsert;

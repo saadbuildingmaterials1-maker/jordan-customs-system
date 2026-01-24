@@ -16,10 +16,19 @@ import {
   financialSummaries,
   Notification,
   InsertNotification,
-  notifications
+  notifications,
+  Container,
+  InsertContainer,
+  containers,
+  TrackingEvent,
+  InsertTrackingEvent,
+  trackingEvents,
+  ShipmentDetail,
+  InsertShipmentDetail,
+  shipmentDetails
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
-import { eq, desc, and, lt } from "drizzle-orm";
+import { eq, desc, and, lt, or, like } from "drizzle-orm";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -435,4 +444,182 @@ export async function deleteOldNotifications(userId: number, daysOld: number = 3
   await db
     .delete(notifications)
     .where(and(eq(notifications.userId, userId), lt(notifications.createdAt, cutoffDate)));
+}
+
+
+/**
+ * ===== عمليات الحاويات والتتبع =====
+ */
+
+export async function createContainer(data: {
+  userId: number;
+  containerNumber: string;
+  containerType: string;
+  shippingCompany: string;
+  billOfLadingNumber: string;
+  portOfLoading: string;
+  portOfDischarge: string;
+  sealNumber?: string;
+  loadingDate?: string;
+  estimatedArrivalDate?: string;
+  notes?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(containers).values({
+    userId: data.userId,
+    containerNumber: data.containerNumber,
+    containerType: data.containerType as any,
+    shippingCompany: data.shippingCompany,
+    billOfLadingNumber: data.billOfLadingNumber,
+    portOfLoading: data.portOfLoading,
+    portOfDischarge: data.portOfDischarge,
+    sealNumber: data.sealNumber,
+    loadingDate: data.loadingDate ? new Date(data.loadingDate) : null,
+    estimatedArrivalDate: data.estimatedArrivalDate ? new Date(data.estimatedArrivalDate) : null,
+    notes: data.notes,
+  });
+  
+  return result;
+}
+
+export async function getContainerByNumber(containerNumber: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(containers).where(
+    eq(containers.containerNumber, containerNumber)
+  );
+  
+  return result[0] || null;
+}
+
+export async function getUserContainers(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(containers).where(
+    eq(containers.userId, userId)
+  ).orderBy(desc(containers.createdAt));
+  
+  return result;
+}
+
+export async function searchContainers(userId: number, query: string) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(containers).where(
+    and(
+      eq(containers.userId, userId),
+      or(
+        like(containers.containerNumber, `%${query}%`),
+        like(containers.billOfLadingNumber, `%${query}%`),
+        like(containers.shippingCompany, `%${query}%`)
+      )
+    )
+  );
+  
+  return result;
+}
+
+export async function addTrackingEvent(data: {
+  containerId: number;
+  userId: number;
+  eventType: string;
+  eventLocation?: string;
+  eventDescription?: string;
+  eventDateTime: Date;
+  documentUrl?: string;
+  notes?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(trackingEvents).values({
+    containerId: data.containerId,
+    userId: data.userId,
+    eventType: data.eventType as any,
+    eventLocation: data.eventLocation,
+    eventDescription: data.eventDescription,
+    eventDateTime: data.eventDateTime,
+    documentUrl: data.documentUrl,
+    notes: data.notes,
+  });
+  
+  return result;
+}
+
+export async function getContainerTrackingHistory(containerId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const result = await db.select().from(trackingEvents).where(
+    eq(trackingEvents.containerId, containerId)
+  ).orderBy(desc(trackingEvents.eventDateTime));
+  
+  return result;
+}
+
+export async function updateContainerStatus(containerId: number, status: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.update(containers).set({
+    status: status as any,
+    updatedAt: new Date(),
+  }).where(eq(containers.id, containerId));
+  
+  return result;
+}
+
+export async function createShipmentDetail(data: {
+  containerId: number;
+  userId: number;
+  shipmentNumber: string;
+  totalWeight: number;
+  totalVolume?: number;
+  numberOfPackages: number;
+  packageType?: string;
+  shipper: string;
+  consignee: string;
+  freightCharges?: number;
+  insuranceCharges?: number;
+  handlingCharges?: number;
+  otherCharges?: number;
+  notes?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const result = await db.insert(shipmentDetails).values({
+    containerId: data.containerId,
+    userId: data.userId,
+    shipmentNumber: data.shipmentNumber,
+    totalWeight: data.totalWeight.toString(),
+    totalVolume: data.totalVolume?.toString(),
+    numberOfPackages: data.numberOfPackages,
+    packageType: data.packageType,
+    shipper: data.shipper,
+    consignee: data.consignee,
+    freightCharges: data.freightCharges?.toString(),
+    insuranceCharges: data.insuranceCharges?.toString(),
+    handlingCharges: data.handlingCharges?.toString(),
+    otherCharges: data.otherCharges?.toString(),
+    notes: data.notes,
+  });
+  
+  return result;
+}
+
+export async function getShipmentDetail(containerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(shipmentDetails).where(
+    eq(shipmentDetails.containerId, containerId)
+  );
+  
+  return result[0] || null;
 }

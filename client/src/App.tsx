@@ -34,6 +34,7 @@ import About from '@/pages/About';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import NotificationsCenter from '@/pages/NotificationsCenter';
+import ContainerTracking from '@/pages/ContainerTracking';
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -76,6 +77,7 @@ function Router() {
       <Route path="/privacy" component={PrivacyPolicy} />
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/notifications-center" component={NotificationsCenter} />
+      <Route path="/tracking" component={ContainerTracking} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
