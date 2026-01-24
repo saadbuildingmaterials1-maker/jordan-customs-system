@@ -740,7 +740,7 @@ export type InsertBankVerification = typeof bankVerifications.$inferInsert;
  */
 export const bankNotifications = mysqlTable("bank_notifications", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   type: mysqlEnum("type", [
     "account_added",
     "account_verified",
@@ -773,7 +773,7 @@ export type InsertBankNotification = typeof bankNotifications.$inferInsert;
  */
 export const notificationLog = mysqlTable("notification_log", {
   id: int("id").autoincrement().primaryKey(),
-  notificationId: int("notificationId").notNull().references(() => bankNotifications.id),
+  notificationId: int("notificationId").notNull().references(() => bankNotifications.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   channel: mysqlEnum("channel", ["email", "sms", "push", "in_app"]).notNull(),
   status: mysqlEnum("status", ["pending", "sent", "failed", "bounced"]).default("pending"),
   recipient: varchar("recipient", { length: 255 }).notNull(),
@@ -793,7 +793,7 @@ export type InsertNotificationLog = typeof notificationLog.$inferInsert;
  */
 export const notificationPreferences = mysqlTable("notification_preferences", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().unique().references(() => users.id),
+  userId: int("userId").notNull().unique().references(() => users.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
   emailNotifications: boolean("emailNotifications").default(true),
   smsNotifications: boolean("smsNotifications").default(false),
   pushNotifications: boolean("pushNotifications").default(true),

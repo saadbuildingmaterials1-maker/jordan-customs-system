@@ -23,19 +23,11 @@ import {
 import { stripeRouter } from "./routers/stripe";
 import { paymentMethodsRouter } from "./routers/payment-methods";
 import { governmentRouter } from "./routers/government";
+import { authRouter } from "./routers/auth";
 
 export const appRouter = router({
   system: systemRouter,
-  auth: router({
-    me: publicProcedure.query((opts) => opts.ctx.user),
-    logout: publicProcedure.mutation(({ ctx }) => {
-      const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
-      return {
-        success: true,
-      } as const;
-    }),
-  }),
+  auth: authRouter,
 
   /**
    * ===== إجراءات البيانات الجمركية =====
@@ -401,11 +393,6 @@ export const appRouter = router({
   }),
 
   /**
-   * ===== إجراءات الذكاء الاصطناعي =====
-   */
-  ai: aiRouter,
-  
-  /**
    * ===== إجراءات استيراد PDF =====
    */
   pdfImport: router({
@@ -430,6 +417,7 @@ export const appRouter = router({
           throw new Error(`خطأ في استيراد الملف: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
         }
       }),
+  }),
 
   /**
    * ===== إجراءات الإشعارات =====
@@ -468,10 +456,7 @@ export const appRouter = router({
         await db.deleteNotification(input.notificationId);
         return { success: true };
       }),
-   }),
-  stripe: stripeRouter,
-  paymentMethods: paymentMethodsRouter,
-  government: governmentRouter,
+  }),
 
   /**
    * ===== إجراءات تتبع الحاويات =====
@@ -633,6 +618,10 @@ export const appRouter = router({
         }
       }),
   }),
-  }),
+  stripe: stripeRouter,
+  paymentMethods: paymentMethodsRouter,
+  government: governmentRouter,
+  ai: aiRouter,
 });
+
 export type AppRouter = typeof appRouter;

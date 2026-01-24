@@ -3,10 +3,25 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
+import helmet from "helmet";
+import cors from "cors";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import {
+  generalLimiter,
+  authLimiter,
+  apiLimiter,
+  corsOptions,
+  helmetOptions,
+  suspiciousRequestLogger,
+  securityHeaders,
+  requestValidation,
+  sanitizeInput,
+  securityErrorHandler,
+  requestLogger,
+} from "./security-middleware";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -30,9 +45,39 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // تفعيل Trust Proxy للعمل مع Rate Limiting
+  app.set('trust proxy', 1);
+  
+  // ========== SECURITY MIDDLEWARE ==========
+  // تطبيق Helmet للأمان الشامل
+  app.use(helmet(helmetOptions as any));
+  
+  // تطبيق CORS
+  app.use(cors(corsOptions as any));
+  
+  // تسجيل الطلبات
+  app.use(requestLogger);
+  
+  // إضافة رؤوس الأمان
+  app.use(securityHeaders);
+  
+  // تسجيل الطلبات المريبة
+  app.use(suspiciousRequestLogger);
+  
+  // التحقق من صحة الطلب
+  app.use(requestValidation);
+  
+  // تطبيق Rate Limiting العام
+  app.use(generalLimiter as any);
+  
+  // ========== BODY PARSER ==========
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  
+  // تنظيف البيانات المدخلة
+  app.use(sanitizeInput);
   
   // Download route MUST be FIRST before any other middleware
   app.get("/api/download/:filename", async (req, res) => {
@@ -63,8 +108,16 @@ async function startServer() {
     }
   });
   
+  // ========== AUTHENTICATION ROUTES ==========
+  // تطبيق Rate Limiting للمصادقة
+  app.use('/api/oauth', authLimiter as any);
+  
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // ========== API ROUTES ==========
+  // تطبيق Rate Limiting لـ API
+  app.use('/api/trpc', apiLimiter as any);
   
   // tRPC API
   app.use(
@@ -75,6 +128,11 @@ async function startServer() {
     })
   );
   
+  // ========== ERROR HANDLING ==========
+  // معالج الأخطاء الأمنية
+  app.use(securityErrorHandler);
+  
+  // ========== STATIC FILES ==========
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
