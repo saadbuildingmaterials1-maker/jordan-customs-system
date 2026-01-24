@@ -17,11 +17,6 @@ win:
   target:
     - nsis
     - portable
-  certificateFile: null
-  certificatePassword: null
-  signingHashAlgorithms:
-    - sha256
-  sign: null
 
 nsis:
   oneClick: false
@@ -41,11 +36,7 @@ mac:
     - dmg
     - zip
   category: public.app-category.business
-  icon: assets/icon.icns
-  certificateFile: null
-  certificatePassword: null
-  signingIdentity: null
-  notarize: false
+  icon: assets/icon.png
 
 dmg:
   contents:
