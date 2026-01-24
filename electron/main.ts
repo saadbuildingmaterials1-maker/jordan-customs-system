@@ -157,6 +157,8 @@ function checkForUpdates() {
 }
 
 // معالجات IPC
+import * as fs from 'fs';
+
 ipcMain.on('app-version', (event) => {
   event.reply('app-version', {
     app: app.getVersion(),
@@ -167,6 +169,107 @@ ipcMain.on('app-version', (event) => {
 
 ipcMain.on('check-for-updates', () => {
   checkForUpdates();
+});
+
+// حفظ البيانات محلياً
+ipcMain.handle('save-data', async (event, data) => {
+  try {
+    const dataPath = path.join(app.getPath('userData'), 'data.json');
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving data:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// تحميل البيانات المحفوظة
+ipcMain.handle('load-data', async (event) => {
+  try {
+    const dataPath = path.join(app.getPath('userData'), 'data.json');
+    if (fs.existsSync(dataPath)) {
+      const data = fs.readFileSync(dataPath, 'utf-8');
+      return { success: true, data: JSON.parse(data) };
+    }
+    return { success: true, data: null };
+  } catch (error) {
+    console.error('Error loading data:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// إنشاء نسخة احتياطية
+ipcMain.handle('create-backup', async (event) => {
+  try {
+    const dataPath = path.join(app.getPath('userData'), 'data.json');
+    const backupDir = path.join(app.getPath('userData'), 'backups');
+
+    if (!fs.existsSync(backupDir)) {
+      fs.mkdirSync(backupDir, { recursive: true });
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupPath = path.join(backupDir, `backup-${timestamp}.json`);
+
+    if (fs.existsSync(dataPath)) {
+      fs.copyFileSync(dataPath, backupPath);
+      return { success: true, backupPath };
+    }
+
+    return { success: false, error: 'No data to backup' };
+  } catch (error) {
+    console.error('Error creating backup:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// استعادة من نسخة احتياطية
+ipcMain.handle('restore-backup', async (event, backupPath) => {
+  try {
+    const dataPath = path.join(app.getPath('userData'), 'data.json');
+    fs.copyFileSync(backupPath, dataPath);
+    return { success: true };
+  } catch (error) {
+    console.error('Error restoring backup:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// قائمة النسخ الاحتياطية
+ipcMain.handle('list-backups', async (event) => {
+  try {
+    const backupDir = path.join(app.getPath('userData'), 'backups');
+
+    if (!fs.existsSync(backupDir)) {
+      return { success: true, backups: [] };
+    }
+
+    const files = fs.readdirSync(backupDir);
+    const backups = files
+      .filter((f) => f.startsWith('backup-') && f.endsWith('.json'))
+      .map((f) => ({
+        name: f,
+        path: path.join(backupDir, f),
+        date: fs.statSync(path.join(backupDir, f)).mtime,
+      }))
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+    return { success: true, backups };
+  } catch (error) {
+    console.error('Error listing backups:', error);
+    return { success: false, error: (error as Error).message };
+  }
+});
+
+// حذف نسخة احتياطية
+ipcMain.handle('delete-backup', async (event, backupPath) => {
+  try {
+    fs.unlinkSync(backupPath);
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting backup:', error);
+    return { success: false, error: (error as Error).message };
+  }
 });
 
 // أحداث التطبيق
