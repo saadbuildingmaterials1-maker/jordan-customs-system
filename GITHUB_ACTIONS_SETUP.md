@@ -213,9 +213,9 @@ git push origin main
 ## الدعم
 
 للمساعدة:
-- 📧 البريد: support@manus.im
+- 📧 البريد: saad.building.materials1@gmail.com
 - 🌐 الموقع: www.manus.im
-- 📱 الهاتف: +1-XXX-XXX-XXXX
+- 📱 الهاتف: 00962795917424
 
 ---
 

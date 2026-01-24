@@ -135,7 +135,7 @@ function createMenu() {
               type: 'info',
               title: 'حول نظام إدارة تكاليف الشحن والجمارك',
               message: 'نظام إدارة تكاليف الشحن والجمارك الأردنية',
-              detail: 'الإصدار: 1.0.0\nصانع التطبيق: Manus Development Team\nالبريد: support@manus.im',
+              detail: 'الإصدار: 1.0.0\nصانع التطبيق: سعد النابلسي\nالبريد: saad.building.materials1@gmail.com',
             });
           },
         },
