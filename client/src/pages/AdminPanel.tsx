@@ -49,31 +49,31 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* معلومات الصانع */}
+      {/* معلومات المالك والمطور */}
       <Card className="border-blue-200 bg-blue-50">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-right">
             <FileText className="h-5 w-5 text-blue-600" />
-            معلومات صانع التطبيق
+            معلومات التطبيق
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg bg-white p-4">
-              <p className="text-sm text-gray-600">اسم صانع التطبيق</p>
-              <p className="text-lg font-bold">Manus Development Team</p>
+              <p className="text-sm text-gray-600">المالك والمطور</p>
+              <p className="text-lg font-bold">mp3</p>
             </div>
             <div className="rounded-lg bg-white p-4">
               <p className="text-sm text-gray-600">البريد الإلكتروني</p>
-              <p className="text-lg font-bold">support@manus.im</p>
+              <p className="text-lg font-bold">saad.building.materials1@gmail.com</p>
             </div>
             <div className="rounded-lg bg-white p-4">
               <p className="text-sm text-gray-600">إصدار التطبيق</p>
-              <p className="text-lg font-bold">1.0.0</p>
+              <p className="text-lg font-bold">2.5.0</p>
             </div>
             <div className="rounded-lg bg-white p-4">
               <p className="text-sm text-gray-600">تاريخ الإطلاق</p>
-              <p className="text-lg font-bold">22 يناير 2026</p>
+              <p className="text-lg font-bold">24 يناير 2026</p>
             </div>
           </div>
         </CardContent>
