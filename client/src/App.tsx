@@ -1,57 +1,70 @@
 import { Toaster } from "@/components/ui/sonner";
+import { lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import Home from "@/pages/Home";
-import DeclarationForm from "@/pages/DeclarationForm";
-import DeclarationFormAdvanced from "@/pages/DeclarationFormAdvanced";
-import DeclarationDetail from "@/pages/DeclarationDetail";
-import DeclarationsList from "@/pages/DeclarationsList";
-import ItemsManagement from "@/pages/ItemsManagement";
-import VarianceAnalysis from "@/pages/VarianceAnalysis";
-import AdminPanel from "@/pages/AdminPanel";
-import AccountingDashboard from "@/pages/AccountingDashboard";
-import AdvancedReports from "@/pages/AdvancedReports";
-import AlertsManagement from "@/pages/AlertsManagement";
-import SupplierInvoice from "@/pages/SupplierInvoice";
-import ShippingPage from "@/pages/ShippingPage";
-import ExpensesPage from "@/pages/ExpensesPage";
-import AdvancedCustomsDeclaration from "@/pages/AdvancedCustomsDeclaration";
-import Dashboard from "@/pages/Dashboard";
-import NotificationCenter from "@/pages/NotificationCenter";
-import { PaymentsManagement } from "@/pages/PaymentsManagement";
-import Checkout from "@/pages/Checkout";
-import SmartDashboard from "@/pages/SmartDashboard";
-import FactoriesAndInvoices from "@/pages/FactoriesAndInvoices";
-import ReportsAndExports from "@/pages/ReportsAndExports";
-import AlertsAndNotifications from "@/pages/AlertsAndNotifications";
-import UsersAndRoles from "@/pages/UsersAndRoles";
-import SettingsAndSecurity from '@/pages/SettingsAndSecurity';
-import ShippingManagement from '@/pages/ShippingManagement';
-import ExpensesManagement from '@/pages/ExpensesManagement';
-import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPage';
-import ReportsPage from '@/pages/ReportsPage';
-import UsersManagement from '@/pages/UsersManagement';
-import SettingsPage from '@/pages/SettingsPage';
-import AdvancedSearch from '@/pages/AdvancedSearch';
-import DownloadPage from '@/pages/DownloadPage';
-import About from '@/pages/About';
-import PrivacyPolicy from '@/pages/PrivacyPolicy';
-import TermsOfUse from '@/pages/TermsOfUse';
-import NotificationsCenter from '@/pages/NotificationsCenter';
-import ContainerTracking from '@/pages/ContainerTracking';
-import BackupAndNotifications from './pages/BackupAndNotifications';
-import PaymentPage from './pages/PaymentPage';
-import BankAccountManagement from '@/pages/BankAccountManagement';
-import NotificationsManagement from '@/pages/NotificationsManagement';
+import LoadingSpinner from "./components/LoadingSpinner";
+// Lazy load all pages
+const Home = lazy(() => import("@/pages/Home"));
+const DeclarationForm = lazy(() => import("@/pages/DeclarationForm"));
+const DeclarationFormAdvanced = lazy(() => import("@/pages/DeclarationFormAdvanced"));
+const DeclarationDetail = lazy(() => import("@/pages/DeclarationDetail"));
+const DeclarationsList = lazy(() => import("@/pages/DeclarationsList"));
+const ItemsManagement = lazy(() => import("@/pages/ItemsManagement"));
+const VarianceAnalysis = lazy(() => import("@/pages/VarianceAnalysis"));
+const AdminPanel = lazy(() => import("@/pages/AdminPanel"));
+const AccountingDashboard = lazy(() => import("@/pages/AccountingDashboard"));
+const AdvancedReports = lazy(() => import("@/pages/AdvancedReports"));
+const AlertsManagement = lazy(() => import("@/pages/AlertsManagement"));
+const SupplierInvoice = lazy(() => import("@/pages/SupplierInvoice"));
+const ShippingPage = lazy(() => import("@/pages/ShippingPage"));
+const ExpensesPage = lazy(() => import("@/pages/ExpensesPage"));
+const AdvancedCustomsDeclaration = lazy(() => import("@/pages/AdvancedCustomsDeclaration"));
+const Dashboard = lazy(() => import("@/pages/Dashboard"));
+const NotificationCenter = lazy(() => import("@/pages/NotificationCenter"));
+const PaymentsManagement = lazy(() => import("@/pages/PaymentsManagement").then((m: any) => ({ default: m.PaymentsManagement || m.default })));
+const Checkout = lazy(() => import("@/pages/Checkout"));
+const SmartDashboard = lazy(() => import("@/pages/SmartDashboard"));
+const FactoriesAndInvoices = lazy(() => import("@/pages/FactoriesAndInvoices"));
+const ReportsAndExports = lazy(() => import("@/pages/ReportsAndExports"));
+const AlertsAndNotifications = lazy(() => import("@/pages/AlertsAndNotifications"));
+const UsersAndRoles = lazy(() => import("@/pages/UsersAndRoles"));
+const SettingsAndSecurity = lazy(() => import('@/pages/SettingsAndSecurity'));
+const ShippingManagement = lazy(() => import('@/pages/ShippingManagement'));
+const ExpensesManagement = lazy(() => import('@/pages/ExpensesManagement'));
+const AdvancedCustomsDeclarationPage = lazy(() => import('@/pages/AdvancedCustomsDeclarationPage'));
+const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
+const UsersManagement = lazy(() => import('@/pages/UsersManagement'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const AdvancedSearch = lazy(() => import('@/pages/AdvancedSearch'));
+const DownloadPage = lazy(() => import('@/pages/DownloadPage'));
+const About = lazy(() => import('@/pages/About'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
+const NotificationsCenter = lazy(() => import('@/pages/NotificationsCenter'));
+const ContainerTracking = lazy(() => import('@/pages/ContainerTracking'));
+const BackupAndNotifications = lazy(() => import('./pages/BackupAndNotifications'));
+const PaymentPage = lazy(() => import('./pages/PaymentPage'));
+const BankAccountManagement = lazy(() => import('@/pages/BankAccountManagement'));
+const NotificationsManagement = lazy(() => import('@/pages/NotificationsManagement'));
+const NotFound = lazy(() => import('@/pages/NotFound'));
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { ToastContainer } from "./components/ToastContainer";
 
+// Loading component
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background">
+      <LoadingSpinner />
+    </div>
+  );
+}
+
 function Router() {
   return (
-    <Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/declarations"} component={DeclarationsList} />
       <Route path={"/declarations/new"} component={DeclarationForm} />
@@ -97,7 +110,8 @@ function Router() {
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
-    </Switch>
+      </Switch>
+    </Suspense>
   );
 }
 

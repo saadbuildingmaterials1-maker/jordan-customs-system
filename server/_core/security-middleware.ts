@@ -72,9 +72,14 @@ export const corsOptions: any = {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173',
       process.env.FRONTEND_URL,
+      // السماح بجميع النطاقات في بيئة التطوير
+      ...(process.env.NODE_ENV === 'development' ? ['*'] : []),
     ].filter(Boolean);
 
-    if (!origin || allowedOrigins.includes(origin)) {
+    // في بيئة التطوير، السماح بجميع الأصول
+    if (process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -97,7 +102,7 @@ export const helmetOptions: any = {
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'https:'],
       fontSrc: ["'self'", 'data:'],
-      connectSrc: ["'self'", 'https:'],
+      connectSrc: ["'self'", 'https:', 'wss:'],
     },
   },
   hsts: {
