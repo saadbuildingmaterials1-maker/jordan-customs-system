@@ -197,6 +197,21 @@ export default defineConfig({
             return "vendor-pdf";
           }
 
+          // Vendor chunks - Date/Time
+          if (id.includes("node_modules/date-fns") || id.includes("node_modules/dayjs")) {
+            return "vendor-date";
+          }
+
+          // Vendor chunks - Form
+          if (id.includes("node_modules/react-hook-form") || id.includes("node_modules/zod")) {
+            return "vendor-form";
+          }
+
+          // Vendor chunks - HTTP
+          if (id.includes("node_modules/axios") || id.includes("node_modules/fetch")) {
+            return "vendor-http";
+          }
+
           // Vendor chunks - Other utilities
           if (id.includes("node_modules")) {
             return "vendor-utils";
