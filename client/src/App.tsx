@@ -32,6 +32,7 @@ import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPa
 import ReportsPage from '@/pages/ReportsPage';
 import UsersManagement from '@/pages/UsersManagement';
 import SettingsPage from '@/pages/SettingsPage';
+import AdvancedSearch from '@/pages/AdvancedSearch';
 import DownloadPage from '@/pages/DownloadPage';
 import About from '@/pages/About';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
@@ -78,6 +79,7 @@ function Router() {
       <Route path="/reports-page" component={ReportsPage} />
       <Route path="/users-management" component={UsersManagement} />
       <Route path="/settings-page" component={SettingsPage} />
+      <Route path="/advanced-search" component={AdvancedSearch} />
       <Route path="/download" component={DownloadPage} />
       <Route path="/about" component={About} />
       <Route path="/privacy" component={PrivacyPolicy} />
