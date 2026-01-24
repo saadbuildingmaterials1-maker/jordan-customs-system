@@ -71,6 +71,20 @@
       "when": 1769277461064,
       "tag": "0009_silky_celestials",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1769286995735,
+      "tag": "0010_handy_vapor",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1769287289976,
+      "tag": "0011_many_skrulls",
+      "breakpoints": true
     }
   ]
 }

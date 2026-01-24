@@ -633,3 +633,147 @@ export const shipmentDetails = mysqlTable("shipment_details", {
 
 export type ShipmentDetail = typeof shipmentDetails.$inferSelect;
 export type InsertShipmentDetail = typeof shipmentDetails.$inferInsert;
+
+/**
+ * جدول البيانات البنكية - تخزين آمن لمعلومات الحسابات البنكية
+ */
+export const bankAccounts = mysqlTable("bank_accounts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  accountName: varchar("accountName", { length: 255 }).notNull(),
+  // البيانات مشفرة
+  ibanEncrypted: text("ibanEncrypted").notNull(),
+  bankName: varchar("bankName", { length: 255 }).notNull(),
+  swiftCode: varchar("swiftCode", { length: 20 }),
+  accountType: mysqlEnum("accountType", ["checking", "savings", "business"]).default("checking"),
+  currency: varchar("currency", { length: 3 }).default("JOD"),
+  isDefault: boolean("isDefault").default(false),
+  isVerified: boolean("isVerified").default(false),
+  verificationCode: varchar("verificationCode", { length: 10 }),
+  verificationAttempts: int("verificationAttempts").default(0),
+  stripeAccountId: varchar("stripeAccountId", { length: 255 }),
+  status: mysqlEnum("status", ["pending", "verified", "active", "inactive", "suspended"]).default("pending"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BankAccount = typeof bankAccounts.$inferSelect;
+export type InsertBankAccount = typeof bankAccounts.$inferInsert;
+
+/**
+ * جدول سجل المعاملات البنكية
+ */
+export const bankTransactions = mysqlTable("bank_transactions", {
+  id: int("id").autoincrement().primaryKey(),
+  bankAccountId: int("bankAccountId").notNull().references(() => bankAccounts.id),
+  transactionId: varchar("transactionId", { length: 255 }).notNull().unique(),
+  amount: decimal("amount", { precision: 15, scale: 2 }).notNull(),
+  currency: varchar("currency", { length: 3 }).default("JOD"),
+  type: mysqlEnum("type", ["deposit", "withdrawal", "transfer", "payment", "refund"]).notNull(),
+  status: mysqlEnum("status", ["pending", "processing", "completed", "failed", "cancelled"]).default("pending"),
+  description: text("description"),
+  reference: varchar("reference", { length: 255 }),
+  metadata: text("metadata"), // JSON
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BankTransaction = typeof bankTransactions.$inferSelect;
+export type InsertBankTransaction = typeof bankTransactions.$inferInsert;
+
+/**
+ * جدول سجل التحقق من الحسابات البنكية
+ */
+export const bankVerifications = mysqlTable("bank_verifications", {
+  id: int("id").autoincrement().primaryKey(),
+  bankAccountId: int("bankAccountId").notNull().references(() => bankAccounts.id),
+  verificationMethod: mysqlEnum("verificationMethod", ["micro_deposit", "document", "api", "manual"]).notNull(),
+  status: mysqlEnum("status", ["pending", "verified", "failed", "expired"]).default("pending"),
+  verificationCode: varchar("verificationCode", { length: 10 }),
+  attempts: int("attempts").default(0),
+  maxAttempts: int("maxAttempts").default(3),
+  expiresAt: timestamp("expiresAt"),
+  verifiedAt: timestamp("verifiedAt"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BankVerification = typeof bankVerifications.$inferSelect;
+export type InsertBankVerification = typeof bankVerifications.$inferInsert;
+
+/**
+ * جدول الإشعارات - لتخزين إشعارات النظام
+ */
+export const bankNotifications = mysqlTable("bank_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  type: mysqlEnum("type", [
+    "account_added",
+    "account_verified",
+    "transaction_completed",
+    "transaction_failed",
+    "verification_required",
+    "security_alert",
+    "account_suspended",
+    "payment_received",
+    "payment_sent",
+  ]).notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  relatedEntityType: varchar("relatedEntityType", { length: 50 }), // bank_account, transaction
+  relatedEntityId: int("relatedEntityId"),
+  isRead: boolean("isRead").default(false),
+  priority: mysqlEnum("priority", ["low", "medium", "high", "critical"]).default("medium"),
+  channels: varchar("channels", { length: 255 }).default("email,in_app"), // JSON array
+  sentAt: timestamp("sentAt"),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type BankNotification = typeof bankNotifications.$inferSelect;
+export type InsertBankNotification = typeof bankNotifications.$inferInsert;
+
+/**
+ * جدول سجل الإشعارات المرسلة
+ */
+export const notificationLog = mysqlTable("notification_log", {
+  id: int("id").autoincrement().primaryKey(),
+  notificationId: int("notificationId").notNull().references(() => bankNotifications.id),
+  channel: mysqlEnum("channel", ["email", "sms", "push", "in_app"]).notNull(),
+  status: mysqlEnum("status", ["pending", "sent", "failed", "bounced"]).default("pending"),
+  recipient: varchar("recipient", { length: 255 }).notNull(),
+  sentAt: timestamp("sentAt"),
+  failureReason: text("failureReason"),
+  retryCount: int("retryCount").default(0),
+  maxRetries: int("maxRetries").default(3),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationLog = typeof notificationLog.$inferSelect;
+export type InsertNotificationLog = typeof notificationLog.$inferInsert;
+
+/**
+ * جدول تفضيلات الإشعارات
+ */
+export const notificationPreferences = mysqlTable("notification_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique().references(() => users.id),
+  emailNotifications: boolean("emailNotifications").default(true),
+  smsNotifications: boolean("smsNotifications").default(false),
+  pushNotifications: boolean("pushNotifications").default(true),
+  inAppNotifications: boolean("inAppNotifications").default(true),
+  accountAddedNotification: boolean("accountAddedNotification").default(true),
+  accountVerifiedNotification: boolean("accountVerifiedNotification").default(true),
+  transactionNotification: boolean("transactionNotification").default(true),
+  securityAlertNotification: boolean("securityAlertNotification").default(true),
+  dailyDigest: boolean("dailyDigest").default(false),
+  weeklyReport: boolean("weeklyReport").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+export type InsertNotificationPreferences = typeof notificationPreferences.$inferInsert;

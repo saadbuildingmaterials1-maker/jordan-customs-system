@@ -39,6 +39,9 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfUse from '@/pages/TermsOfUse';
 import NotificationsCenter from '@/pages/NotificationsCenter';
 import ContainerTracking from '@/pages/ContainerTracking';
+import BackupAndNotifications from '@/pages/BackupAndNotifications';
+import BankAccountManagement from '@/pages/BankAccountManagement';
+import NotificationsManagement from '@/pages/NotificationsManagement';
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -73,8 +76,8 @@ function Router() {
       <Route path={"/alerts-notifications"} component={AlertsAndNotifications} />
       <Route path={"/users-roles"} component={UsersAndRoles} />
       <Route path="/settings" component={SettingsAndSecurity} />
-      <Route path="/shipping" component={ShippingManagement} />
-      <Route path="/expenses" component={ExpensesManagement} />
+      <Route path="/shipping-management" component={ShippingManagement} />
+      <Route path="/expenses-management" component={ExpensesManagement} />
       <Route path="/advanced-customs" component={AdvancedCustomsDeclarationPage} />
       <Route path="/reports-page" component={ReportsPage} />
       <Route path="/users-management" component={UsersManagement} />
@@ -86,6 +89,9 @@ function Router() {
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/notifications-center" component={NotificationsCenter} />
       <Route path="/tracking" component={ContainerTracking} />
+      <Route path="/backup-notifications" component={BackupAndNotifications} />
+      <Route path="/bank-accounts" component={BankAccountManagement} />
+      <Route path="/notifications-management" component={NotificationsManagement} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
