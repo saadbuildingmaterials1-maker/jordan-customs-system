@@ -30,6 +30,8 @@ import ShippingManagement from '@/pages/ShippingManagement';
 import ExpensesManagement from '@/pages/ExpensesManagement';
 import AdvancedCustomsDeclarationPage from '@/pages/AdvancedCustomsDeclarationPage';
 import ReportsPage from '@/pages/ReportsPage';
+import UsersManagement from '@/pages/UsersManagement';
+import SettingsPage from '@/pages/SettingsPage';
 import DownloadPage from '@/pages/DownloadPage';
 import About from '@/pages/About';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
@@ -74,6 +76,8 @@ function Router() {
       <Route path="/expenses" component={ExpensesManagement} />
       <Route path="/advanced-customs" component={AdvancedCustomsDeclarationPage} />
       <Route path="/reports-page" component={ReportsPage} />
+      <Route path="/users-management" component={UsersManagement} />
+      <Route path="/settings-page" component={SettingsPage} />
       <Route path="/download" component={DownloadPage} />
       <Route path="/about" component={About} />
       <Route path="/privacy" component={PrivacyPolicy} />
