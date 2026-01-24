@@ -1,14 +1,37 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar } from 'lucide-react';
+import { DollarSign, Plus, Edit2, Trash2, TrendingUp, Calendar, Download } from 'lucide-react';
 
 export default function ExpensesManagement() {
   const [activeTab, setActiveTab] = useState('expenses');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const handleExportCSV = () => {
+    const headers = ['النوع', 'المبلغ', 'العملة', 'التاريخ', 'الوصف', 'الحالة'];
+    const rows = expenses.map(exp => [
+      exp.type,
+      exp.amount,
+      exp.currency,
+      exp.date,
+      exp.description,
+      exp.status
+    ]);
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `expenses-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    toast.success('تم تصدير المصاريف بنجاح');
+  };
 
   const [expenses, setExpenses] = useState([
     {
@@ -192,6 +215,29 @@ export default function ExpensesManagement() {
               </Button>
             </div>
 
+            {/* البحث والتصفية */}
+            <Card>
+              <CardContent className="pt-6 space-y-4">
+                <Input
+                  placeholder="ابحث عن المصاريف..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <div className="flex gap-4">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className="flex-1 border rounded-lg px-3 py-2"
+                  >
+                    <option value="all">جميع الحالات</option>
+                    <option value="مدفوع">مدفوع</option>
+                    <option value="قيد الانتظار">قيد الانتظار</option>
+                    <option value="متأخر">متأخر</option>
+                  </select>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>المصاريف</CardTitle>
@@ -211,7 +257,14 @@ export default function ExpensesManagement() {
                       </tr>
                     </thead>
                     <tbody>
-                      {expenses.map((expense) => (
+                      {expenses
+                        .filter(exp => {
+                          const matchesSearch = exp.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                             exp.type.toLowerCase().includes(searchQuery.toLowerCase());
+                          const matchesStatus = filterStatus === 'all' || exp.status === filterStatus;
+                          return matchesSearch && matchesStatus;
+                        })
+                        .map((expense) => (
                         <tr key={expense.id} className="border-b hover:bg-gray-50">
                           <td className="py-3 px-4 font-medium">{expense.type}</td>
                           <td className="py-3 px-4">
@@ -295,7 +348,15 @@ export default function ExpensesManagement() {
 
           {/* تبويب التقارير */}
           <TabsContent value="reports" className="space-y-6">
-            <h2 className="text-xl font-semibold">التقارير والتحليلات</h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">التقارير والتحليلات</h2>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex items-center gap-2" onClick={handleExportCSV}>
+                  <Download className="w-4 h-4" />
+                  تصدير CSV
+                </Button>
+              </div>
+            </div>
 
             <Card>
               <CardHeader>
