@@ -9,6 +9,7 @@ import Stripe from 'stripe';
 
 describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكامل', () => {
   let stripe: Stripe;
+  const hasStripeKey = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder';
 
   beforeAll(() => {
     const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
@@ -16,6 +17,9 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       apiVersion: '2024-12-15' as any,
     });
   });
+
+  // تخطي جميع الاختبارات إذا لم تكن مفاتيح Stripe مضبوطة
+  const describeOrSkip = hasStripeKey ? describe : describe.skip;
 
   /**
    * 1️⃣ اختبارات إنشاء العملاء
