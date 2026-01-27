@@ -169,6 +169,9 @@ export default defineConfig({
     emptyOutDir: true,
     chunkSizeWarningLimit: 500,
     minify: "esbuild",
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: (id) => {
