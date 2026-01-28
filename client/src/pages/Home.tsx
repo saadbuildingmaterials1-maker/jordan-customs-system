@@ -2,311 +2,345 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { 
   Plus, FileText, TrendingUp, DollarSign, Download, Smartphone, Monitor,
-  ArrowRight, CheckCircle, Zap, BarChart3, Package, Truck, Clock, Shield
+  ArrowRight, CheckCircle, Zap, BarChart3, Package, Truck, Clock, Shield,
+  Sparkles, ChevronRight, Gauge, Lock, Zap as Lightning
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   const [, navigate] = useLocation();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }}></div>
+        <div className="absolute top-1/2 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }}></div>
+      </div>
+
       {/* Hero Section */}
-      <header className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white py-16 px-4 md:py-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+      <header className="relative pt-20 pb-32 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          {/* Top Badge */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 border border-blue-400/30 backdrop-blur-md">
+              <Sparkles className="w-4 h-4 text-blue-300" />
+              <span className="text-sm text-blue-200">منصة متطورة للإدارة الجمركية</span>
+            </div>
+          </div>
+
+          {/* Main Title */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-cyan-200 to-blue-200">
               نظام إدارة تكاليف الشحن والجمارك الأردنية
             </h1>
-            <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-              منصة متكاملة لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية وسهولة استخدام
+            <p className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto leading-relaxed">
+              منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية وسهولة استخدام فائقة
             </p>
+
+            {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                onClick={() => navigate("/declarations/new")} 
-                className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-8 py-6 text-lg gap-2"
+              <button
+                onClick={() => navigate("/declarations/new")}
+                className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/50 hover:-translate-y-1"
               >
-                <Plus className="w-5 h-5" />
-                ابدأ الآن
-              </Button>
-              <Button 
-                onClick={() => navigate("/dashboard")} 
-                className="bg-blue-500 hover:bg-blue-600 font-semibold px-8 py-6 text-lg gap-2"
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <Plus className="w-5 h-5" />
+                  ابدأ الآن
+                </div>
+              </button>
+              <button
+                onClick={() => navigate("/dashboard")}
+                className="group px-8 py-4 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-lg font-semibold text-lg transition-all duration-300 backdrop-blur-md"
               >
-                <BarChart3 className="w-5 h-5" />
-                لوحة التحكم
-              </Button>
+                <div className="flex items-center justify-center gap-2">
+                  <BarChart3 className="w-5 h-5" />
+                  لوحة التحكم
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </div>
+              </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Quick Stats */}
-      <section className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              { icon: FileText, label: "بيانات جمركية", color: "text-blue-600" },
-              { icon: DollarSign, label: "حسابات مالية", color: "text-green-600" },
-              { icon: Truck, label: "تتبع الشحنات", color: "text-orange-600" },
-              { icon: Shield, label: "أمان عالي", color: "text-purple-600" }
-            ].map((stat, idx) => (
-              <div key={idx} className="text-center">
-                <stat.icon className={`w-8 h-8 ${stat.color} mx-auto mb-2`} />
-                <p className="text-gray-700 font-medium">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Features Grid */}
+      <section className="relative py-20 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
+            المميزات الرئيسية
+          </h2>
 
-      {/* Main Features */}
-      <main className="max-w-6xl mx-auto px-4 py-16">
-        {/* Quick Actions */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">الإجراءات السريعة</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Plus,
-                title: "إنشاء بيان جمركي",
-                description: "أضف بيان جمركي جديد باستخدام نموذج سهل وسريع",
-                action: () => navigate("/declarations/new"),
-                color: "from-blue-500 to-blue-600"
-              },
-              {
-                icon: FileText,
-                title: "استيراد من PDF",
-                description: "استخرج البيانات تلقائياً من ملفات PDF والفواتير",
-                action: () => navigate("/pdf-import"),
-                color: "from-orange-500 to-orange-600"
-              },
-              {
-                icon: Truck,
-                title: "تتبع الحاويات",
-                description: "تابع حالة الشحنات والحاويات في الوقت الفعلي",
-                action: () => navigate("/tracking"),
-                color: "from-green-500 to-green-600"
-              }
-            ].map((action, idx) => (
-              <button
-                key={idx}
-                onClick={action.action}
-                onMouseEnter={() => setHoveredCard(`action-${idx}`)}
-                onMouseLeave={() => setHoveredCard(null)}
-                className="group text-left"
-              >
-                <div className={`bg-gradient-to-br ${action.color} text-white p-6 rounded-lg transition-all duration-300 ${
-                  hoveredCard === `action-${idx}` ? 'shadow-lg scale-105' : 'shadow-md'
-                }`}>
-                  <action.icon className="w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
-                  <h3 className="font-semibold text-lg mb-2">{action.title}</h3>
-                  <p className="text-white/90 text-sm mb-4">{action.description}</p>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    ابدأ الآن <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* Core Features */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">المميزات الرئيسية</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               {
                 icon: FileText,
                 title: "إدارة البيانات الجمركية",
-                description: "إدارة شاملة للبيانات الجمركية مع حساب الرسوم والضرائب تلقائياً",
-                features: ["حساب تلقائي للرسوم", "ضرائب ديناميكية", "تقارير مفصلة"],
-                action: () => navigate("/declarations"),
-                color: "border-blue-200 bg-blue-50"
+                description: "إدارة شاملة مع حساب الرسوم والضرائب تلقائياً",
+                features: ["حساب تلقائي", "ضرائب ديناميكية", "تقارير مفصلة"],
+                gradient: "from-blue-600 to-blue-700",
+                action: () => navigate("/declarations")
               },
               {
                 icon: BarChart3,
                 title: "التقارير والتحليلات",
-                description: "تقارير شاملة مع رسوم بيانية متقدمة وتحليل البيانات",
-                features: ["رسوم بيانية حية", "تصدير PDF/Excel", "تحليلات متقدمة"],
-                action: () => navigate("/reports"),
-                color: "border-green-200 bg-green-50"
+                description: "رسوم بيانية متقدمة وتحليل شامل للبيانات",
+                features: ["رسوم بيانية حية", "تصدير متعدد", "تحليلات عميقة"],
+                gradient: "from-cyan-600 to-cyan-700",
+                action: () => navigate("/reports")
               },
               {
                 icon: DollarSign,
                 title: "نظام الدفع والفواتير",
-                description: "نظام دفع متكامل مع Stripe وإدارة شاملة للفواتير",
+                description: "دفع آمن مع إدارة شاملة للفواتير",
                 features: ["دفع آمن", "فواتير تلقائية", "تتبع الدفعات"],
-                action: () => navigate("/payments"),
-                color: "border-purple-200 bg-purple-50"
+                gradient: "from-purple-600 to-purple-700",
+                action: () => navigate("/payments")
               },
               {
-                icon: TrendingUp,
-                title: "لوحة التحكم الذكية",
-                description: "لوحة تحكم ذكية مع رسوم بيانية وإحصائيات فورية",
-                features: ["إحصائيات فورية", "رسوم بيانية تفاعلية", "مؤشرات الأداء"],
-                action: () => navigate("/dashboard"),
-                color: "border-orange-200 bg-orange-50"
+                icon: Truck,
+                title: "تتبع الشحنات",
+                description: "تتبع فوري للحاويات والشحنات",
+                features: ["تتبع حي", "خريطة تفاعلية", "إشعارات فورية"],
+                gradient: "from-orange-600 to-orange-700",
+                action: () => navigate("/tracking")
               }
-            ].map((feature, idx) => (
-              <div
-                key={idx}
-                className={`p-6 border-2 rounded-lg transition-all duration-300 hover:shadow-lg ${feature.color}`}
-              >
-                <feature.icon className="w-8 h-8 text-gray-700 mb-4" />
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 mb-4">{feature.description}</p>
-                <ul className="space-y-2 mb-4">
-                  {feature.features.map((f, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Button
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <button
+                  key={idx}
                   onClick={feature.action}
-                  variant="outline"
-                  className="w-full"
+                  onMouseEnter={() => setHoveredCard(`feature-${idx}`)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  className="group text-left"
                 >
-                  اكتشف المزيد
-                </Button>
-              </div>
-            ))}
+                  <div className={`relative p-8 rounded-2xl bg-gradient-to-br ${feature.gradient} overflow-hidden transition-all duration-500 ${
+                    hoveredCard === `feature-${idx}` ? 'shadow-2xl scale-105' : 'shadow-lg'
+                  }`}>
+                    {/* Animated Background */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-between mb-4">
+                        <Icon className="w-10 h-10 text-white/90" />
+                        <ChevronRight className="w-6 h-6 text-white/60 group-hover:text-white group-hover:translate-x-2 transition-all" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-white mb-2">{feature.title}</h3>
+                      <p className="text-white/80 mb-4">{feature.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {feature.features.map((f, i) => (
+                          <span key={i} className="px-3 py-1 rounded-full bg-white/20 text-sm text-white/90">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Benefits Section */}
-        <section className="mb-16 bg-gradient-to-r from-blue-50 to-blue-100 p-8 rounded-lg">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">لماذا تختار نظامنا؟</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Zap,
-                title: "سرعة عالية",
-                description: "معالجة فورية للبيانات مع واجهة سريعة وسهلة الاستخدام"
-              },
-              {
-                icon: Shield,
-                title: "أمان عالي",
-                description: "حماية كاملة للبيانات مع تشفير قوي ونسخ احتياطية منتظمة"
-              },
-              {
-                icon: Clock,
-                title: "توفير الوقت",
-                description: "أتمتة العمليات الروتينية وتقليل الأخطاء اليدوية"
-              }
-            ].map((benefit, idx) => (
-              <div key={idx} className="text-center">
-                <benefit.icon className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">{benefit.title}</h3>
-                <p className="text-gray-700">{benefit.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* Quick Actions */}
+      <section className="relative py-20 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
+            الإجراءات السريعة
+          </h2>
 
-        {/* Download Section */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8">تحميل التطبيقات</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                icon: Monitor,
-                title: "تطبيق الويب",
-                description: "استخدم التطبيق مباشرة من المتصفح بدون تثبيت",
-                action: () => navigate("/"),
-                buttonText: "فتح الآن"
+                icon: Plus,
+                title: "إنشاء بيان جمركي",
+                description: "أضف بيان جديد باستخدام نموذج سهل",
+                action: () => navigate("/declarations/new"),
+                color: "from-blue-500/20 to-blue-600/20"
               },
               {
-                icon: Smartphone,
-                title: "تطبيق الهاتف",
-                description: "حمّل التطبيق على iOS أو Android للعمل في أي مكان",
-                action: null,
-                buttonText: "قريباً"
+                icon: FileText,
+                title: "استيراد من PDF",
+                description: "استخرج البيانات تلقائياً من الملفات",
+                action: () => navigate("/pdf-import"),
+                color: "from-orange-500/20 to-orange-600/20"
               },
               {
-                icon: Download,
-                title: "تطبيق سطح المكتب",
-                description: "حمّل التطبيق لـ Windows أو Mac أو Linux",
-                action: () => navigate("/download"),
-                buttonText: "تحميل"
+                icon: Truck,
+                title: "تتبع الحاويات",
+                description: "تابع حالة الشحنات في الوقت الفعلي",
+                action: () => navigate("/tracking"),
+                color: "from-green-500/20 to-green-600/20"
               }
-            ].map((app, idx) => (
-              <div key={idx} className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition-colors">
-                <app.icon className="w-8 h-8 text-blue-600 mb-4" />
-                <h3 className="font-semibold text-lg text-gray-900 mb-2">{app.title}</h3>
-                <p className="text-gray-600 mb-4">{app.description}</p>
-                <Button
-                  onClick={app.action || (() => {})}
-                  className="w-full"
-                  disabled={!app.action}
+            ].map((action, idx) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={idx}
+                  onClick={action.action}
+                  onMouseEnter={() => setHoveredCard(`action-${idx}`)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                  className="group"
                 >
-                  {app.buttonText}
-                </Button>
+                  <div className={`p-8 rounded-2xl bg-gradient-to-br ${action.color} border border-white/10 hover:border-white/30 transition-all duration-500 backdrop-blur-md ${
+                    hoveredCard === `action-${idx}` ? 'shadow-2xl' : 'shadow-lg'
+                  }`}>
+                    <Icon className="w-12 h-12 text-white mb-4 group-hover:scale-110 transition-transform duration-300" />
+                    <h3 className="text-xl font-bold text-white mb-2">{action.title}</h3>
+                    <p className="text-white/70 mb-4">{action.description}</p>
+                    <div className="flex items-center gap-2 text-white/80 group-hover:text-white transition-colors">
+                      ابدأ الآن <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="relative py-20 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
+            لماذا تختار نظامنا؟
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Lightning,
+                title: "سرعة عالية",
+                description: "معالجة فورية للبيانات مع واجهة سريعة وسلسة"
+              },
+              {
+                icon: Lock,
+                title: "أمان عالي",
+                description: "حماية كاملة للبيانات مع تشفير قوي ونسخ احتياطية"
+              },
+              {
+                icon: Gauge,
+                title: "أداء ممتاز",
+                description: "أتمتة العمليات الروتينية وتقليل الأخطاء اليدوية"
+              }
+            ].map((benefit, idx) => {
+              const Icon = benefit.icon;
+              return (
+                <div key={idx} className="text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border border-blue-400/30 mb-4">
+                    <Icon className="w-8 h-8 text-blue-200" />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{benefit.title}</h3>
+                  <p className="text-blue-100/70">{benefit.description}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="relative py-20 px-4 md:px-8 lg:px-16">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { label: "بيانات جمركية", value: "1000+", icon: FileText },
+              { label: "شحنات مُتتبعة", value: "500+", icon: Truck },
+              { label: "مستخدمون نشطون", value: "200+", icon: Shield },
+              { label: "دول مخدومة", value: "50+", icon: Package }
+            ].map((stat, idx) => {
+              const Icon = stat.icon;
+              return (
+                <div key={idx} className="p-6 rounded-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-md text-center hover:border-white/20 transition-all duration-300">
+                  <Icon className="w-8 h-8 text-blue-300 mx-auto mb-3" />
+                  <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
+                  <p className="text-blue-100/70">{stat.label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-20 px-4 md:px-8 lg:px-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative p-12 rounded-3xl bg-gradient-to-r from-blue-600/40 to-cyan-600/40 border border-white/20 backdrop-blur-md overflow-hidden">
+            {/* Animated Background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+
+            <div className="relative z-10 text-center">
+              <h2 className="text-4xl font-bold text-white mb-4">ابدأ الآن مع نظام الإدارة الجمركية</h2>
+              <p className="text-xl text-blue-100/80 mb-8">انضم إلى آلاف المستخدمين الذين يستخدمون نظامنا لإدارة عملياتهم بكفاءة</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => navigate("/declarations/new")}
+                  className="px-8 py-4 bg-white text-blue-600 font-bold rounded-lg hover:shadow-2xl hover:shadow-white/20 transition-all duration-300 hover:-translate-y-1"
+                >
+                  إنشاء بيان جمركي
+                </button>
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="px-8 py-4 bg-white/20 text-white font-bold rounded-lg border border-white/30 hover:bg-white/30 transition-all duration-300"
+                >
+                  عرض لوحة التحكم
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="relative py-12 px-4 md:px-8 lg:px-16 border-t border-white/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {[
+              {
+                title: "عن النظام",
+                links: ["المميزات", "الأسعار", "الدعم"]
+              },
+              {
+                title: "الروابط السريعة",
+                links: ["البيانات الجمركية", "التقارير", "لوحة التحكم"]
+              },
+              {
+                title: "المساعدة",
+                links: ["الدعم الفني", "التوثيق", "الأسئلة الشائعة"]
+              },
+              {
+                title: "القانوني",
+                links: ["سياسة الخصوصية", "شروط الاستخدام", "اتصل بنا"]
+              }
+            ].map((section, idx) => (
+              <div key={idx}>
+                <h3 className="font-bold text-white mb-4">{section.title}</h3>
+                <ul className="space-y-2">
+                  {section.links.map((link, i) => (
+                    <li key={i}>
+                      <a href="#" className="text-blue-100/70 hover:text-blue-200 transition-colors">
+                        {link}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-12 rounded-lg text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">ابدأ الآن مع نظام إدارة الجمارك</h2>
-          <p className="text-blue-100 mb-8 max-w-2xl mx-auto">
-            انضم إلى آلاف المستخدمين الذين يستخدمون نظامنا لإدارة عملياتهم الجمركية بكفاءة
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={() => navigate("/declarations/new")}
-              className="bg-white text-blue-700 hover:bg-blue-50 font-semibold px-8 py-3"
-            >
-              إنشاء بيان جمركي
-            </Button>
-            <Button
-              onClick={() => navigate("/dashboard")}
-              className="bg-blue-500 hover:bg-blue-600 font-semibold px-8 py-3"
-            >
-              عرض لوحة التحكم
-            </Button>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="font-semibold text-lg mb-4">عن النظام</h3>
-              <p className="text-gray-400 text-sm">نظام متكامل لإدارة البيانات الجمركية والشحنات بكفاءة عالية</p>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-4">الروابط السريعة</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><button onClick={() => navigate("/declarations")} className="hover:text-white">البيانات الجمركية</button></li>
-                <li><button onClick={() => navigate("/reports")} className="hover:text-white">التقارير</button></li>
-                <li><button onClick={() => navigate("/dashboard")} className="hover:text-white">لوحة التحكم</button></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-4">المساعدة</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">الدعم الفني</a></li>
-                <li><a href="#" className="hover:text-white">التوثيق</a></li>
-                <li><a href="#" className="hover:text-white">الأسئلة الشائعة</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg mb-4">القانوني</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white">سياسة الخصوصية</a></li>
-                <li><a href="#" className="hover:text-white">شروط الاستخدام</a></li>
-                <li><a href="#" className="hover:text-white">اتصل بنا</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
+          <div className="border-t border-white/10 pt-8 text-center text-blue-100/50">
             <p>&copy; 2026 نظام إدارة تكاليف الشحن والجمارك الأردنية. جميع الحقوق محفوظة.</p>
           </div>
         </div>
