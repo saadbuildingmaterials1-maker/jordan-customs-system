@@ -17,60 +17,54 @@ export async function setupVite(app: Express, server: Server) {
     ...viteConfig,
     configFile: false,
     server: serverOptions,
-    appType: "custom",
+    appType: "mpa",
   });
 
-  // في وضع التطوير، نستخدم express.static أولاً لتقديم الملفات الثابتة
-  // ثم Vite middleware للملفات الأخرى
-  const distPath = path.resolve(import.meta.dirname, "../..", "dist", "public");
-  
-  // تقديم الملفات الثابتة من dist/public
+  // تقديم الملفات من client/public
+  const clientPath = path.resolve(import.meta.dirname, "../..", "client");
   app.use(
-    express.static(distPath, {
-      maxAge: "1y",
+    express.static(path.join(clientPath, "public"), {
+      maxAge: "1h",
       etag: true,
       lastModified: true,
-      setHeaders: (res, filePath) => {
-        const ext = path.extname(filePath).toLowerCase();
-        // لا تخزن ملفات HTML مؤقتاً
-        if (ext === ".html") {
-          res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-          res.setHeader("Pragma", "no-cache");
-        }
-        // خزّن الملفات المجزأة لمدة طويلة
-        else if (filePath.match(/\.[a-f0-9]{8}\.(js|css)$/)) {
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        }
-      },
     })
   );
 
-  // ثم استخدم Vite middleware للملفات الأخرى
+  // استخدام Vite middleware للملفات
   app.use(vite.middlewares);
 
-  // Fallback to index.html for SPA routing
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
+  // معالج لـ index.html
+  app.get("/", async (req, res, next) => {
+    try {
+      const clientTemplate = path.join(clientPath, "index.html");
+      let template = await fs.promises.readFile(clientTemplate, "utf-8");
+      
+      // استخدام transformIndexHtml لتحويل الملف بشكل صحيح
+      const page = await vite.transformIndexHtml("/", template);
+      res.set({ "Content-Type": "text/html; charset=utf-8" }).end(page);
+    } catch (e) {
+      console.error("[Vite] Error serving index.html:", e);
+      vite.ssrFixStacktrace(e as Error);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+  // معالج fallback لـ SPA routing
+  app.get("*", async (req, res, next) => {
+    // تجاهل الملفات الثابتة والملفات ذات الامتدادات
+    if (req.path.includes(".") && !req.path.endsWith(".html")) {
+      return next();
+    }
     
     try {
-      const clientTemplate = path.resolve(
-        import.meta.dirname,
-        "../..",
-        "client",
-        "index.html"
-      );
-
-      // always reload the index.html file from disk incase it changes
+      const clientTemplate = path.join(clientPath, "index.html");
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
+      const page = await vite.transformIndexHtml(req.originalUrl, template);
+      res.set({ "Content-Type": "text/html; charset=utf-8" }).end(page);
     } catch (e) {
+      console.error("[Vite] Error serving SPA:", e);
       vite.ssrFixStacktrace(e as Error);
-      next(e);
+      res.status(500).send("Internal Server Error");
     }
   });
 }

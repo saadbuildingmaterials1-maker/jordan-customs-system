@@ -8,6 +8,8 @@ import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
 
+console.log("[main.tsx] Starting application...");
+
 const queryClient = new QueryClient();
 
 const redirectToLoginIfUnauthorized = (error: unknown) => {
@@ -52,7 +54,14 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-createRoot(document.getElementById("root")!).render(
+console.log("[main.tsx] Creating React root...");
+const rootElement = document.getElementById("root");
+console.log("[main.tsx] Root element:", rootElement);
+if (!rootElement) {
+  console.error("[main.tsx] ERROR: Root element not found!");
+  throw new Error("Root element not found");
+}
+createRoot(rootElement).render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <App />
