@@ -41,6 +41,7 @@ const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
 const NotificationsCenter = lazy(() => import('@/pages/NotificationsCenter'));
 const ContainerTracking = lazy(() => import('@/pages/ContainerTracking'));
+const PDFImport = lazy(() => import('@/pages/PDFImport'));
 const BackupAndNotifications = lazy(() => import('./pages/BackupAndNotifications'));
 const PaymentPage = lazy(() => import('./pages/PaymentPage'));
 const BankAccountManagement = lazy(() => import('@/pages/BankAccountManagement'));
@@ -103,6 +104,7 @@ function Router() {
       <Route path="/terms" component={TermsOfUse} />
       <Route path="/notifications-center" component={NotificationsCenter} />
       <Route path="/tracking" component={ContainerTracking} />
+      <Route path="/pdf-import" component={PDFImport} />
         <Route path="/backup-notifications" component={BackupAndNotifications} />
         <Route path="/payments" component={PaymentPage} />
       <Route path="/bank-accounts" component={BankAccountManagement} />
