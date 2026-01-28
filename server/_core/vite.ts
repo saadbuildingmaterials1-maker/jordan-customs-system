@@ -9,7 +9,7 @@ import viteConfig from "../../vite.config";
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    hmm: { server },
     allowedHosts: true as const,
   };
 
@@ -30,10 +30,7 @@ export async function setupVite(app: Express, server: Server) {
     })
   );
 
-  // استخدام Vite middleware للملفات
-  app.use(vite.middlewares);
-
-  // معالج لـ index.html
+  // معالج لـ index.html (الصفحة الرئيسية)
   app.get("/", async (req, res, next) => {
     try {
       const clientTemplate = path.join(clientPath, "index.html");
@@ -49,13 +46,27 @@ export async function setupVite(app: Express, server: Server) {
     }
   });
 
-  // معالج fallback لـ SPA routing
+  // معالج fallback لـ SPA routing - يجب أن يأتي قبل vite.middlewares
+  // حتى يتمكن من إعادة index.html للصفحات الداخلية قبل أن يحاول Vite معالجتها
   app.get("*", async (req, res, next) => {
-    // تجاهل الملفات الثابتة والملفات ذات الامتدادات
-    if (req.path.includes(".") && !req.path.endsWith(".html")) {
+    // تجاهل طلبات API
+    if (req.path.startsWith("/api")) {
       return next();
     }
     
+    // تجاهل طلبات Vite الخاصة
+    if (req.path.startsWith("/@") || req.path.startsWith("/node_modules/") || req.path.startsWith("/src/")) {
+      return next();
+    }
+    
+    // تجاهل الملفات ذات الامتدادات المعروفة
+    // حتى يتمكن vite.middlewares من معالجتها
+    const knownExtensions = /\.(js|jsx|ts|tsx|css|scss|json|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|map|txt|md|mjs)$/i;
+    if (knownExtensions.test(req.path)) {
+      return next();
+    }
+    
+    // إعادة index.html للصفحات الداخلية
     try {
       const clientTemplate = path.join(clientPath, "index.html");
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
@@ -67,6 +78,9 @@ export async function setupVite(app: Express, server: Server) {
       res.status(500).send("Internal Server Error");
     }
   });
+
+  // استخدام Vite middleware للملفات (بعد معالج SPA)
+  app.use(vite.middlewares);
 }
 
 export function serveStatic(app: Express) {

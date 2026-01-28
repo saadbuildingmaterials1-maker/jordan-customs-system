@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import helmet from "helmet";
 import cors from "cors";
@@ -163,7 +164,8 @@ async function startServer() {
   } else {
     serveStatic(app);
   }
-  
+
+
   // ========== ERROR HANDLING ==========
   // معالج الأخطاء الأمنية (يجب أن يأتي بعد جميع المعالجات الأخرى)
   app.use(securityErrorHandler);

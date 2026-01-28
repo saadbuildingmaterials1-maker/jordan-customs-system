@@ -19,8 +19,8 @@ export const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // تخطي الطلبات من localhost في بيئة التطوير
-    return process.env.NODE_ENV === 'development' && req.ip === '::1';
+    // تخطي جميع الطلبات في بيئة التطوير
+    return process.env.NODE_ENV === 'development';
   },
 });
 
@@ -43,7 +43,7 @@ export const authLimiter = rateLimit({
  */
 export const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // دقيقة واحدة
-  max: 30, // حد أقصى 30 طلب
+  max: 300, // حد أقصى 300 طلب
   message: 'عدد كبير جداً من طلبات API، يرجى المحاولة لاحقاً',
   standardHeaders: true,
   legacyHeaders: false,
@@ -98,11 +98,12 @@ export const helmetOptions: any = {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", 'https://manus-analytics.com'],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://manus-analytics.com', 'blob:'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-      connectSrc: ["'self'", 'https:', 'wss:', 'https://manus-analytics.com'],
+      connectSrc: ["'self'", 'https:', 'wss:', 'https://manus-analytics.com', 'blob:'],
+      workerSrc: ["'self'", 'blob:'],
     },
   },
   hsts: {
