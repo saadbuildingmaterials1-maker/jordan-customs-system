@@ -156,15 +156,17 @@ async function startServer() {
     });
   });
 
-  // ========== ERROR HANDLING ==========
-  // معالج الأخطاء الأمنية
-  app.use(securityErrorHandler);
-  
   // ========== STATIC FILES & SPA FALLBACK ==========
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
+  } else {
+    serveStatic(app);
   }
+  
+  // ========== ERROR HANDLING ==========
+  // معالج الأخطاء الأمنية (يجب أن يأتي بعد جميع المعالجات الأخرى)
+  app.use(securityErrorHandler);
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
