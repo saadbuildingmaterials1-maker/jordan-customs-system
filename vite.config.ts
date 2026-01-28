@@ -254,8 +254,15 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'wouter', 'lucide-react'],
+    exclude: ['@vite/client'],
+  },
   server: {
     host: true,
+    warmup: {
+      clientFiles: ['./src/App.tsx', './src/pages/Home.tsx', './src/pages/DeclarationsList.tsx'],
+    },
     allowedHosts: [
       ".manuspre.computer",
       ".manus.computer",
