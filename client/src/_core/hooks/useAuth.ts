@@ -14,7 +14,7 @@ export function useAuth(options?: UseAuthOptions) {
   const utils = trpc.useUtils();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
-    retry: false,
+    retry: 1,
     refetchOnWindowFocus: false,
   });
 
@@ -48,7 +48,7 @@ export function useAuth(options?: UseAuthOptions) {
     );
     return {
       user: meQuery.data ?? null,
-      loading: meQuery.isLoading || logoutMutation.isPending,
+      loading: meQuery.isLoading && !meQuery.isError || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(meQuery.data),
     };

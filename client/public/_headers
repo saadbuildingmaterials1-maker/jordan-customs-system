@@ -1,0 +1,51 @@
+# Headers for Cloudflare
+# هذا الملف يخبر Cloudflare بكيفية تقديم الملفات بشكل صحيح
+
+# الملفات الثابتة - لا تطبق SPA fallback
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# ملفات CSS
+/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+# ملفات JavaScript
+/*.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
+# ملفات الخطوط
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# ملفات الصور
+/images/*
+  Cache-Control: public, max-age=2592000
+
+# ملفات الأيقونات
+/icon-*.png
+  Cache-Control: public, max-age=2592000
+/favicon.ico
+  Cache-Control: public, max-age=2592000
+
+# ملف manifest
+/manifest.json
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+# ملف robots.txt
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+
+# ملف sitemap.xml
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=86400
+
+# الصفحات الأخرى - لا تطبق caching
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff

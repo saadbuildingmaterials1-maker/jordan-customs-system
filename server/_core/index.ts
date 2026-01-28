@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -50,6 +49,15 @@ async function startServer() {
   
   // تفعيل Trust Proxy للعمل مع Rate Limiting
   app.set('trust proxy', 1);
+  
+  // ========== STATIC FILES FIRST ==========
+  // يجب أن تأتي الملفات الثابتة قبل middleware الأمان
+  // لأن middleware الأمان قد يعدل رؤوس الاستجابة
+  if (process.env.NODE_ENV === "development") {
+    // في وضع التطوير، سيتم إعداد Vite لاحقاً
+  } else {
+    serveStatic(app);
+  }
   
   // ========== SECURITY MIDDLEWARE ==========
   // تطبيق Helmet للأمان الشامل
@@ -152,12 +160,10 @@ async function startServer() {
   // معالج الأخطاء الأمنية
   app.use(securityErrorHandler);
   
-  // ========== STATIC FILES ==========
+  // ========== STATIC FILES & SPA FALLBACK ==========
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
-  } else {
-    serveStatic(app);
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
