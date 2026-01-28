@@ -62,7 +62,11 @@ interface UploadedFile {
  * مكون رفع الملفات مع قراءة ذكية باستخدام AI
  * يدعم PDF و Excel ويستخرج البيانات تلقائياً
  */
-export function FileUploadWithAI() {
+interface FileUploadWithAIProps {
+  onDataExtracted?: () => void;
+}
+
+export function FileUploadWithAI({ onDataExtracted }: FileUploadWithAIProps = {}) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [dragActive, setDragActive] = useState(false);

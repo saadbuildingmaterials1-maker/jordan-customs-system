@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,11 @@ import {
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useToast } from "@/contexts/ToastContext";
+import { FileUploadWithAI } from "@/components/FileUploadWithAI";
 import { 
   Loader2, Plus, Trash2, Eye, Edit2, Search, Download, Filter, 
   Calendar, MapPin, FileCheck, AlertCircle, CheckCircle, Clock, Zap,
-  TrendingUp, MoreVertical, Copy, Share2, Archive
+  TrendingUp, MoreVertical, Copy, Share2, Archive, FileText
 } from "lucide-react";
 import { CustomsDeclaration } from "@shared/types";
 
@@ -27,6 +28,7 @@ export default function DeclarationsList() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "number">("date");
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
+  const [showFileUpload, setShowFileUpload] = useState(false);
   const { addToast } = useToast();
 
   // Queries
@@ -132,14 +134,41 @@ export default function DeclarationsList() {
               إدارة وعرض جميع البيانات الجمركية المحفوظة ({filteredDeclarations.length})
             </p>
           </div>
-          <Button
-            onClick={() => navigate("/declarations/new")}
-            className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-lg text-white gap-2 px-6 py-2 rounded-lg transition-all"
-          >
-            <Plus className="w-5 h-5" />
-            بيان جديد
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <Button
+              onClick={() => navigate("/declarations/new")}
+              className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:shadow-lg text-white gap-2 px-4 sm:px-6 py-2 rounded-lg transition-all text-sm sm:text-base"
+            >
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">بيان جديد</span>
+              <span className="sm:hidden">جديد</span>
+            </Button>
+            <Button
+              onClick={() => setShowFileUpload(!showFileUpload)}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:shadow-lg text-white gap-2 px-4 sm:px-6 py-2 rounded-lg transition-all text-sm sm:text-base"
+            >
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">استيراد ملف</span>
+              <span className="sm:hidden">استيراد</span>
+            </Button>
+          </div>
         </div>
+
+        {/* File Upload Section */}
+        {showFileUpload && (
+          <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-purple-900">استيراد بيانات جمركية من ملف</h2>
+              <button
+                onClick={() => setShowFileUpload(false)}
+                className="text-purple-600 hover:text-purple-900 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <FileUploadWithAI onDataExtracted={() => refetch()} />
+          </div>
+        )}
 
         {/* Quick Stats المحسّنة */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
