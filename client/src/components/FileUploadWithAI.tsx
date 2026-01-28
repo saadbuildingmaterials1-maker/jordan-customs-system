@@ -259,7 +259,7 @@ export function FileUploadWithAI({ onDataExtracted }: FileUploadWithAIProps = {}
               multiple
               accept=".pdf,.xls,.xlsx,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               onChange={(e) => e.target.files && handleFiles(e.target.files)}
-              className="hidden"
+              className="w-full p-4 border-2 border-slate-300 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
             />
           </div>
         </CardContent>

@@ -184,7 +184,7 @@ export function PdfImportDialog({
                 type="file"
                 accept=".pdf"
                 onChange={handleFileSelect}
-                className="hidden"
+                className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
               />
             </div>
           )}

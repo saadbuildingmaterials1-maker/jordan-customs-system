@@ -109,7 +109,7 @@ function Router() {
       <Route path="/tracking" component={ContainerTracking} />
       <Route path="/pdf-import" component={PDFImport} />
         <Route path="/backup-notifications" component={BackupAndNotifications} />
-        <Route path="/payments" component={PaymentPage} />
+        <Route path="/payment" component={PaymentPage} />
       <Route path="/bank-accounts" component={BankAccountManagement} />
       <Route path="/notifications-management" component={NotificationsManagement} />
       <Route path="/reports-analytics" component={Reports} />

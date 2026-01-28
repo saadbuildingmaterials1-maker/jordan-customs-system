@@ -373,7 +373,7 @@ export default function AdvancedCustomsDeclarationPage() {
                     type="file"
                     accept=".pdf"
                     onChange={handleFileUpload}
-                    className="hidden"
+                    className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 transition-colors"
                     id="pdf-upload"
                   />
                   <label htmlFor="pdf-upload" className="cursor-pointer">
