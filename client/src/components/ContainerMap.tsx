@@ -13,6 +13,8 @@ interface ContainerLocation {
   lastUpdate: Date;
   portName?: string;
   destination?: string;
+  shippingCompany?: string;
+  portOfLoading?: string;
 }
 
 interface ContainerMapProps {
@@ -196,14 +198,26 @@ export function ContainerMap({
           </CardHeader>
           <CardContent className="space-y-4">
             {/* معلومات الموقع */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white p-3 rounded-lg">
                 <p className="text-xs text-slate-600 font-semibold">الإحداثيات</p>
                 <p className="font-mono text-sm mt-1">
-                  {selectedContainer.latitude.toFixed(4)}°
+                  {selectedContainer.latitude.toFixed(4)}° N
                 </p>
                 <p className="font-mono text-sm">
-                  {selectedContainer.longitude.toFixed(4)}°
+                  {selectedContainer.longitude.toFixed(4)}° E
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-slate-600 font-semibold">شركة الشحن</p>
+                <p className="text-sm mt-1 font-semibold">
+                  {selectedContainer.shippingCompany || 'غير محدد'}
+                </p>
+              </div>
+              <div className="bg-white p-3 rounded-lg">
+                <p className="text-xs text-slate-600 font-semibold">ميناء الشحن</p>
+                <p className="text-sm mt-1">
+                  {selectedContainer.portOfLoading || 'غير محدد'}
                 </p>
               </div>
               <div className="bg-white p-3 rounded-lg">

@@ -575,6 +575,10 @@ export const containers = mysqlTable("containers", {
   // الحالة
   status: mysqlEnum("status", ["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"]).default("pending").notNull(),
   
+  // الإحداثيات الجغرافية للتتبع الحي
+  currentLatitude: decimal("currentLatitude", { precision: 10, scale: 6 }),
+  currentLongitude: decimal("currentLongitude", { precision: 10, scale: 6 }),
+  
   // معلومات إضافية
   notes: text("notes"),
   

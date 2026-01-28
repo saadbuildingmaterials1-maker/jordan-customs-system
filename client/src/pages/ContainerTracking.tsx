@@ -333,11 +333,13 @@ export default function ContainerTracking() {
         containers={containers.map(c => ({
           id: c.id,
           containerNumber: c.containerNumber,
-          latitude: 31.9454 + Math.random() * 2,
-          longitude: 35.9284 + Math.random() * 2,
+          latitude: c.currentLatitude ? parseFloat(c.currentLatitude) : 31.9454,
+          longitude: c.currentLongitude ? parseFloat(c.currentLongitude) : 35.9284,
           status: c.status,
-          lastUpdate: new Date(),
+          lastUpdate: c.updatedAt || new Date(),
           portName: c.portOfDischarge,
+          shippingCompany: c.shippingCompany,
+          portOfLoading: c.portOfLoading,
         }))}
         selectedContainerId={selectedContainer || undefined}
         onContainerSelect={handleViewDetails}
