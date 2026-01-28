@@ -1,0 +1,19 @@
+{
+  "query": "SELECT COUNT(*) as container_count FROM containers; SELECT COUNT(*) as event_count FROM tracking_events;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user QB2fahn7CwkdyG9.root --database 5j9uG3pftfjEb3akdTmTAd --execute SELECT COUNT(*) as container_count FROM containers; SELECT COUNT(*) as event_count FROM tracking_events;",
+  "rows": [
+    {
+      "container_count": "6"
+    },
+    {
+      "container_count": "event_count"
+    },
+    {
+      "container_count": "26"
+    }
+  ],
+  "messages": [],
+  "stdout": "container_count\n6\nevent_count\n26\n",
+  "stderr": "",
+  "execution_time_ms": 1765
+}
