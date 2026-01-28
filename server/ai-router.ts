@@ -6,6 +6,11 @@ import {
   analyzeDeclaration,
   predictCosts,
 } from "./ai-service";
+import {
+  extractDataFromText,
+  validateExtractedData,
+  enhanceExtractedData,
+} from "./ai-data-extraction";
 
 export const aiRouter = router({
   /**
@@ -60,6 +65,36 @@ export const aiRouter = router({
       } catch (error) {
         console.error("خطأ في التحليل الذكي:", error);
         throw new Error("فشل التحليل الذكي. يرجى محاولة مجددا");
+      }
+    }),
+
+  /**
+   * استخراج بيانات من ملف PDF أو Excel
+   */
+  extractFromFile: protectedProcedure
+    .input(
+      z.object({
+        fileId: z.string(),
+        fileName: z.string(),
+        fileContent: z.string(),
+        fileType: z.enum(['application/pdf', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        // استخراج البيانات باستخدام الذكاء الاصطناعي
+        const extracted = await extractDataFromText(input.fileContent);
+        
+        // التحقق من البيانات
+        const validation = validateExtractedData(extracted);
+        
+        // تحسين البيانات إذا لم تكن مرضية
+        const enhanced = validation.valid ? extracted : await enhanceExtractedData(extracted);
+        
+        return enhanced;
+      } catch (error) {
+        console.error('خطأ في استخراج البيانات:', error);
+        throw new Error('فشل استخراج البيانات من الملف. يرجى محاولة مجددا');
       }
     }),
 

@@ -46,6 +46,7 @@ const BackupAndNotifications = lazy(() => import('./pages/BackupAndNotifications
 const PaymentPage = lazy(() => import('./pages/PaymentPage'));
 const BankAccountManagement = lazy(() => import('@/pages/BankAccountManagement'));
 const NotificationsManagement = lazy(() => import('@/pages/NotificationsManagement'));
+const Reports = lazy(() => import('@/pages/Reports'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -109,6 +110,7 @@ function Router() {
         <Route path="/payments" component={PaymentPage} />
       <Route path="/bank-accounts" component={BankAccountManagement} />
       <Route path="/notifications-management" component={NotificationsManagement} />
+      <Route path="/reports-analytics" component={Reports} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

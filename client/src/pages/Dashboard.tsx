@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +19,7 @@ interface StatCard {
 
 export default function Dashboard() {
   const [dateRange, setDateRange] = useState('month');
+  const [showAdvancedAnalytics, setShowAdvancedAnalytics] = useState(true);
 
   // بيانات الإحصائيات المحسّنة
   const stats: StatCard[] = [
@@ -317,6 +319,13 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* لوحة التحليلات المتقدمة */}
+      {showAdvancedAnalytics && (
+        <div className="mt-8">
+          <AnalyticsDashboard />
+        </div>
+      )}
     </DashboardLayout>
   );
 }
