@@ -185,7 +185,7 @@ export function validateExtractedData(data: ExtractedData): { valid: boolean; is
       if (!item.description) {
         issues.push(`الصنف ${index + 1}: الوصف مفقود`);
       }
-      if (item.quantity && item.quantity <= 0) {
+      if (item.quantity !== undefined && item.quantity !== null && item.quantity <= 0) {
         issues.push(`الصنف ${index + 1}: الكمية يجب أن تكون موجبة`);
       }
     });
