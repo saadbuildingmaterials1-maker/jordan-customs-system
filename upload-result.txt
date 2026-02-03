@@ -1,0 +1,4 @@
+Uploading file: dist/نظام إدارة تكاليف الشحن والجمارك الأردنية-1.0.0.AppImage (size: 174061190 bytes)
+Upload timeout: 10m0s
+File uploaded successfully!
+CDN URL: https://files.manuscdn.com/user_upload_by_module/session_file/310519663107576035/VSRAXlgmYrxfsinI.AppImage
