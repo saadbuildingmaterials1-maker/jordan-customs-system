@@ -40,7 +40,7 @@ const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const UsersManagement = lazy(() => import('@/pages/UsersManagement'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const AdvancedSearch = lazy(() => import('@/pages/AdvancedSearch'));
-const DownloadPage = lazy(() => import('@/pages/DownloadPage'));
+const DownloadPage = lazy(() => import('@/pages/Download'));
 const About = lazy(() => import('@/pages/About'));
 const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
@@ -130,6 +130,7 @@ function Router() {
         {/* البحث والتحميل */}
         <Route path="/advanced-search" component={AdvancedSearch} />
         <Route path="/download" component={DownloadPage} />
+        <Route path="/downloads" component={DownloadPage} />
         <Route path="/pdf-import" component={PDFImport} />
         
         {/* النسخ الاحتياطي */}
