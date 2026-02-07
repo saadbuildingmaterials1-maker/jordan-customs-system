@@ -66,6 +66,8 @@ const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const PaymentSystem = lazy(() => import('@/pages/PaymentSystem'));
 const ClickPayment = lazy(() => import('@/pages/ClickPayment'));
 const AdvancedPaymentGateway = lazy(() => import('@/pages/AdvancedPaymentGateway'));
+const SubscriptionPlans = lazy(() => import('@/pages/SubscriptionPlans'));
+const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -126,14 +128,16 @@ function Router() {
         <Route path={"/supplier-invoice"} component={SupplierInvoice} />
         <Route path={"/factories-invoices"} component={FactoriesAndInvoices} />
         
-        {/* الدفع والحسابات البنكية */}
-        <Route path={"/payments"} component={PaymentsManagement} />
-        <Route path={"/checkout"} component={Checkout} />
-        <Route path={"/payment"} component={PaymentPage} />
-        <Route path={"/payment-system"} component={PaymentSystem} />
-        <Route path={"/click-payment"} component={ClickPayment} />
-        <Route path={"/advanced-payment"} component={AdvancedPaymentGateway} />
-        <Route path={"/bank-accounts"} component={BankAccountManagement} />
+            {/* الدفع والحسابات البنكية */}
+        <Route path="/payments" component={PaymentsManagement} />
+        <Route path="/checkout" component={Checkout} />
+        <Route path="/payment" component={PaymentPage} />
+        <Route path="/payment-system" component={PaymentSystem} />
+        <Route path="/click-payment" component={ClickPayment} />
+        <Route path="/advanced-payment" component={AdvancedPaymentGateway} />
+        <Route path="/bank-accounts" component={BankAccountManagement} />
+        <Route path="/subscription-plans" component={SubscriptionPlans} />
+        <Route path="/subscription-dashboard" component={SubscriptionDashboard} />
         
         {/* إدارة المستخدمين والأدوار */}
         <Route path={"/users-management"} component={UsersManagement} />

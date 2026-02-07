@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Calendar, CreditCard, Download, MoreVertical, Zap } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/_core/hooks/useAuth';
 
 /**
  * Subscription Status Badge
@@ -241,8 +241,8 @@ export default function SubscriptionDashboard() {
   }
 
   // Placeholder data for now
-  const activeSubscription = null;
-  const invoices = invoicesQuery.data?.invoices || [];
+  const activeSubscription: any = null;
+  const invoices: any[] = invoicesQuery.data?.invoices || [];
 
   return (
     <div className="container mx-auto py-8">
@@ -258,12 +258,12 @@ export default function SubscriptionDashboard() {
         <div className="lg:col-span-2 space-y-6">
           {activeSubscription ? (
             <>
-              <TrialPeriodCard subscription={activeSubscription} />
+              <TrialPeriodCard subscription={activeSubscription as any} />
               <ActiveSubscriptionCard
-                subscription={activeSubscription}
+                subscription={activeSubscription as any}
                 onCancel={() => {
                   if (activeSubscription?.id) {
-                    setSelectedSubscription(activeSubscription.id);
+                    setSelectedSubscription(activeSubscription?.id as string);
                     setShowCancelConfirm(true);
                   }
                 }}
