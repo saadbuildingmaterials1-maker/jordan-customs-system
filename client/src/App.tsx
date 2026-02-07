@@ -54,6 +54,13 @@ const NotificationsManagement = lazy(() => import('@/pages/NotificationsManageme
 const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
 const VideoTutorials = lazy(() => import('@/pages/VideoTutorials'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Contact = lazy(() => import('@/pages/Contact'));
+const Support = lazy(() => import('@/pages/Support'));
+const FAQ = lazy(() => import('@/pages/FAQ'));
+const Documentation = lazy(() => import('@/pages/Documentation'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -140,8 +147,13 @@ function Router() {
         <Route path="/help" component={HelpCenter} />
         <Route path="/tutorials" component={VideoTutorials} />
         <Route path="/about" component={About} />
-        <Route path="/privacy" component={PrivacyPolicy} />
-        <Route path="/terms" component={TermsOfUse} />
+        <Route path="/privacy" component={Privacy} />
+        <Route path="/terms" component={Terms} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/support" component={Support} />
+        <Route path="/faq" component={FAQ} />
+        <Route path="/documentation" component={Documentation} />
+        <Route path="/pricing" component={Pricing} />
         
         {/* صفحة 404 */}
         <Route path={"/404"} component={NotFound} />

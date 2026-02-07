@@ -25,6 +25,42 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Footer links configuration
+  const footerSections = [
+    {
+      title: "عن النظام",
+      links: [
+        { label: "المميزات", action: () => navigate("/#features") },
+        { label: "الأسعار", action: () => navigate("/pricing") },
+        { label: "الدعم", action: () => navigate("/support") }
+      ]
+    },
+    {
+      title: "الروابط السريعة",
+      links: [
+        { label: "البيانات الجمركية", action: () => navigate("/declarations") },
+        { label: "التقارير", action: () => navigate("/reports") },
+        { label: "لوحة التحكم", action: () => navigate("/dashboard") }
+      ]
+    },
+    {
+      title: "المساعدة",
+      links: [
+        { label: "الدعم الفني", action: () => navigate("/support") },
+        { label: "التوثيق", action: () => navigate("/documentation") },
+        { label: "الأسئلة الشائعة", action: () => navigate("/faq") }
+      ]
+    },
+    {
+      title: "القانوني",
+      links: [
+        { label: "سياسة الخصوصية", action: () => navigate("/privacy") },
+        { label: "شروط الاستخدام", action: () => navigate("/terms") },
+        { label: "اتصل بنا", action: () => navigate("/contact") }
+      ]
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden">
       {/* Animated Background Elements */}
@@ -82,7 +118,7 @@ export default function Home() {
       </header>
 
       {/* Features Grid */}
-      <section className="relative py-20 px-4 md:px-8 lg:px-16">
+      <section id="features" className="relative py-20 px-4 md:px-8 lg:px-16">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
             المميزات الرئيسية
@@ -312,35 +348,21 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="relative py-12 px-4 md:px-8 lg:px-16 border-t border-white/10">
+      <footer className="relative py-12 px-4 md:px-8 lg:px-16 border-t border-white/10 bg-slate-900/50 backdrop-blur-md">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {[
-              {
-                title: "عن النظام",
-                links: ["المميزات", "الأسعار", "الدعم"]
-              },
-              {
-                title: "الروابط السريعة",
-                links: ["البيانات الجمركية", "التقارير", "لوحة التحكم"]
-              },
-              {
-                title: "المساعدة",
-                links: ["الدعم الفني", "التوثيق", "الأسئلة الشائعة"]
-              },
-              {
-                title: "القانوني",
-                links: ["سياسة الخصوصية", "شروط الاستخدام", "اتصل بنا"]
-              }
-            ].map((section, idx) => (
+            {footerSections.map((section, idx) => (
               <div key={idx}>
-                <h3 className="font-bold text-white mb-4">{section.title}</h3>
-                <ul className="space-y-2">
+                <h3 className="font-bold text-white mb-4 text-lg">{section.title}</h3>
+                <ul className="space-y-3">
                   {section.links.map((link, i) => (
                     <li key={i}>
-                      <a href="#" className="text-blue-100/70 hover:text-blue-200 transition-colors">
-                        {link}
-                      </a>
+                      <button
+                        onClick={link.action}
+                        className="text-blue-100/70 hover:text-blue-200 transition-colors duration-300 text-sm hover:translate-x-1 transition-transform"
+                      >
+                        {link.label}
+                      </button>
                     </li>
                   ))}
                 </ul>
