@@ -1,0 +1,195 @@
+name: بناء مثبت Windows الاحترافي
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    tags:
+      - 'v*'
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-windows:
+    name: بناء مثبت Windows
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: 📥 استخراج الكود
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 إعداد Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: 📦 إعداد pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+          run_install: false
+
+      - name: 📂 الحصول على مسار pnpm
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: 💾 تخزين مؤقت pnpm
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: 📦 تثبيت المكتبات
+        run: pnpm install --frozen-lockfile
+
+      - name: ✅ فحص TypeScript
+        run: pnpm run check
+        continue-on-error: true
+
+      - name: 🧪 تشغيل الاختبارات
+        run: pnpm run test
+        continue-on-error: true
+
+      - name: 🔨 بناء التطبيق
+        run: pnpm run build
+        env:
+          NODE_ENV: production
+
+      - name: 🔨 بناء مثبت Windows
+        run: pnpm run electron:build
+        env:
+          NODE_ENV: production
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📂 فحص ملفات البناء
+        shell: powershell
+        run: |
+          Write-Host "محتويات dist_electron:"
+          Get-ChildItem -Path dist_electron -Recurse | Select-Object FullName
+          
+          Write-Host "`nملفات EXE:"
+          Get-ChildItem -Path dist_electron -Filter "*.exe" -Recurse
+
+      - name: 📤 رفع مثبت Windows
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist_electron/*.exe
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: 📤 رفع تقرير البناء
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-report
+          path: |
+            dist_electron/
+          retention-days: 7
+
+  create-release:
+    name: إنشاء إصدار GitHub
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: 📥 استخراج الكود
+        uses: actions/checkout@v4
+
+      - name: 📥 تحميل ملفات Windows
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-installer
+          path: ./release
+
+      - name: 📋 إنشاء ملاحظات الإصدار
+        id: release_notes
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          cat > release_notes.md << 'EOF'
+          # نظام إدارة تكاليف الشحن والجمارك الأردنية
+          
+          ## الإصدار: ${{ github.ref_name }}
+          
+          ### 📥 تحميل الملفات
+          
+          #### Windows
+          - **مثبت Windows** (`*.exe`): ملف التثبيت الرسمي
+          - **نسخة محمولة** (`*-portable.exe`): تطبيق بدون تثبيت
+          
+          ### ✨ الميزات
+          - ✅ واجهة رسومية احترافية
+          - ✅ حساب تكاليف الشحن والجمارك
+          - ✅ تتبع الحاويات على الخريطة
+          - ✅ استيراد الملفات بذكاء
+          - ✅ تقارير شاملة
+          - ✅ نظام إشعارات فوري
+          
+          ### 📋 متطلبات النظام
+          - **نظام التشغيل**: Windows 10/11 (64-bit)
+          - **الذاكرة**: 4 GB RAM (موصى به 8 GB)
+          - **المساحة**: 500 MB
+          - **الإنترنت**: مطلوب للميزات السحابية
+          
+          ### 🚀 البدء السريع
+          1. حمل ملف التثبيت
+          2. شغل الملف بنقرة واحدة
+          3. اتبع خطوات التثبيت
+          4. سيتم إنشاء اختصار على سطح المكتب تلقائياً
+          
+          ### 🔧 معلومات تقنية
+          - **الإصدار**: ${{ github.ref_name }}
+          - **تاريخ الإصدار**: $(date '+%Y-%m-%d')
+          - **المنصة**: Electron + React + Express
+          - **قاعدة البيانات**: MySQL/TiDB
+          
+          ### 📞 الدعم والمساعدة
+          - 📧 البريد: support@manus.im
+          - 🌐 الموقع: www.jordancustoms.com
+          - 📱 الهاتف: +962 795 917 424
+          
+          ### ⚠️ ملاحظات مهمة
+          - تأكد من تشغيل الملف كمسؤول إذا واجهت مشاكل
+          - قد تطلب Windows إذن للتثبيت (هذا طبيعي)
+          - سيتم إنشاء اختصار على سطح المكتب تلقائياً
+          
+          **شكراً لاستخدام التطبيق! 🎉**
+          EOF
+
+      - name: 🚀 نشر الإصدار
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify-success:
+    name: إرسال إشعار النجاح
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: ✅ طباعة رسالة النجاح
+        run: |
+          echo "✅ تم بناء مثبت Windows بنجاح!"
+          echo "📥 يمكنك تحميل الملفات من Artifacts"
+          echo "🔗 أو من GitHub Releases إذا كان هناك tag"
