@@ -93,11 +93,11 @@ export default function SubscriptionPlans() {
   const savings = Math.round((plans[1].monthlyPrice * 12 - plans[1].yearlyPrice) / (plans[1].monthlyPrice * 12) * 100);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-primary/5 animate-fade-in">
       {/* Header */}
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">خطط الاشتراك</h1>
-        <p className="text-lg text-muted-foreground mb-8">اختر الخطة المناسبة لاحتياجات عملك</p>
+      <div className="container mx-auto px-4 py-16 text-center animate-slide-down">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">خطط الاشتراك</h1>
+        <p className="text-lg text-muted-foreground mb-8 animate-fade-in delay-100">اختر الخطة المناسبة لاحتياجات عملك</p>
 
         {/* Billing Toggle */}
         <div className="flex justify-center items-center gap-4 mb-12">
@@ -128,7 +128,7 @@ export default function SubscriptionPlans() {
       {/* Plans Grid */}
       <div className="container mx-auto px-4 pb-16">
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {plans.map((plan) => (
+          {plans.map((plan, index) => (
             <div key={plan.id} className="relative">
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
@@ -136,11 +136,11 @@ export default function SubscriptionPlans() {
                 </div>
               )}
 
-              <Card className={`h-full flex flex-col overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-105 ${
-                plan.popular ? 'ring-2 ring-primary md:scale-105' : ''
-              }`}>
+              <Card className={`h-full flex flex-col overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-105 animate-fade-in ${
+                plan.popular ? 'ring-2 ring-primary md:scale-105 shadow-lg' : ''
+              }`} style={{ animationDelay: `${index * 100}ms`, transform: `perspective(1000px) rotateY(${index === 1 ? 0 : (index === 0 ? 3 : -3)}deg)` }}>
                   {/* Plan Header */}
-                <div className={`bg-gradient-to-r ${plan.color} p-6 text-white transition-all duration-300 group-hover:shadow-lg`}>
+                <div className={`bg-gradient-to-r ${plan.color} p-6 text-white transition-all duration-500 hover:shadow-xl`}>
                   <div className="flex items-center gap-3 mb-4">
                     {plan.icon}
                     <h3 className="text-2xl font-bold">{plan.name}</h3>
@@ -172,10 +172,10 @@ export default function SubscriptionPlans() {
 
                   {/* CTA Button */}
                   <Button
-                    className={`w-full mb-6 transition-all duration-300 transform hover:scale-105 ${
+                    className={`w-full mb-6 transition-all duration-500 transform hover:scale-110 active:scale-95 ${
                       plan.popular
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg'
-                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-xl shadow-lg'
+                        : 'bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground hover:shadow-lg'
                     }`}
                   >
                     ابدأ الآن
