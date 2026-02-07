@@ -5,11 +5,13 @@
  */
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark";
+type Theme = "light" | "dark" | "system";
 
 interface ThemeContextType {
   theme: Theme;
-  toggleTheme?: () => void;
+  isDark: boolean;
+  toggleTheme: () => void;
+  setTheme: (theme: Theme) => void;
   switchable: boolean;
 }
 
@@ -23,38 +25,71 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "light",
-  switchable = false,
+  defaultTheme = "system",
+  switchable = true,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (switchable) {
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
       const stored = localStorage.getItem("theme");
       return (stored as Theme) || defaultTheme;
     }
     return defaultTheme;
   });
 
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
+  const [isDark, setIsDark] = useState(false);
 
-    if (switchable) {
-      localStorage.setItem("theme", theme);
+  useEffect(() => {
+    const updateTheme = () => {
+      let shouldBeDark = false;
+
+      if (theme === "dark") {
+        shouldBeDark = true;
+      } else if (theme === "light") {
+        shouldBeDark = false;
+      } else {
+        // system mode
+        shouldBeDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      }
+
+      setIsDark(shouldBeDark);
+
+      const root = document.documentElement;
+      if (shouldBeDark) {
+        root.classList.add("dark");
+      } else {
+        root.classList.remove("dark");
+      }
+
+      if (switchable) {
+        localStorage.setItem("theme", theme);
+      }
+    };
+
+    updateTheme();
+
+    // الاستماع لتغييرات نظام التشغيل
+    if (theme === "system") {
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      const handleChange = () => updateTheme();
+      mediaQuery.addEventListener("change", handleChange);
+      return () => mediaQuery.removeEventListener("change", handleChange);
     }
   }, [theme, switchable]);
 
-  const toggleTheme = switchable
-    ? () => {
-        setTheme(prev => (prev === "light" ? "dark" : "light"));
-      }
-    : undefined;
+  const toggleTheme = () => {
+    setThemeState((prev) => {
+      if (prev === "light") return "dark";
+      if (prev === "dark") return "system";
+      return "light";
+    });
+  };
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+  };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, setTheme, switchable }}>
       {children}
     </ThemeContext.Provider>
   );

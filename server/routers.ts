@@ -37,13 +37,13 @@ import {
   extractPdfData,
   validateExtractedData,
 } from "./pdf-extraction-service";
-import { stripeRouter } from "./routers/stripe";
+import { stripePaymentRouter } from "./stripe-payment-router";
 import { paymentMethodsRouter } from "./routers/payment-methods";
 import { governmentRouter } from "./routers/government";
 import { authRouter } from "./routers/auth";
 import { errorsRouter } from "./routers/errors";
 import { updatesRouter } from "./routers/updates";
-import { stripePaymentRouter } from "./stripe-payment-router";
+import { notificationsRouter } from "./routers/notifications";
 
 /**
  * Main Application Router
@@ -647,6 +647,7 @@ export const appRouter = router({
   ai: aiRouter,
   errors: errorsRouter,
   updates: updatesRouter,
+  sms: notificationsRouter,
 });
 
 export type AppRouter = typeof appRouter;

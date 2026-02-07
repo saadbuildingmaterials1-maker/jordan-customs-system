@@ -8,6 +8,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, Zap, Crown, Briefcase } from 'lucide-react';
 import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { useAuth } from '@/_core/hooks/useAuth';
 
 interface PlanFeature {
   name: string;
@@ -88,7 +90,20 @@ const plans: SubscriptionPlan[] = [
 ];
 
 export default function SubscriptionPlans() {
+  const [, navigate] = useLocation();
+  const { user } = useAuth();
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+
+  const handleSelectPlan = (plan: SubscriptionPlan) => {
+    if (!user) {
+      alert('يرجى تسجيل الدخول أولاً لاختيار خطة');
+      navigate('/login');
+      return;
+    }
+
+    // الانتقال إلى صفحة تأكيد الخطة مع بيانات الخطة
+    navigate(`/confirm-plan?planId=${plan.id}&billingPeriod=${billingPeriod}`);
+  };
 
   const savings = Math.round((plans[1].monthlyPrice * 12 - plans[1].yearlyPrice) / (plans[1].monthlyPrice * 12) * 100);
 
@@ -172,6 +187,7 @@ export default function SubscriptionPlans() {
 
                   {/* CTA Button */}
                   <Button
+                    onClick={() => handleSelectPlan(plan)}
                     className={`w-full mb-6 transition-all duration-500 transform hover:scale-110 active:scale-95 ${
                       plan.popular
                         ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground hover:shadow-xl shadow-lg'
