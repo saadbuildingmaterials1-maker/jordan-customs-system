@@ -1,3 +1,8 @@
+/**
+ * notification-websocket
+ * 
+ * @module ./server/notification-websocket
+ */
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import * as db from './db';

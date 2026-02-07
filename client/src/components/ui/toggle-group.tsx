@@ -1,3 +1,10 @@
+/**
+ * toggle-group Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/toggle-group
+ */
 "use client";
 
 import * as React from "react";

@@ -1,3 +1,10 @@
+/**
+ * SupplierInvoice Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/SupplierInvoice
+ */
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

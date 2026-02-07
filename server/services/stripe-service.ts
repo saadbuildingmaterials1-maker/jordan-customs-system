@@ -1,3 +1,10 @@
+/**
+ * stripe-service Service
+ * 
+ * خدمة
+ * 
+ * @module ./server/services/stripe-service
+ */
 import Stripe from 'stripe';
 import { getDb } from '../db';
 import { payments, stripeInvoices, refunds, subscriptions, subscriptionInvoices } from '../../drizzle/schema';

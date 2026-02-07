@@ -1,3 +1,10 @@
+/**
+ * CheckoutForm Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/CheckoutForm
+ */
 import { useState } from 'react';
 import { trpc } from '@/lib/trpc';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

@@ -1,3 +1,10 @@
+/**
+ * tabs Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/tabs
+ */
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 

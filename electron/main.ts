@@ -1,3 +1,8 @@
+/**
+ * main
+ * 
+ * @module ./electron/main
+ */
 import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import * as path from 'path';

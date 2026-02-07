@@ -1,3 +1,10 @@
+/**
+ * ImportSuccessAlert Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ImportSuccessAlert
+ */
 'use client';
 
 import React from 'react';

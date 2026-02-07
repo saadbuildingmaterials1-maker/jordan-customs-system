@@ -1,3 +1,10 @@
+/**
+ * field Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/field
+ */
 import { useMemo } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 

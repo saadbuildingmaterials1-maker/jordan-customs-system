@@ -1,3 +1,8 @@
+/**
+ * vite
+ * 
+ * @module ./server/_core/vite
+ */
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import fs from "fs";
 import { type Server } from "http";

@@ -1,3 +1,8 @@
+/**
+ * invoice-db
+ * 
+ * @module ./server/invoice-db
+ */
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {

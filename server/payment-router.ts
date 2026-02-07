@@ -1,3 +1,8 @@
+/**
+ * payment-router
+ * 
+ * @module ./server/payment-router
+ */
 import { z } from 'zod';
 import { router, protectedProcedure } from './_core/trpc';
 import type { AnyData } from '../shared/types';

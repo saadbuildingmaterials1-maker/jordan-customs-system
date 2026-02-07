@@ -1,3 +1,8 @@
+/**
+ * alert-service
+ * 
+ * @module ./server/alert-service
+ */
 import { getDb } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { notifyOwner } from "./_core/notification";

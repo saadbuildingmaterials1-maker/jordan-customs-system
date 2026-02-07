@@ -1,3 +1,10 @@
+/**
+ * useWebSocket Hook
+ * 
+ * React Hook مخصص
+ * 
+ * @module ./client/src/hooks/useWebSocket
+ */
 import { useEffect, useRef, useCallback, useState } from 'react';
 
 export type WebSocketEventType = 

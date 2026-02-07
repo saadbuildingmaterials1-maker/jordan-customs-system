@@ -1,3 +1,8 @@
+/**
+ * utils
+ * 
+ * @module ./client/src/lib/utils
+ */
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

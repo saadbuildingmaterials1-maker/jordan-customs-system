@@ -1,3 +1,10 @@
+/**
+ * input-otp Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/input-otp
+ */
 import * as React from "react";
 import { OTPInput, OTPInputContext } from "input-otp";
 import { MinusIcon } from "lucide-react";

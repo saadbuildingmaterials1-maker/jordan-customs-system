@@ -1,3 +1,10 @@
+/**
+ * stripe-webhook Hook
+ * 
+ * React Hook مخصص
+ * 
+ * @module ./server/webhooks/stripe-webhook
+ */
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
 import { getDb } from '../db';

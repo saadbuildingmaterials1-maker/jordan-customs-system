@@ -1,3 +1,10 @@
+/**
+ * AnalyticsDashboard Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/AnalyticsDashboard
+ */
 import { useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

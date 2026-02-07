@@ -1,3 +1,10 @@
+/**
+ * DeclarationsList Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/DeclarationsList
+ */
 import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";

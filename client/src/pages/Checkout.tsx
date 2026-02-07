@@ -1,3 +1,10 @@
+/**
+ * Checkout Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/Checkout
+ */
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import DashboardLayout from '@/components/DashboardLayout';

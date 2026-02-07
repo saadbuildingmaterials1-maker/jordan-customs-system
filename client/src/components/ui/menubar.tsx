@@ -1,3 +1,10 @@
+/**
+ * menubar Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/menubar
+ */
 import * as React from "react";
 import * as MenubarPrimitive from "@radix-ui/react-menubar";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";

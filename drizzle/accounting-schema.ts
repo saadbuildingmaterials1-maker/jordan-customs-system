@@ -1,3 +1,8 @@
+/**
+ * accounting-schema
+ * 
+ * @module ./drizzle/accounting-schema
+ */
 import {
   int,
   mysqlEnum,

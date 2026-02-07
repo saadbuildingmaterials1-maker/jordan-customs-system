@@ -1,3 +1,10 @@
+/**
+ * excelExport Service
+ * 
+ * خدمة
+ * 
+ * @module ./client/src/services/excelExport
+ */
 import ExcelJS from "exceljs";
 import { CustomsDeclaration, Item } from "@shared/types";
 

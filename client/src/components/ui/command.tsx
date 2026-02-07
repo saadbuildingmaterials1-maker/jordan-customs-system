@@ -1,3 +1,10 @@
+/**
+ * command Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/command
+ */
 "use client";
 
 import * as React from "react";

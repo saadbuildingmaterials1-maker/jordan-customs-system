@@ -1,3 +1,10 @@
+/**
+ * government Router
+ * 
+ * tRPC Router
+ * 
+ * @module ./server/routers/government
+ */
 import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../_core/trpc';
 import type { ErrorType } from '../../shared/types';

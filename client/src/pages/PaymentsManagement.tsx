@@ -1,3 +1,10 @@
+/**
+ * PaymentsManagement Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/PaymentsManagement
+ */
 import { useState, useEffect } from 'react';
 import { trpc } from '@/lib/trpc';
 import DashboardLayout from '@/components/DashboardLayout';

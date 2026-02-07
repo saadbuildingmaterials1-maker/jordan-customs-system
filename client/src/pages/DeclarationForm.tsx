@@ -1,3 +1,10 @@
+/**
+ * DeclarationForm Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/DeclarationForm
+ */
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";

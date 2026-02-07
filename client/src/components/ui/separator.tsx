@@ -1,3 +1,10 @@
+/**
+ * separator Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/separator
+ */
 import * as React from "react";
 import * as SeparatorPrimitive from "@radix-ui/react-separator";
 

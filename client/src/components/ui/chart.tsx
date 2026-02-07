@@ -1,3 +1,10 @@
+/**
+ * chart Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/chart
+ */
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 

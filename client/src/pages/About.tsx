@@ -1,3 +1,10 @@
+/**
+ * About Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/About
+ */
 import React from 'react';
 import { Users, Target, Lightbulb, Award, Globe, Shield } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

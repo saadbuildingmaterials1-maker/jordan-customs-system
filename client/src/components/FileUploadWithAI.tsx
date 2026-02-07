@@ -1,3 +1,10 @@
+/**
+ * FileUploadWithAI Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/FileUploadWithAI
+ */
 import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

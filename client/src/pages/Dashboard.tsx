@@ -1,3 +1,10 @@
+/**
+ * Dashboard Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/Dashboard
+ */
 import { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';

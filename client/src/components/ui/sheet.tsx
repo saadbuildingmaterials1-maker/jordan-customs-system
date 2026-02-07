@@ -1,3 +1,10 @@
+/**
+ * sheet Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/sheet
+ */
 "use client";
 
 import * as React from "react";

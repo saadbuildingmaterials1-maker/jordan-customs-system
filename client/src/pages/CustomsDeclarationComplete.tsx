@@ -1,3 +1,10 @@
+/**
+ * CustomsDeclarationComplete Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/CustomsDeclarationComplete
+ */
 import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/DashboardLayout';

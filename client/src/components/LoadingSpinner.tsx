@@ -1,3 +1,10 @@
+/**
+ * LoadingSpinner Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/LoadingSpinner
+ */
 import { Loader2 } from 'lucide-react';
 
 interface LoadingSpinnerProps {

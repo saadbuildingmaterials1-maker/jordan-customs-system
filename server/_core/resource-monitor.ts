@@ -1,3 +1,8 @@
+/**
+ * resource-monitor
+ * 
+ * @module ./server/_core/resource-monitor
+ */
 import os from "os";
 
 interface MemoryStats {

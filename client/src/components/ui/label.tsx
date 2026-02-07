@@ -1,3 +1,10 @@
+/**
+ * label Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/label
+ */
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 

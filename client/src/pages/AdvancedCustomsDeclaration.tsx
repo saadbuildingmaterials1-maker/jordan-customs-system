@@ -1,3 +1,10 @@
+/**
+ * AdvancedCustomsDeclaration Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/AdvancedCustomsDeclaration
+ */
 'use client';
 
 import { useState, useMemo } from 'react';

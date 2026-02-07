@@ -1,3 +1,10 @@
+/**
+ * DashboardLayoutSkeleton Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/DashboardLayoutSkeleton
+ */
 import { Skeleton } from './ui/skeleton';
 
 export function DashboardLayoutSkeleton() {

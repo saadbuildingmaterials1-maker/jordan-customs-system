@@ -1,3 +1,10 @@
+/**
+ * ContainerMap Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ContainerMap
+ */
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { MapView } from './Map';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

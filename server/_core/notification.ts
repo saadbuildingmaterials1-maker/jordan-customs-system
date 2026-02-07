@@ -1,3 +1,8 @@
+/**
+ * notification
+ * 
+ * @module ./server/_core/notification
+ */
 import { TRPCError } from "@trpc/server";
 import { ENV } from "./env";
 

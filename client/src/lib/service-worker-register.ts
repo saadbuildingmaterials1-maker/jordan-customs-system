@@ -1,3 +1,8 @@
+/**
+ * service-worker-register
+ * 
+ * @module ./client/src/lib/service-worker-register
+ */
 // تسجيل Service Worker للتطبيق
 
 export function registerServiceWorker() {

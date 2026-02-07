@@ -1,3 +1,10 @@
+/**
+ * textarea Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/textarea
+ */
 import { useDialogComposition } from "@/components/ui/dialog";
 import { useComposition } from "@/hooks/useComposition";
 import { cn } from "@/lib/utils";

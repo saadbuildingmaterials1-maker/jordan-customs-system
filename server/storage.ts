@@ -1,3 +1,8 @@
+/**
+ * storage
+ * 
+ * @module ./server/storage
+ */
 // Preconfigured storage helpers for Manus WebDev templates
 // Uses the Biz-provided storage proxy (Authorization: Bearer <token>)
 

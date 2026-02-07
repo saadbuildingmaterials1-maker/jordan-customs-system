@@ -1,3 +1,10 @@
+/**
+ * pdfExport Service
+ * 
+ * خدمة
+ * 
+ * @module ./client/src/services/pdfExport
+ */
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 // import html2canvas from "html2canvas"; // تم تعطيل المكتبة غير المثبتة

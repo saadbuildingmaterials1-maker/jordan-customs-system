@@ -1,3 +1,10 @@
+/**
+ * AdvancedAnalyticsDashboard Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/AdvancedAnalyticsDashboard
+ */
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';

@@ -1,3 +1,8 @@
+/**
+ * schema
+ * 
+ * @module ./drizzle/schema
+ */
 import {
   int, 
   mysqlEnum, 

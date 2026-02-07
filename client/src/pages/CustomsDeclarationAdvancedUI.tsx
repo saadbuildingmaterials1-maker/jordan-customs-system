@@ -1,3 +1,10 @@
+/**
+ * CustomsDeclarationAdvancedUI Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/CustomsDeclarationAdvancedUI
+ */
 import { useState, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/DashboardLayout';

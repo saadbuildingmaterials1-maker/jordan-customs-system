@@ -1,3 +1,10 @@
+/**
+ * VarianceAnalysis Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/VarianceAnalysis
+ */
 import { useState } from "react";
 import { useParams } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";

@@ -1,3 +1,10 @@
+/**
+ * popover Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/popover
+ */
 import * as React from "react";
 import * as PopoverPrimitive from "@radix-ui/react-popover";
 

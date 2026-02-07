@@ -1,3 +1,8 @@
+/**
+ * preload
+ * 
+ * @module ./electron/preload
+ */
 import { contextBridge, ipcRenderer } from 'electron';
 
 // تعريض واجهات آمنة للتطبيق

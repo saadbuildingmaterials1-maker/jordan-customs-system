@@ -1,3 +1,10 @@
+/**
+ * AIChatBox Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/AIChatBox
+ */
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";

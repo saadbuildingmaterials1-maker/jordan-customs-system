@@ -1,3 +1,8 @@
+/**
+ * index
+ * 
+ * @module ./server/_core/index
+ */
 import express from "express";
 import { createServer } from "http";
 import net from "net";

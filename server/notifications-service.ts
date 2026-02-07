@@ -1,3 +1,8 @@
+/**
+ * notifications-service
+ * 
+ * @module ./server/notifications-service
+ */
 import nodemailer from 'nodemailer';
 import { notifications } from '../drizzle/schema';
 

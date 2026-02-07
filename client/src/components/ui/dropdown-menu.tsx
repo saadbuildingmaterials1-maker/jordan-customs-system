@@ -1,3 +1,10 @@
+/**
+ * dropdown-menu Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/dropdown-menu
+ */
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";

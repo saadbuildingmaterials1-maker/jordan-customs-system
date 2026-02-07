@@ -1,3 +1,10 @@
+/**
+ * AccountingDashboard Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/AccountingDashboard
+ */
 import { useState } from "react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";

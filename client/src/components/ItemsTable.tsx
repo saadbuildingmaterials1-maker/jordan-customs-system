@@ -1,3 +1,10 @@
+/**
+ * ItemsTable Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ItemsTable
+ */
 import { Item } from "@shared/types";
 import { Button } from "@/components/ui/button";
 import {

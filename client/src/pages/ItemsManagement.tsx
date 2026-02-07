@@ -1,3 +1,10 @@
+/**
+ * ItemsManagement Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/ItemsManagement
+ */
 import { useState, useMemo } from "react";
 import { useParams } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";

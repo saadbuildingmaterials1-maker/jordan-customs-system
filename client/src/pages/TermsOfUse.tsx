@@ -1,3 +1,10 @@
+/**
+ * TermsOfUse Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/TermsOfUse
+ */
 import React from 'react';
 import { FileText, AlertTriangle, CheckCircle, XCircle, Scale, Zap } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

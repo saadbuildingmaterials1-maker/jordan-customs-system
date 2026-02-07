@@ -1,3 +1,10 @@
+/**
+ * sidebar Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/sidebar
+ */
 "use client";
 
 import { Button } from "@/components/ui/button";

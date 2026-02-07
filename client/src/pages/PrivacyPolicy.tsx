@@ -1,3 +1,10 @@
+/**
+ * PrivacyPolicy Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/PrivacyPolicy
+ */
 import React from 'react';
 import { Shield, Lock, Eye, Database, Users, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

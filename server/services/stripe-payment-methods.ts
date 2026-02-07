@@ -1,3 +1,10 @@
+/**
+ * stripe-payment-methods Service
+ * 
+ * خدمة
+ * 
+ * @module ./server/services/stripe-payment-methods
+ */
 import Stripe from 'stripe';
 import { getDb } from '../db';
 import { payments } from '../../drizzle/schema';

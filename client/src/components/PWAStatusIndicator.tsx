@@ -1,3 +1,10 @@
+/**
+ * PWAStatusIndicator Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/PWAStatusIndicator
+ */
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle, WifiOff } from 'lucide-react';
 

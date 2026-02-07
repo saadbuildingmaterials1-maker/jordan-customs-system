@@ -1,3 +1,10 @@
+/**
+ * drawer Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/drawer
+ */
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 

@@ -1,3 +1,10 @@
+/**
+ * SmartSuggestionsModal Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/SmartSuggestionsModal
+ */
 import { useState } from "react";
 import {
   Dialog,

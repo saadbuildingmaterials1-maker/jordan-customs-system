@@ -1,3 +1,10 @@
+/**
+ * AdvancedCustomsDeclarationPage Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/AdvancedCustomsDeclarationPage
+ */
 import React, { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

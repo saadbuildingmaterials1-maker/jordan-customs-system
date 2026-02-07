@@ -1,3 +1,8 @@
+/**
+ * asset-handler
+ * 
+ * @module ./server/_core/asset-handler
+ */
 import { type Express, type Request, type Response, type NextFunction } from "express";
 import path from "path";
 import fs from "fs";

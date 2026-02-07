@@ -1,3 +1,10 @@
+/**
+ * input-group Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/input-group
+ */
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 

@@ -1,3 +1,10 @@
+/**
+ * ToastContainer Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ToastContainer
+ */
 'use client';
 
 import React, { useEffect, useState } from 'react';

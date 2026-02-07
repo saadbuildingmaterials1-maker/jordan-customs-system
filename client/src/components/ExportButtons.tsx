@@ -1,3 +1,10 @@
+/**
+ * ExportButtons Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ExportButtons
+ */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, FileText } from "lucide-react";

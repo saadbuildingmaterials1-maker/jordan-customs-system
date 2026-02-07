@@ -1,3 +1,10 @@
+/**
+ * resizable Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/resizable
+ */
 import * as React from "react";
 import { GripVerticalIcon } from "lucide-react";
 import * as ResizablePrimitive from "react-resizable-panels";

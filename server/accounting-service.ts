@@ -1,3 +1,8 @@
+/**
+ * accounting-service
+ * 
+ * @module ./server/accounting-service
+ */
 import { eq, and, gte, lte, sum } from "drizzle-orm";
 import { getDb } from "./db";
 import {

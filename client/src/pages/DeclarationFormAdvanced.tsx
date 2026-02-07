@@ -1,3 +1,10 @@
+/**
+ * DeclarationFormAdvanced Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/DeclarationFormAdvanced
+ */
 import { useState } from "react";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/DashboardLayout";

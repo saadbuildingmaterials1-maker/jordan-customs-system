@@ -1,3 +1,10 @@
+/**
+ * skeleton Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/skeleton
+ */
 import { cn } from "@/lib/utils";
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {

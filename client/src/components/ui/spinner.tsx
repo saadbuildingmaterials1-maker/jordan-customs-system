@@ -1,3 +1,10 @@
+/**
+ * spinner Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/spinner
+ */
 import { Loader2Icon } from "lucide-react";
 
 import { cn } from "@/lib/utils";

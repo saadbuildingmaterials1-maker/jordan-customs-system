@@ -1,3 +1,10 @@
+/**
+ * Home Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/Home
+ */
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { 

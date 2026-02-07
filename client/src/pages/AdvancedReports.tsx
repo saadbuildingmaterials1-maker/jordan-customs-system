@@ -1,3 +1,10 @@
+/**
+ * AdvancedReports Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/AdvancedReports
+ */
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

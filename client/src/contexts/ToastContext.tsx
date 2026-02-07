@@ -1,3 +1,8 @@
+/**
+ * ToastContext
+ * 
+ * @module ./client/src/contexts/ToastContext
+ */
 'use client';
 
 import React, { createContext, useCallback, useState, useEffect } from 'react';

@@ -1,3 +1,10 @@
+/**
+ * ItemsManagementWithAI Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/ItemsManagementWithAI
+ */
 import { useState } from "react";
 import { useLocation, useRoute } from "wouter";
 import { trpc } from "@/lib/trpc";

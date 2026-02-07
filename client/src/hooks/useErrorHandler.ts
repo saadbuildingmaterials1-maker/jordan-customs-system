@@ -1,3 +1,10 @@
+/**
+ * useErrorHandler Hook
+ * 
+ * React Hook مخصص
+ * 
+ * @module ./client/src/hooks/useErrorHandler
+ */
 import { useCallback } from 'react';
 import { useContext } from 'react';
 import { ToastContext } from '@/contexts/ToastContext';

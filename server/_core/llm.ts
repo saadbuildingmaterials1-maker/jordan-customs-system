@@ -1,3 +1,8 @@
+/**
+ * llm
+ * 
+ * @module ./server/_core/llm
+ */
 import { ENV } from "./env";
 
 export type Role = "system" | "user" | "assistant" | "tool" | "function";

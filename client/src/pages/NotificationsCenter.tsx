@@ -1,3 +1,10 @@
+/**
+ * NotificationsCenter Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/NotificationsCenter
+ */
 import React, { useState } from 'react';
 import { Bell, Trash2, Archive, CheckCircle, AlertCircle, Info, Zap, Gift } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

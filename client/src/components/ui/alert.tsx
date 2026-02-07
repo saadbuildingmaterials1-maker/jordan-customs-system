@@ -1,3 +1,10 @@
+/**
+ * alert Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/alert
+ */
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 

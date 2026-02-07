@@ -1,3 +1,10 @@
+/**
+ * ExpensesManagement Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/ExpensesManagement
+ */
 import { useState, useMemo } from 'react';
 import { toast } from 'sonner';
 import DashboardLayout from '@/components/DashboardLayout';

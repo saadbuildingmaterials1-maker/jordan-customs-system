@@ -1,3 +1,10 @@
+/**
+ * UsersManagement Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/UsersManagement
+ */
 import React, { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

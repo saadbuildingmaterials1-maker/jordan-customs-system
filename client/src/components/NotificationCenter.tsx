@@ -1,3 +1,10 @@
+/**
+ * NotificationCenter Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/NotificationCenter
+ */
 import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

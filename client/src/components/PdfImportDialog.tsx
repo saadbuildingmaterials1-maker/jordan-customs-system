@@ -1,3 +1,10 @@
+/**
+ * PdfImportDialog Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/PdfImportDialog
+ */
 'use client';
 
 import React, { useState, useRef } from 'react';

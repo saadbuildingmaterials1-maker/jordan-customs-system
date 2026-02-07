@@ -1,3 +1,10 @@
+/**
+ * AdvancedSearch Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/AdvancedSearch
+ */
 import React, { useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

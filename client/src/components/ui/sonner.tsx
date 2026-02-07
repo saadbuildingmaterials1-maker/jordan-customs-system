@@ -1,3 +1,10 @@
+/**
+ * sonner Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/sonner
+ */
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 

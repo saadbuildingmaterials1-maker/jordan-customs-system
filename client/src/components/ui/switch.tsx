@@ -1,3 +1,10 @@
+/**
+ * switch Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/switch
+ */
 import * as React from "react";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 

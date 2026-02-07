@@ -1,3 +1,10 @@
+/**
+ * hover-card Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/hover-card
+ */
 import * as React from "react";
 import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
 

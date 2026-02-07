@@ -1,3 +1,10 @@
+/**
+ * DownloadPage Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/DownloadPage
+ */
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, CheckCircle, AlertCircle, Loader } from "lucide-react";

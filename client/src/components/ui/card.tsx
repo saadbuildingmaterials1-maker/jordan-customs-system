@@ -1,3 +1,10 @@
+/**
+ * card Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/card
+ */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";

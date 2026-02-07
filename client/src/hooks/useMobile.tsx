@@ -1,3 +1,10 @@
+/**
+ * useMobilex Hook
+ * 
+ * React Hook مخصص
+ * 
+ * @module ./client/src/hooks/useMobile
+ */
 import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;

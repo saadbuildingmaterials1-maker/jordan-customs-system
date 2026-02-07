@@ -1,3 +1,10 @@
+/**
+ * NotFound Page
+ * 
+ * صفحة
+ * 
+ * @module ./client/src/pages/NotFound
+ */
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Home } from "lucide-react";

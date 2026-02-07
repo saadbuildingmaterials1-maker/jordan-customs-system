@@ -1,3 +1,8 @@
+/**
+ * health-check
+ * 
+ * @module ./server/_core/health-check
+ */
 import { resourceMonitor } from "./resource-monitor";
 
 interface HealthCheckResult {

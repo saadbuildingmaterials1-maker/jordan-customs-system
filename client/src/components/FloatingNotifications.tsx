@@ -1,3 +1,10 @@
+/**
+ * FloatingNotifications Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/FloatingNotifications
+ */
 import React, { useState, useEffect } from 'react';
 import { X, Bell, CheckCircle, AlertCircle, Info, Zap, Gift } from 'lucide-react';
 

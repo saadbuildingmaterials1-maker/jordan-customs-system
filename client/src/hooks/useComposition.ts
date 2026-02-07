@@ -1,3 +1,10 @@
+/**
+ * useComposition Hook
+ * 
+ * React Hook مخصص
+ * 
+ * @module ./client/src/hooks/useComposition
+ */
 import { useRef } from "react";
 import { usePersistFn } from "./usePersistFn";
 

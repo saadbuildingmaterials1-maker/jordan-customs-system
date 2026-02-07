@@ -1,3 +1,8 @@
+/**
+ * accounting-full-schema
+ * 
+ * @module ./drizzle/accounting-full-schema
+ */
 import {
   int,
   varchar,

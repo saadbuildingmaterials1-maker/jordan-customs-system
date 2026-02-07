@@ -1,3 +1,10 @@
+/**
+ * empty Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/empty
+ */
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";

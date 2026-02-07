@@ -1,3 +1,10 @@
+/**
+ * kbd Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/kbd
+ */
 import { cn } from "@/lib/utils";
 
 function Kbd({ className, ...props }: React.ComponentProps<"kbd">) {

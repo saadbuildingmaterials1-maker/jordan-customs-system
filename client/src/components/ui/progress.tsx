@@ -1,3 +1,10 @@
+/**
+ * progress Component
+ * 
+ * مكون React
+ * 
+ * @module ./client/src/components/ui/progress
+ */
 import * as React from "react";
 import * as ProgressPrimitive from "@radix-ui/react-progress";
 
