@@ -43,6 +43,7 @@ import { governmentRouter } from "./routers/government";
 import { authRouter } from "./routers/auth";
 import { errorsRouter } from "./routers/errors";
 import { updatesRouter } from "./routers/updates";
+import { stripePaymentRouter } from "./stripe-payment-router";
 
 /**
  * Main Application Router
@@ -51,7 +52,6 @@ import { updatesRouter } from "./routers/updates";
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,
-
   /**
    * ===== إجراءات البيانات الجمركية =====
    */
@@ -641,7 +641,7 @@ export const appRouter = router({
         }
       }),
   }),
-  stripe: stripeRouter,
+  stripe: stripePaymentRouter,
   paymentMethods: paymentMethodsRouter,
   government: governmentRouter,
   ai: aiRouter,
