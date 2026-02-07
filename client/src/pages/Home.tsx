@@ -7,6 +7,7 @@
  */
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import ShippingAndTaxesDisplay from "@/components/ShippingAndTaxesDisplay";
 import { 
   Plus, FileText, TrendingUp, DollarSign, Download, Smartphone, Monitor,
   ArrowRight, CheckCircle, Zap, BarChart3, Package, Truck, Clock, Shield,
@@ -356,6 +357,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Shipping and Taxes Calculator */}
+      <ShippingAndTaxesDisplay />
 
       {/* Footer */}
       <footer className="relative py-12 px-4 md:px-8 lg:px-16 border-t border-white/10 bg-slate-900/50 backdrop-blur-md">
