@@ -1,3 +1,8 @@
+/**
+ * pdfExtractionService Service
+ * خدمة
+ * @module ./server/services/pdfExtractionService
+ */
 // استخراج البيانات من PDF - يتم استخدام مكتبة pdf-parse
 // npm install pdf-parse
 

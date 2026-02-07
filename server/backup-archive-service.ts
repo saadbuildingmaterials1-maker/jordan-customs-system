@@ -1,3 +1,7 @@
+/**
+ * backup-archive-service
+ * @module ./server/backup-archive-service
+ */
 import crypto from 'crypto';
 
 /**

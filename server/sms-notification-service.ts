@@ -1,3 +1,7 @@
+/**
+ * sms-notification-service
+ * @module ./server/sms-notification-service
+ */
 import { createNotification } from './db';
 import { eq, and } from 'drizzle-orm';
 

@@ -1,3 +1,8 @@
+/**
+ * AppTour Component
+ * مكون React
+ * @module ./client/src/components/AppTour
+ */
 import { useState, useEffect } from 'react';
 import { ChevronRight, ChevronLeft, X, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';

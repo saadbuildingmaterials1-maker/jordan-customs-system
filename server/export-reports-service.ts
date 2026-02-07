@@ -1,3 +1,7 @@
+/**
+ * export-reports-service
+ * @module ./server/export-reports-service
+ */
 import { PDFDocument, rgb } from 'pdf-lib';
 import { Workbook } from 'exceljs';
 import { Buffer } from 'buffer';

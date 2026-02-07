@@ -1,3 +1,7 @@
+/**
+ * security-service
+ * @module ./server/security-service
+ */
 import crypto from 'crypto';
 
 /**

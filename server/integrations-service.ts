@@ -1,3 +1,7 @@
+/**
+ * integrations-service
+ * @module ./server/integrations-service
+ */
 import axios from 'axios';
 
 /**

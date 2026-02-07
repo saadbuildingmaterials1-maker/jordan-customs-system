@@ -1,3 +1,7 @@
+/**
+ * payment-service
+ * @module ./server/payment-service
+ */
 import { z } from 'zod';
 /**
  * Payment Service Module

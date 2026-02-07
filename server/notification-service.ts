@@ -1,3 +1,7 @@
+/**
+ * notification-service
+ * @module ./server/notification-service
+ */
 import axios from 'axios';
 import nodemailer from 'nodemailer';
 

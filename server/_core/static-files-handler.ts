@@ -1,3 +1,8 @@
+/**
+ * static-files-handler Core
+ * أداة أساسية
+ * @module ./server/_core/static-files-handler
+ */
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import path from "path";
 import fs from "fs";

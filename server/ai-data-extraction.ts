@@ -1,3 +1,7 @@
+/**
+ * ai-data-extraction
+ * @module ./server/ai-data-extraction
+ */
 import { invokeLLM } from './_core/llm';
 
 /**

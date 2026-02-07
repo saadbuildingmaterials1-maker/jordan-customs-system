@@ -1,3 +1,8 @@
+/**
+ * performance-optimization Core
+ * أداة أساسية
+ * @module ./server/_core/performance-optimization
+ */
 import compression from 'compression';
 import { Express } from 'express';
 

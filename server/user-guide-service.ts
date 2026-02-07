@@ -1,3 +1,7 @@
+/**
+ * user-guide-service
+ * @module ./server/user-guide-service
+ */
 import { z } from 'zod';
 
 /**

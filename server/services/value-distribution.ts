@@ -1,3 +1,8 @@
+/**
+ * value-distribution Service
+ * خدمة
+ * @module ./server/services/value-distribution
+ */
 // خدمة توزيع القيم والرسوم المحاسبية
 
 /**

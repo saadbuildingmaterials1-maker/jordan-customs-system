@@ -1,3 +1,8 @@
+/**
+ * cloudflare-handler Core
+ * أداة أساسية
+ * @module ./server/_core/cloudflare-handler
+ */
 import { type Express, type Request, type Response, type NextFunction } from "express";
 import path from "path";
 import fs from "fs";

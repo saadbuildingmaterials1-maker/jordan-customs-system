@@ -1,3 +1,7 @@
+/**
+ * pdfExtraction
+ * @module ./server/pdfExtraction
+ */
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pdfParse from 'pdf-parse';

@@ -1,3 +1,8 @@
+/**
+ * routers Router
+ * tRPC Router
+ * @module ./server/routers
+ */
 import { z } from "zod";
 /**
  * Main tRPC Router

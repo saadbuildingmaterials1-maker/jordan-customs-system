@@ -1,3 +1,8 @@
+/**
+ * data-sync-service Service
+ * خدمة
+ * @module ./server/services/data-sync-service
+ */
 import EventEmitter from 'events';
 
 /**

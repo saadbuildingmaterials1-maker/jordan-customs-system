@@ -1,3 +1,7 @@
+/**
+ * ai-service
+ * @module ./server/ai-service
+ */
 import { invokeLLM } from "./_core/llm";
 
 /**

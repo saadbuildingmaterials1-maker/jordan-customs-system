@@ -1,3 +1,7 @@
+/**
+ * db
+ * @module ./server/db
+ */
 import { drizzle } from "drizzle-orm/mysql2";
 /**
  * Database Query Helpers

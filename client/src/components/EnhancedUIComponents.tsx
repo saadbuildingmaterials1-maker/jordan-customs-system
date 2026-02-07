@@ -1,3 +1,8 @@
+/**
+ * EnhancedUIComponents Component
+ * مكون React
+ * @module ./client/src/components/EnhancedUIComponents
+ */
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Info, X } from 'lucide-react';
 

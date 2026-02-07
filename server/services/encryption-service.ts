@@ -1,3 +1,8 @@
+/**
+ * encryption-service Service
+ * خدمة
+ * @module ./server/services/encryption-service
+ */
 import crypto from 'crypto';
 
 /**
