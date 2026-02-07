@@ -46,7 +46,7 @@ const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
 const TermsOfUse = lazy(() => import('@/pages/TermsOfUse'));
 const NotificationsCenter = lazy(() => import('@/pages/NotificationsCenter'));
 const ContainerTracking = lazy(() => import('@/pages/ContainerTracking'));
-const PDFImport = lazy(() => import('@/pages/PDFImport'));
+const PdfImport = lazy(() => import('@/pages/PdfImport'));
 const BackupAndNotifications = lazy(() => import('./pages/BackupAndNotifications'));
 const PaymentPage = lazy(() => import('./pages/PaymentPage'));
 const BankAccountManagement = lazy(() => import('@/pages/BankAccountManagement'));
@@ -131,7 +131,7 @@ function Router() {
         <Route path="/advanced-search" component={AdvancedSearch} />
         <Route path="/download" component={DownloadPage} />
         <Route path="/downloads" component={DownloadPage} />
-        <Route path="/pdf-import" component={PDFImport} />
+        <Route path="/pdf-import" component={PdfImport} />
         
         {/* النسخ الاحتياطي */}
         <Route path="/backup-notifications" component={BackupAndNotifications} />
