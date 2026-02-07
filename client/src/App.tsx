@@ -62,6 +62,7 @@ const FAQ = lazy(() => import('@/pages/FAQ'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const Login = lazy(() => import('@/pages/Login'));
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -97,6 +98,7 @@ function Router() {
         
         {/* الإدارة والتحكم */}
         <Route path={"/admin"} component={AdminPanel} />
+        <Route path={"/dashboard"} component={Dashboard} />
         <Route path={"/smart-dashboard"} component={SmartDashboard} />
         
         {/* المحاسبة والتقارير */}
