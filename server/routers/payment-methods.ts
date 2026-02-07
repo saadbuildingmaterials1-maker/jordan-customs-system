@@ -1,3 +1,10 @@
+/**
+ * Payment Methods Router
+ * 
+ * إدارة طرق الدفع المختلفة
+ * 
+ * @module server/routers/payment-methods
+ */
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc';
 import {

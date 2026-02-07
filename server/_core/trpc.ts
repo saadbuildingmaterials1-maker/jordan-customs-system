@@ -1,3 +1,10 @@
+/**
+ * TRPC Client Setup
+ * 
+ * إعداد عميل tRPC
+ * 
+ * @module client/src/lib/trpc
+ */
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";

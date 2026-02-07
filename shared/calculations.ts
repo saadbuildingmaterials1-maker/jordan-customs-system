@@ -1,3 +1,10 @@
+/**
+ * Calculation Utilities
+ * 
+ * دوال حسابية مشتركة
+ * 
+ * @module shared/calculations
+ */
 import { SALES_TAX_RATE, DECIMAL_PLACES } from "./constants";
 
 /**

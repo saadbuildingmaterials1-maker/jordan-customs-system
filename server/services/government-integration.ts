@@ -1,3 +1,10 @@
+/**
+ * Government Integration Service
+ * 
+ * التكامل مع الأنظمة الحكومية
+ * 
+ * @module server/services/government-integration
+ */
 import axios, { AxiosInstance } from 'axios';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';

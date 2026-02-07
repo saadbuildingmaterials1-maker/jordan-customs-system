@@ -1,4 +1,14 @@
 import { z } from 'zod';
+/**
+ * Payment Service Module
+ * 
+ * يحتوي على جميع عمليات معالجة الدفعات
+ * والفواتير والاسترجاعات
+ * 
+ * @module server/payment-service
+ * @requires server/db
+ */
+
 import * as db from './db';
 
 /**

@@ -1,3 +1,10 @@
+/**
+ * Main Application Component
+ * 
+ * المكون الرئيسي للتطبيق
+ * 
+ * @module client/src/App
+ */
 import { Toaster } from "@/components/ui/sonner";
 import { lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";

@@ -1,3 +1,10 @@
+/**
+ * AI Router
+ * 
+ * عمليات الذكاء الاصطناعي والتحليل الذكي
+ * 
+ * @module server/ai-router
+ */
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import * as db from "./db";

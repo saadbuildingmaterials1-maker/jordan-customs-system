@@ -1,3 +1,10 @@
+/**
+ * Stripe Payment Router
+ * 
+ * عمليات الدفع عبر Stripe
+ * 
+ * @module server/routers/stripe
+ */
 import { z } from 'zod';
 import { router, protectedProcedure } from '../_core/trpc';
 import {
