@@ -10,7 +10,7 @@ import { useLocation } from "wouter";
 import { 
   Plus, FileText, TrendingUp, DollarSign, Download, Smartphone, Monitor,
   ArrowRight, CheckCircle, Zap, BarChart3, Package, Truck, Clock, Shield,
-  Sparkles, ChevronRight, Gauge, Lock, Zap as Lightning
+  Sparkles, ChevronRight, Gauge, Lock, Zap as Lightning, LogIn
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -92,6 +92,16 @@ export default function Home() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => navigate("/login")}
+                className="group relative px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-semibold text-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/50 hover:-translate-y-1"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center justify-center gap-2">
+                  <LogIn className="w-5 h-5" />
+                  تسجيل الدخول
+                </div>
+              </button>
               <button
                 onClick={() => navigate("/declarations/new")}
                 className="group relative px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg font-semibold text-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/50 hover:-translate-y-1"

@@ -61,6 +61,7 @@ const Support = lazy(() => import('@/pages/Support'));
 const FAQ = lazy(() => import('@/pages/FAQ'));
 const Documentation = lazy(() => import('@/pages/Documentation'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
+const Login = lazy(() => import('@/pages/Login'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -144,6 +145,7 @@ function Router() {
         <Route path="/backup-notifications" component={BackupAndNotifications} />
         
         {/* المساعدة والمعلومات */}
+        <Route path="/login" component={Login} />
         <Route path="/help" component={HelpCenter} />
         <Route path="/tutorials" component={VideoTutorials} />
         <Route path="/about" component={About} />
