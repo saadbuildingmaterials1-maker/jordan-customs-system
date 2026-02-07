@@ -45,6 +45,8 @@ import { errorsRouter } from "./routers/errors";
 import { updatesRouter } from "./routers/updates";
 import { notificationsRouter } from "./routers/notifications";
 import { paymentGatewaysRouter } from "./routers/payment-gateways";
+import { currencyRouter } from "./routers/currency";
+import { couponsRouter } from "./routers/coupons";
 
 /**
  * Main Application Router
@@ -650,6 +652,8 @@ export const appRouter = router({
   updates: updatesRouter,
   sms: notificationsRouter,
   paymentGateways: paymentGatewaysRouter,
+  currency: currencyRouter,
+  coupons: couponsRouter,
 });
 
 export type AppRouter = typeof appRouter;
