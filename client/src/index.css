@@ -231,7 +231,7 @@
   }
 
   .card-elegant {
-    @apply rounded-xl border border-border bg-card p-6 shadow-sm transition-all duration-200 hover:shadow-md;
+    @apply rounded-xl border border-border bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md;
   }
 
   .input-elegant {
@@ -243,11 +243,11 @@
   }
 
   .section-title {
-    @apply text-3xl font-bold text-foreground mb-2;
+    @apply text-2xl font-bold text-foreground mb-3;
   }
 
   .section-subtitle {
-    @apply text-lg text-muted-foreground mb-6;
+    @apply text-base text-muted-foreground mb-4;
   }
 
   .btn-primary {

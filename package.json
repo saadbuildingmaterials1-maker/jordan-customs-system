@@ -89,6 +89,7 @@
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.530",
     "pdfkit": "^0.17.2",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.1",
     "react-day-picker": "^9.11.1",
     "react-dom": "^19.2.1",

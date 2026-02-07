@@ -63,6 +63,8 @@ const Documentation = lazy(() => import('@/pages/Documentation'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const PaymentSystem = lazy(() => import('@/pages/PaymentSystem'));
+const ClickPayment = lazy(() => import('@/pages/ClickPayment'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -127,6 +129,8 @@ function Router() {
         <Route path={"/payments"} component={PaymentsManagement} />
         <Route path={"/checkout"} component={Checkout} />
         <Route path={"/payment"} component={PaymentPage} />
+        <Route path={"/payment-system"} component={PaymentSystem} />
+        <Route path={"/click-payment"} component={ClickPayment} />
         <Route path={"/bank-accounts"} component={BankAccountManagement} />
         
         {/* إدارة المستخدمين والأدوار */}
