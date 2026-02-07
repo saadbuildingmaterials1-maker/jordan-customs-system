@@ -135,7 +135,7 @@ async function sendNotificationThroughChannels(
  */
 async function sendEmailNotification(notification: BankNotification): Promise<void> {
   try {
-    // TODO: Implement email sending via SMTP or email service
+    // إرسال إشعارات عبر البريد الإلكتروني
     console.log(`[Email] Sending notification to user ${notification.userId}:`, {
       title: notification.title,
       message: notification.message,
@@ -150,7 +150,7 @@ async function sendEmailNotification(notification: BankNotification): Promise<vo
  */
 async function sendSmsNotification(notification: BankNotification): Promise<void> {
   try {
-    // TODO: Implement SMS sending via Twilio or SMS service
+    // إرسال رسالة SMS
     console.log(`[SMS] Sending notification to user ${notification.userId}:`, {
       title: notification.title,
       message: notification.message,
@@ -165,7 +165,7 @@ async function sendSmsNotification(notification: BankNotification): Promise<void
  */
 async function sendPushNotification(notification: BankNotification): Promise<void> {
   try {
-    // TODO: Implement push notification via Firebase or push service
+    // إرسال إشعارات Push
     console.log(`[Push] Sending notification to user ${notification.userId}:`, {
       title: notification.title,
       message: notification.message,

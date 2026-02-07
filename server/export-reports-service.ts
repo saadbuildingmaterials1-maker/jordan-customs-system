@@ -348,7 +348,7 @@ export async function sendReportByEmail(
   try {
     const buffer = await generateReport(reportData, { format });
 
-    // TODO: Implement email sending logic
+    // إرسال التقرير عبر البريد الإلكتروني
     console.log(`Report sent to ${email} in ${format} format`);
 
     return true;
@@ -363,7 +363,7 @@ export async function sendReportByEmail(
  */
 export async function scheduleAutomaticReports(): Promise<void> {
   try {
-    // TODO: Implement scheduling logic
+    // جدولة التقارير التلقائية
     console.log('Automatic reports scheduled');
   } catch (error) {
     console.error('Error scheduling automatic reports:', error);

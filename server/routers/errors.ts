@@ -3,7 +3,7 @@
  * يوفر endpoints لإرسال تقارير الأخطاء
  */
 
-import { router, publicProcedure } from "../_core/router";
+import { router, publicProcedure } from "../_core/trpc";
 import {
   createErrorReport,
   sendErrorReport,

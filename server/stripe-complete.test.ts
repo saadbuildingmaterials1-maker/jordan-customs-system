@@ -9,13 +9,17 @@ import Stripe from 'stripe';
 
 describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكامل', () => {
   let stripe: Stripe;
-  const hasStripeKey = process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder';
+  const hasStripeKey = process.env.STRIPE_SECRET_KEY && 
+                      process.env.STRIPE_SECRET_KEY !== 'sk_test_placeholder' &&
+                      process.env.STRIPE_SECRET_KEY?.startsWith('sk_');
 
   beforeAll(() => {
-    const stripeKey = process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder';
-    stripe = new Stripe(stripeKey, {
-      apiVersion: '2024-12-15' as any,
-    });
+    if (hasStripeKey) {
+      const stripeKey = process.env.STRIPE_SECRET_KEY!;
+      stripe = new Stripe(stripeKey, {
+        apiVersion: '2024-12-15' as any,
+      });
+    }
   });
 
   // تخطي جميع الاختبارات إذا لم تكن مفاتيح Stripe مضبوطة

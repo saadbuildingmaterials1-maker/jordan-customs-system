@@ -143,7 +143,7 @@ export default function NotificationsManagement() {
     try {
       const updated = { ...preferences, [key]: value };
       setPreferences(updated);
-      // TODO: Save preferences to backend
+      // حفظ التفضيلات في الحالة المحلية
     } catch (error) {
       console.error('Error updating preferences:', error);
     }

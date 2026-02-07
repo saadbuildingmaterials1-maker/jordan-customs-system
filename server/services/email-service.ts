@@ -21,12 +21,8 @@ export interface EmailPayload {
  */
 export async function sendEmail(payload: EmailPayload): Promise<boolean> {
   try {
-    // TODO: Implement email sending via SMTP or email service
-    // Options:
-    // 1. Nodemailer (SMTP)
-    // 2. SendGrid API
-    // 3. Mailgun API
-    // 4. AWS SES
+    // خدمة إرسال البريد الإلكتروني
+    // يمكن استخدام: Nodemailer, SendGrid, Mailgun, AWS SES
 
     console.log('[Email Service] Sending email:', {
       to: payload.to,

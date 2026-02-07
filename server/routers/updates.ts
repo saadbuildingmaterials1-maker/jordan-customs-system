@@ -3,7 +3,7 @@
  * يوفر endpoints للتحقق من التحديثات والحصول على معلومات الإصدار
  */
 
-import { router, publicProcedure } from "../_core/router";
+import { router, publicProcedure } from "../_core/trpc";
 import { checkForUpdates, getUpdateInfo, resetCheckInterval } from "../updateChecker";
 import { z } from "zod";
 

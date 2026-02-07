@@ -24,6 +24,8 @@ import { stripeRouter } from "./routers/stripe";
 import { paymentMethodsRouter } from "./routers/payment-methods";
 import { governmentRouter } from "./routers/government";
 import { authRouter } from "./routers/auth";
+import { errorsRouter } from "./routers/errors";
+import { updatesRouter } from "./routers/updates";
 
 export const appRouter = router({
   system: systemRouter,
@@ -622,6 +624,8 @@ export const appRouter = router({
   paymentMethods: paymentMethodsRouter,
   government: governmentRouter,
   ai: aiRouter,
+  errors: errorsRouter,
+  updates: updatesRouter,
 });
 
 export type AppRouter = typeof appRouter;
