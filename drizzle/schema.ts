@@ -854,3 +854,137 @@ export const expenses = mysqlTable("expenses", {
 
 export type Expense = typeof expenses.$inferSelect;
 export type InsertExpense = typeof expenses.$inferInsert;
+
+
+/**
+ * جدول الحسابات المحفوظة
+ * يحتفظ بسجل الحسابات التي أجراها المستخدمون
+ */
+export const savedCalculations = mysqlTable("saved_calculations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  
+  // معلومات الحساب
+  calculationName: varchar("calculationName", { length: 255 }).notNull(),
+  description: text("description"),
+  
+  // بيانات الحساب
+  weight: decimal("weight", { precision: 10, scale: 3 }).notNull(),
+  value: decimal("value", { precision: 15, scale: 3 }).notNull(),
+  currency: varchar("currency", { length: 10 }).notNull().default("JOD"),
+  country: varchar("country", { length: 100 }).notNull(),
+  
+  // النتائج
+  shippingCost: decimal("shippingCost", { precision: 12, scale: 3 }).notNull(),
+  customsDuty: decimal("customsDuty", { precision: 12, scale: 3 }).notNull(),
+  tax: decimal("tax", { precision: 12, scale: 3 }).notNull(),
+  totalCost: decimal("totalCost", { precision: 15, scale: 3 }).notNull(),
+  
+  // معلومات إضافية
+  isPublic: boolean("isPublic").default(false),
+  tags: text("tags"), // JSON array
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SavedCalculation = typeof savedCalculations.$inferSelect;
+export type InsertSavedCalculation = typeof savedCalculations.$inferInsert;
+
+/**
+ * جدول التقارير المحفوظة
+ * يحتفظ بسجل التقارير التي أنشأها المستخدمون
+ */
+export const savedReports = mysqlTable("saved_reports", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  
+  // معلومات التقرير
+  reportName: varchar("reportName", { length: 255 }).notNull(),
+  reportType: varchar("reportType", { length: 50 }).notNull(), // 'monthly', 'quarterly', 'yearly', 'custom'
+  description: text("description"),
+  
+  // نطاق التقرير
+  startDate: date("startDate").notNull(),
+  endDate: date("endDate").notNull(),
+  
+  // الإحصائيات
+  totalShipping: decimal("totalShipping", { precision: 15, scale: 3 }).notNull(),
+  totalDuty: decimal("totalDuty", { precision: 15, scale: 3 }).notNull(),
+  totalTax: decimal("totalTax", { precision: 15, scale: 3 }).notNull(),
+  totalCost: decimal("totalCost", { precision: 15, scale: 3 }).notNull(),
+  recordCount: int("recordCount").notNull(),
+  
+  // البيانات
+  reportData: text("reportData"), // JSON data
+  
+  // معلومات إضافية
+  isPublic: boolean("isPublic").default(false),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SavedReport = typeof savedReports.$inferSelect;
+export type InsertSavedReport = typeof savedReports.$inferInsert;
+
+/**
+ * جدول التنبيهات والإشعارات
+ * يحتفظ بسجل التنبيهات والإشعارات للمستخدمين
+ */
+export const userAlerts = mysqlTable("user_alerts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id),
+  
+  // معلومات التنبيه
+  alertType: varchar("alertType", { length: 50 }).notNull(), // 'price_change', 'customs_update', 'shipment_status'
+  alertTitle: varchar("alertTitle", { length: 255 }).notNull(),
+  alertMessage: text("alertMessage").notNull(),
+  
+  // البيانات المرتبطة
+  relatedCountry: varchar("relatedCountry", { length: 100 }),
+  relatedCalculationId: int("relatedCalculationId"),
+  
+  // الحالة
+  isRead: boolean("isRead").default(false),
+  isPinned: boolean("isPinned").default(false),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserAlert = typeof userAlerts.$inferSelect;
+export type InsertUserAlert = typeof userAlerts.$inferInsert;
+
+/**
+ * جدول تفضيلات المستخدم
+ * يحتفظ بالإعدادات والتفضيلات الشخصية
+ */
+export const userPreferences = mysqlTable("user_preferences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique().references(() => users.id),
+  
+  // التفضيلات العامة
+  defaultCurrency: varchar("defaultCurrency", { length: 10 }).default("JOD"),
+  defaultCountry: varchar("defaultCountry", { length: 100 }).default("SA"),
+  language: varchar("language", { length: 10 }).default("ar"),
+  theme: varchar("theme", { length: 20 }).default("dark"), // 'light', 'dark'
+  
+  // إعدادات الإشعارات
+  enableNotifications: boolean("enableNotifications").default(true),
+  enableEmailNotifications: boolean("enableEmailNotifications").default(true),
+  enablePriceAlerts: boolean("enablePriceAlerts").default(true),
+  
+  // إعدادات الخصوصية
+  isPublicProfile: boolean("isPublicProfile").default(false),
+  allowDataSharing: boolean("allowDataSharing").default(false),
+  
+  // معلومات إضافية
+  preferences: text("preferences"), // JSON for additional preferences
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type UserPreference = typeof userPreferences.$inferSelect;
+export type InsertUserPreference = typeof userPreferences.$inferInsert;

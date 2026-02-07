@@ -134,6 +134,13 @@
       "when": 1770500097389,
       "tag": "0018_mighty_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1770507458826,
+      "tag": "0019_glorious_puck",
+      "breakpoints": true
     }
   ]
 }
