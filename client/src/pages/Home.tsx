@@ -8,6 +8,7 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import AdvancedShippingCalculator from "@/components/AdvancedShippingCalculator";
+import PriceAlertSystem from "@/components/PriceAlertSystem";
 import { 
   Plus, FileText, TrendingUp, DollarSign, Download, Smartphone, Monitor,
   ArrowRight, CheckCircle, Zap, BarChart3, Package, Truck, Clock, Shield,
@@ -360,6 +361,9 @@ export default function Home() {
 
       {/* Advanced Shipping and Taxes Calculator */}
       <AdvancedShippingCalculator />
+
+      {/* Price Alert System */}
+      <PriceAlertSystem />
 
       {/* Footer */}
       <footer className="relative py-12 px-4 md:px-8 lg:px-16 border-t border-white/10 bg-slate-900/50 backdrop-blur-md">

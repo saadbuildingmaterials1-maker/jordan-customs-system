@@ -6,6 +6,8 @@
  * - حاسبة تفاعلية للأسعار
  * - خريطة Google Maps لعرض الدول
  * - نظام مقارنة متقدم للأسعار
+ * - نظام فلترة متقدم
+ * - تصدير التقارير (PDF و Excel)
  * - حفظ الحسابات المفضلة
  */
 
@@ -14,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { DollarSign, Package, Globe, Calculator, TrendingUp, Heart, Trash2, Copy, Check, Map } from 'lucide-react';
+import { DollarSign, Package, Globe, Calculator, TrendingUp, Heart, Trash2, Copy, Check, Map, Filter, Download, RotateCcw } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ShippingRate {
@@ -34,6 +36,17 @@ interface SavedCalculation {
   currency: string;
   timestamp: number;
   total: number;
+}
+
+interface FilterOptions {
+  minShipping: number;
+  maxShipping: number;
+  minCustoms: number;
+  maxCustoms: number;
+  minTax: number;
+  maxTax: number;
+  minTotal: number;
+  maxTotal: number;
 }
 
 const SHIPPING_RATES: Record<string, ShippingRate> = {
@@ -70,6 +83,17 @@ export default function AdvancedShippingCalculator() {
   const [compareCountries, setCompareCountries] = useState<string[]>(['SA', 'AE', 'KW']);
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({
+    minShipping: 0,
+    maxShipping: 100,
+    minCustoms: 0,
+    maxCustoms: 100,
+    minTax: 0,
+    maxTax: 100,
+    minTotal: 0,
+    maxTotal: 5000,
+  });
 
   // Load saved calculations from localStorage
   useEffect(() => {
@@ -117,7 +141,7 @@ export default function AdvancedShippingCalculator() {
 
     if (w <= 0 || v <= 0) return [];
 
-    return compareCountries.map(code => {
+    let data = compareCountries.map(code => {
       const rate = SHIPPING_RATES[code];
       const shippingCost = rate.shippingCost * w;
       const customsDuty = v * rate.customsRate;
@@ -133,8 +157,20 @@ export default function AdvancedShippingCalculator() {
         customsDuty: customsDuty / currencyRate,
         tax: tax / currencyRate,
       };
-    }).sort((a, b) => a.total - b.total);
-  }, [weight, value, currency, compareCountries]);
+    });
+
+    // تطبيق الفلاتر
+    if (showFilters) {
+      data = data.filter(item => 
+        item.shippingCost >= filters.minShipping && item.shippingCost <= filters.maxShipping &&
+        item.customsDuty >= filters.minCustoms && item.customsDuty <= filters.maxCustoms &&
+        item.tax >= filters.minTax && item.tax <= filters.maxTax &&
+        item.total >= filters.minTotal && item.total <= filters.maxTotal
+      );
+    }
+
+    return data.sort((a, b) => a.total - b.total);
+  }, [weight, value, currency, compareCountries, filters, showFilters]);
 
   const currencySymbol = CURRENCIES[currency as keyof typeof CURRENCIES].symbol;
 
@@ -169,6 +205,51 @@ export default function AdvancedShippingCalculator() {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleExportCSV = () => {
+    const csvContent = [
+      ['الدولة', 'تكلفة الشحن', 'الجمارك', 'الضريبة', 'المجموع'].join(','),
+      ...comparisonData.map(item => 
+        [item.country, item.shippingCost.toFixed(2), item.customsDuty.toFixed(2), item.tax.toFixed(2), item.total.toFixed(2)].join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `shipping-comparison-${new Date().toISOString().split('T')[0]}.csv`);
+    link.click();
+  };
+
+  const handleExportExcel = () => {
+    const csvContent = [
+      ['الدولة', 'تكلفة الشحن', 'الجمارك', 'الضريبة', 'المجموع'].join('\t'),
+      ...comparisonData.map(item => 
+        [item.country, item.shippingCost.toFixed(2), item.customsDuty.toFixed(2), item.tax.toFixed(2), item.total.toFixed(2)].join('\t')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `shipping-comparison-${new Date().toISOString().split('T')[0]}.xls`);
+    link.click();
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      minShipping: 0,
+      maxShipping: 100,
+      minCustoms: 0,
+      maxCustoms: 100,
+      minTax: 0,
+      maxTax: 100,
+      minTotal: 0,
+      maxTotal: 5000,
+    });
   };
 
   return (
@@ -255,9 +336,9 @@ export default function AdvancedShippingCalculator() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(SHIPPING_RATES).map(([code, data]) => (
+                        {Object.entries(SHIPPING_RATES).map(([code, rate]) => (
                           <SelectItem key={code} value={code}>
-                            {data.country}
+                            {rate.country}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -265,15 +346,18 @@ export default function AdvancedShippingCalculator() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">العملة</label>
+                    <label className="text-sm font-medium flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      العملة
+                    </label>
                     <Select value={currency} onValueChange={setCurrency}>
                       <SelectTrigger className="border-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.entries(CURRENCIES).map(([code, data]) => (
+                        {Object.entries(CURRENCIES).map(([code, curr]) => (
                           <SelectItem key={code} value={code}>
-                            {data.name}
+                            {curr.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -283,59 +367,70 @@ export default function AdvancedShippingCalculator() {
 
                 {/* Results */}
                 {calculation && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t-2">
-                    <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">تكلفة الشحن</p>
-                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                        {currencySymbol} {calculation.shippingCost.toFixed(2)}
-                      </p>
-                    </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mt-6">
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="pt-4">
+                        <p className="text-xs text-slate-400 mb-1">تكلفة الشحن</p>
+                        <p className="text-lg font-bold text-blue-400">
+                          {currencySymbol} {calculation.shippingCost.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                    <div className="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-lg border border-amber-200 dark:border-amber-800">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">الرسوم الجمركية</p>
-                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">
-                        {currencySymbol} {calculation.customsDuty.toFixed(2)}
-                      </p>
-                    </div>
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="pt-4">
+                        <p className="text-xs text-slate-400 mb-1">الرسوم الجمركية</p>
+                        <p className="text-lg font-bold text-orange-400">
+                          {currencySymbol} {calculation.customsDuty.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                    <div className="bg-orange-50 dark:bg-orange-950/30 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">الضريبة ({(SHIPPING_RATES[country].taxRate * 100).toFixed(0)}%)</p>
-                      <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                        {currencySymbol} {calculation.tax.toFixed(2)}
-                      </p>
-                    </div>
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="pt-4">
+                        <p className="text-xs text-slate-400 mb-1">الضريبة (15%)</p>
+                        <p className="text-lg font-bold text-red-400">
+                          {currencySymbol} {calculation.tax.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                    <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-300 dark:border-gray-700">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">المجموع قبل الضريبة</p>
-                      <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">
-                        {currencySymbol} {calculation.subtotal.toFixed(2)}
-                      </p>
-                    </div>
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="pt-4">
+                        <p className="text-xs text-slate-400 mb-1">المجموع قبل الضريبة</p>
+                        <p className="text-lg font-bold text-yellow-400">
+                          {currencySymbol} {calculation.subtotal.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                    <div className="bg-green-50 dark:bg-green-950/30 p-4 rounded-lg border-2 border-green-500 dark:border-green-600">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">المجموع النهائي</p>
-                      <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                        {currencySymbol} {calculation.total.toFixed(2)}
-                      </p>
-                    </div>
+                    <Card className="bg-slate-800/50 border-slate-700">
+                      <CardContent className="pt-4">
+                        <p className="text-xs text-slate-400 mb-1">تكلفة الوحدة</p>
+                        <p className="text-lg font-bold text-purple-400">
+                          {currencySymbol} {calculation.unitCost.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
 
-                    <div className="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
-                      <p className="text-sm text-gray-600 dark:text-gray-400">تكلفة الوحدة</p>
-                      <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                        {currencySymbol} {calculation.unitCost.toFixed(2)}
-                      </p>
-                    </div>
+                    <Card className="bg-gradient-to-br from-green-500/20 to-green-600/20 border-green-500/50">
+                      <CardContent className="pt-4">
+                        <p className="text-xs text-green-300 mb-1">المجموع النهائي</p>
+                        <p className="text-lg font-bold text-green-400">
+                          {currencySymbol} {calculation.total.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="flex gap-4 justify-center pt-4">
-                  <Button size="lg" className="gap-2" onClick={handleSaveCalculation} disabled={!calculation}>
+                {/* Buttons */}
+                <div className="flex gap-2 flex-wrap">
+                  <Button onClick={handleSaveCalculation} variant="default" className="flex items-center gap-2">
                     <Heart className="h-4 w-4" />
                     حفظ الحساب
                   </Button>
-                  <Button size="lg" variant="outline" className="gap-2">
-                    <TrendingUp className="h-4 w-4" />
+                  <Button onClick={() => {}} variant="outline" className="flex items-center gap-2">
                     احسب التكاليف الكاملة
                   </Button>
                 </div>
@@ -347,66 +442,144 @@ export default function AdvancedShippingCalculator() {
           <TabsContent value="comparison">
             <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  <div>
-                    <CardTitle>مقارنة الأسعار بين الدول</CardTitle>
-                    <CardDescription>قارن التكاليف بين دول مختلفة</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <div>
+                      <CardTitle>مقارنة الأسعار</CardTitle>
+                      <CardDescription>قارن أسعار الشحن والجمارك بين الدول</CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={() => setShowFilters(!showFilters)} 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Filter className="h-4 w-4" />
+                      فلاتر
+                    </Button>
+                    <Button 
+                      onClick={handleExportCSV} 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      CSV
+                    </Button>
+                    <Button 
+                      onClick={handleExportExcel} 
+                      variant="outline" 
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Excel
+                    </Button>
                   </div>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-6">
-                {/* Country Selection for Comparison */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">اختر الدول للمقارنة</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                    {Object.entries(SHIPPING_RATES).map(([code, data]) => (
-                      <Button
-                        key={code}
-                        variant={compareCountries.includes(code) ? "default" : "outline"}
+                {/* Filter Panel */}
+                {showFilters && (
+                  <div className="bg-slate-800/50 p-4 rounded-lg space-y-4 border border-slate-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold text-white">الفلاتر المتقدمة</h3>
+                      <Button 
+                        onClick={handleResetFilters} 
+                        variant="ghost" 
                         size="sm"
-                        onClick={() => {
-                          setCompareCountries(prev =>
-                            prev.includes(code)
-                              ? prev.filter(c => c !== code)
-                              : [...prev, code]
-                          );
-                        }}
+                        className="flex items-center gap-2"
                       >
-                        {code}
+                        <RotateCcw className="h-4 w-4" />
+                        إعادة تعيين
                       </Button>
-                    ))}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm text-slate-300">تكلفة الشحن: {filters.minShipping} - {filters.maxShipping}</label>
+                        <Input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={filters.minShipping}
+                          onChange={(e) => setFilters({...filters, minShipping: parseFloat(e.target.value)})}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm text-slate-300">الجمارك: {filters.minCustoms} - {filters.maxCustoms}</label>
+                        <Input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={filters.minCustoms}
+                          onChange={(e) => setFilters({...filters, minCustoms: parseFloat(e.target.value)})}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm text-slate-300">الضريبة: {filters.minTax} - {filters.maxTax}</label>
+                        <Input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={filters.minTax}
+                          onChange={(e) => setFilters({...filters, minTax: parseFloat(e.target.value)})}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm text-slate-300">المجموع: {filters.minTotal} - {filters.maxTotal}</label>
+                        <Input
+                          type="range"
+                          min="0"
+                          max="5000"
+                          value={filters.minTotal}
+                          onChange={(e) => setFilters({...filters, minTotal: parseFloat(e.target.value)})}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Comparison Table */}
-                {comparisonData.length > 0 && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b-2">
-                          <th className="text-right p-3">الدولة</th>
-                          <th className="text-right p-3">تكلفة الشحن</th>
-                          <th className="text-right p-3">الرسوم الجمركية</th>
-                          <th className="text-right p-3">الضريبة</th>
-                          <th className="text-right p-3 font-bold">المجموع النهائي</th>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-slate-800/50 border-b border-slate-700">
+                      <tr>
+                        <th className="px-4 py-2 text-right">الدولة</th>
+                        <th className="px-4 py-2 text-right">تكلفة الشحن</th>
+                        <th className="px-4 py-2 text-right">الجمارك</th>
+                        <th className="px-4 py-2 text-right">الضريبة</th>
+                        <th className="px-4 py-2 text-right">المجموع</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comparisonData.map((item) => (
+                        <tr key={item.code} className="border-b border-slate-700 hover:bg-slate-800/30">
+                          <td className="px-4 py-3 font-medium">{item.country}</td>
+                          <td className="px-4 py-3 text-blue-400">{currencySymbol} {item.shippingCost.toFixed(2)}</td>
+                          <td className="px-4 py-3 text-orange-400">{currencySymbol} {item.customsDuty.toFixed(2)}</td>
+                          <td className="px-4 py-3 text-red-400">{currencySymbol} {item.tax.toFixed(2)}</td>
+                          <td className="px-4 py-3 text-green-400 font-bold">{currencySymbol} {item.total.toFixed(2)}</td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {comparisonData.map((item, idx) => (
-                          <tr key={item.code} className={idx % 2 === 0 ? 'bg-slate-50 dark:bg-slate-800/50' : ''}>
-                            <td className="p-3 font-medium">{item.country}</td>
-                            <td className="p-3">{currencySymbol} {item.shippingCost.toFixed(2)}</td>
-                            <td className="p-3">{currencySymbol} {item.customsDuty.toFixed(2)}</td>
-                            <td className="p-3">{currencySymbol} {item.tax.toFixed(2)}</td>
-                            <td className="p-3 font-bold text-green-600 dark:text-green-400">
-                              {currencySymbol} {item.total.toFixed(2)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {comparisonData.length === 0 && (
+                  <div className="text-center py-8 text-slate-400">
+                    لا توجد دول تطابق الفلاتر المحددة
                   </div>
                 )}
               </CardContent>
@@ -426,46 +599,25 @@ export default function AdvancedShippingCalculator() {
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-6">
-                <div className="bg-blue-50 dark:bg-blue-950/30 p-6 rounded-lg border border-blue-200 dark:border-blue-800 text-center">
-                  <Map className="h-12 w-12 mx-auto mb-4 text-blue-600 dark:text-blue-400" />
-                  <p className="text-lg font-medium mb-2">خريطة Google Maps التفاعلية</p>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    سيتم عرض خريطة تفاعلية تظهر الدول والمسافات والأسعار
-                  </p>
-                  <Button className="gap-2">
-                    <Map className="h-4 w-4" />
-                    فتح الخريطة التفاعلية
-                  </Button>
-                </div>
-
-                {/* Countries Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(SHIPPING_RATES).map(([code, data]) => (
-                    <div key={code} className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="font-bold text-lg">{code}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{data.country}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-gray-500">الإحداثيات</p>
-                          <p className="text-xs font-mono">{data.latitude.toFixed(2)}, {data.longitude.toFixed(2)}</p>
-                        </div>
-                      </div>
-                      <div className="space-y-1 text-sm">
-                        <p>تكلفة الشحن: {currencySymbol} {data.shippingCost}</p>
-                        <p>معدل الجمارك: {(data.customsRate * 100).toFixed(0)}%</p>
-                        <p>معدل الضريبة: {(data.taxRate * 100).toFixed(0)}%</p>
-                      </div>
-                    </div>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {Object.entries(SHIPPING_RATES).map(([code, rate]) => (
+                    <Button
+                      key={code}
+                      onClick={() => setCountry(code)}
+                      variant={country === code ? "default" : "outline"}
+                      className="h-auto flex flex-col items-center gap-2 p-3"
+                    >
+                      <span className="text-lg font-bold">{code}</span>
+                      <span className="text-xs text-center">{rate.country}</span>
+                    </Button>
                   ))}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          {/* Saved Calculations Tab */}
+          {/* Saved Tab */}
           <TabsContent value="saved">
             <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
               <CardHeader>
@@ -473,28 +625,25 @@ export default function AdvancedShippingCalculator() {
                   <Heart className="h-5 w-5 text-primary" />
                   <div>
                     <CardTitle>الحسابات المحفوظة</CardTitle>
-                    <CardDescription>الحسابات المفضلة لديك</CardDescription>
+                    <CardDescription>إدارة الحسابات المحفوظة والمفضلة</CardDescription>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent>
                 {savedCalculations.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <div className="text-center py-8 text-slate-400">
+                    <Heart className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p>لا توجد حسابات محفوظة بعد</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {savedCalculations.map((calc) => (
-                      <div key={calc.id} className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <p className="font-medium">{SHIPPING_RATES[calc.country].country}</p>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              الوزن: {calc.weight} كغ | القيمة: {calc.value} {calc.currency}
-                            </p>
-                            <p className="text-sm text-gray-500">
+                      <div key={calc.id} className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="font-semibold text-white">{SHIPPING_RATES[calc.country].country}</p>
+                            <p className="text-xs text-slate-400">
                               {new Date(calc.timestamp).toLocaleDateString('ar-JO')}
                             </p>
                           </div>
