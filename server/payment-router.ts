@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { router, protectedProcedure } from './_core/trpc';
+import type { AnyData } from '../shared/types';
 import PaymentService, { PaymentMethod, PaymentStatus } from './payment-service';
 
 /**
@@ -19,7 +20,7 @@ export const paymentRouter = router({
         metadata: z.record(z.string(), z.any()).optional(),
       })
     )
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const payment = await PaymentService.createPayment(
           ctx.user.id,
@@ -35,7 +36,8 @@ export const paymentRouter = router({
           payment,
         };
       } catch (error) {
-        throw new Error(`فشل إنشاء الدفعة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل إنشاء الدفعة: ${message}`);
       }
     }),
 
@@ -49,7 +51,7 @@ export const paymentRouter = router({
         stripePaymentIntentId: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const payment = await PaymentService.processPayment(
           input.paymentId,
@@ -61,7 +63,8 @@ export const paymentRouter = router({
           payment,
         };
       } catch (error) {
-        throw new Error(`فشل معالجة الدفعة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل معالجة الدفعة: ${message}`);
       }
     }),
 
@@ -70,7 +73,7 @@ export const paymentRouter = router({
    */
   confirmPayment: protectedProcedure
     .input(z.object({ paymentId: z.string() }))
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const payment = await PaymentService.confirmPayment(input.paymentId);
 
@@ -79,7 +82,8 @@ export const paymentRouter = router({
           payment,
         };
       } catch (error) {
-        throw new Error(`فشل تأكيد الدفعة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل تأكيد الدفعة: ${message}`);
       }
     }),
 
@@ -93,7 +97,7 @@ export const paymentRouter = router({
         reason: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const payment = await PaymentService.failPayment(input.paymentId, input.reason);
 
@@ -102,7 +106,8 @@ export const paymentRouter = router({
           payment,
         };
       } catch (error) {
-        throw new Error(`فشل رفع الدفعة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل رفع الدفعة: ${message}`);
       }
     }),
 
@@ -116,7 +121,7 @@ export const paymentRouter = router({
         reason: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const payment = await PaymentService.refundPayment(input.paymentId, input.reason);
 
@@ -125,7 +130,8 @@ export const paymentRouter = router({
           payment,
         };
       } catch (error) {
-        throw new Error(`فشل استرجاع الدفعة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل استرجاع الدفعة: ${message}`);
       }
     }),
 
@@ -138,7 +144,7 @@ export const paymentRouter = router({
         limit: z.number().min(1).max(100).optional(),
       })
     )
-    .query(async ({ ctx, input }: any) => {
+    .query(async ({ ctx, input }) => {
       try {
         const payments = await PaymentService.getUserPayments(
           ctx.user.id,
@@ -150,14 +156,15 @@ export const paymentRouter = router({
           payments,
         };
       } catch (error) {
-        throw new Error(`فشل جلب الدفعات: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل جلب الدفعات: ${message}`);
       }
     }),
 
   /**
    * الحصول على إحصائيات الدفع
    */
-  getPaymentStats: protectedProcedure.query(async ({ ctx }: any) => {
+  getPaymentStats: protectedProcedure.query(async ({ ctx }) => {
     try {
       const stats = await PaymentService.getPaymentStats(ctx.user.id);
 
@@ -166,7 +173,8 @@ export const paymentRouter = router({
         stats,
       };
     } catch (error) {
-      throw new Error(`فشل جلب الإحصائيات: ${error}`);
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`فشل جلب الإحصائيات: ${message}`);
     }
   }),
 
@@ -175,7 +183,7 @@ export const paymentRouter = router({
    */
   exportInvoiceToPDF: protectedProcedure
     .input(z.object({ invoiceId: z.string() }))
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const pdf = await PaymentService.exportInvoiceToPDF(input.invoiceId);
 
@@ -184,7 +192,8 @@ export const paymentRouter = router({
           pdf: pdf.toString('base64'),
         };
       } catch (error) {
-        throw new Error(`فشل تصدير الفاتورة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل تصدير الفاتورة: ${message}`);
       }
     }),
 
@@ -198,7 +207,7 @@ export const paymentRouter = router({
         email: z.string().email(),
       })
     )
-    .mutation(async ({ ctx, input }: any) => {
+    .mutation(async ({ ctx, input }) => {
       try {
         const result = await PaymentService.sendInvoiceByEmail(
           input.invoiceId,
@@ -209,7 +218,8 @@ export const paymentRouter = router({
           success: result,
         };
       } catch (error) {
-        throw new Error(`فشل إرسال الفاتورة: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل إرسال الفاتورة: ${message}`);
       }
     }),
 
@@ -224,7 +234,7 @@ export const paymentRouter = router({
         discountPercent: z.number().optional(),
       })
     )
-    .query(async ({ input }: any) => {
+    .query(async ({ input }) => {
       try {
         const finalAmount = PaymentService.calculateFinalAmount(
           input.amount,
@@ -246,7 +256,8 @@ export const paymentRouter = router({
           finalAmount,
         };
       } catch (error) {
-        throw new Error(`فشل حساب المبلغ: ${error}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل حساب المبلغ: ${message}`);
       }
     }),
 });

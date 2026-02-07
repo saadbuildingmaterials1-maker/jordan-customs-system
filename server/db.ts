@@ -1,4 +1,15 @@
 import { drizzle } from "drizzle-orm/mysql2";
+/**
+ * Database Query Helpers
+ * 
+ * يحتوي على جميع دوال الاستعلام عن قاعدة البيانات
+ * تُستخدم في tRPC procedures للتفاعل مع جداول Drizzle
+ * 
+ * @module server/db
+ * @requires drizzle-orm
+ * @requires server/_core/env
+ */
+
 import { 
   InsertUser, 
   users,

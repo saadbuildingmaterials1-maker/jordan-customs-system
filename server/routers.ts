@@ -1,4 +1,16 @@
 import { z } from "zod";
+/**
+ * Main tRPC Router
+ * 
+ * يحتوي على جميع tRPC procedures للتطبيق
+ * يربط بين العميل والخادم بطريقة آمنة مع الأنواع
+ * 
+ * @module server/routers
+ * @requires server/_core/trpc
+ * @requires server/db
+ * @requires server/routers/*
+ */
+
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -27,6 +39,10 @@ import { authRouter } from "./routers/auth";
 import { errorsRouter } from "./routers/errors";
 import { updatesRouter } from "./routers/updates";
 
+/**
+ * Main Application Router
+ * الراوتر الرئيسي للتطبيق يحتوي على جميع العمليات
+ */
 export const appRouter = router({
   system: systemRouter,
   auth: authRouter,

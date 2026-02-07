@@ -26,8 +26,11 @@ export type AnyData = Record<string, unknown>;
 /** دالة callback عامة */
 export type Callback<T = void> = () => T;
 
+/** نوع الخطأ العام */
+export type ErrorType = Error | unknown;
+
 /** دالة معالج الأخطاء */
-export type ErrorHandler = (error: Error | unknown, context?: string) => void;
+export type ErrorHandler = (error: ErrorType, context?: string) => void;
 
 /** دالة معالج النجاح */
 export type SuccessHandler<T = unknown> = (data: T) => void;
@@ -75,3 +78,27 @@ export type EventHandler<T extends Event = Event> = (event: T) => void;
 export type AsyncFunction<T = unknown, Args extends any[] = any[]> = (
   ...args: Args
 ) => Promise<T>;
+
+
+/**
+ * دالة helper للحصول على رسالة الخطأ بشكل آمن
+ */
+export function getErrorMessage(error: ErrorType): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === 'string') {
+    return error;
+  }
+  if (error && typeof error === 'object' && 'message' in error) {
+    return String((error as Record<string, unknown>).message);
+  }
+  return 'خطأ غير معروف';
+}
+
+/**
+ * دالة helper للتحقق من أن الخطأ هو Error
+ */
+export function isError(error: ErrorType): error is Error {
+  return error instanceof Error;
+}

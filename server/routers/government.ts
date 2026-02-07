@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { router, publicProcedure, protectedProcedure } from '../_core/trpc';
+import type { ErrorType } from '../../shared/types';
+import { getErrorMessage } from '../../shared/types';
 import { getGovernmentIntegration } from '../services/government-integration';
 
 /**
@@ -49,13 +51,14 @@ export const governmentRouter = router({
         }
 
         return result;
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('خطأ في إرسال البيان:', error);
         return {
           status: 'error',
           declarationId: '',
           referenceNumber: '',
-          message: error.message || 'فشل إرسال البيان',
+          message: errorMessage || 'فشل إرسال البيان',
         };
       }
     }),
@@ -70,11 +73,11 @@ export const governmentRouter = router({
         const integration = getGovernmentIntegration();
         const result = await integration.getDeclarationStatus(input.declarationId);
         return result;
-      } catch (error: any) {
+      } catch (error: ErrorType) {
         console.error('خطأ في الحصول على حالة البيان:', error);
         return {
           status: 'error',
-          message: error.message,
+          message: getErrorMessage(error),
         };
       }
     }),
@@ -96,12 +99,12 @@ export const governmentRouter = router({
           status: 'success',
           codes,
         };
-      } catch (error: any) {
+      } catch (error: ErrorType) {
         console.error('خطأ في الحصول على الرموز الجمركية:', error);
         return {
           status: 'error',
           codes: [],
-          message: error.message,
+          message: getErrorMessage(error),
         };
       }
     }),
@@ -120,12 +123,13 @@ export const governmentRouter = router({
           valid: result.valid,
           errors: result.errors,
         };
-      } catch (error: any) {
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('خطأ في التحقق من البيان:', error);
         return {
           status: 'error',
           valid: false,
-          errors: [error.message],
+          errors: [errorMessage],
         };
       }
     }),
@@ -143,11 +147,11 @@ export const governmentRouter = router({
           status: 'success',
           taxes,
         };
-      } catch (error: any) {
+      } catch (error: ErrorType) {
         console.error('خطأ في حساب الرسوم:', error);
         return {
           status: 'error',
-          message: error.message,
+          message: getErrorMessage(error),
         };
       }
     }),
@@ -165,11 +169,11 @@ export const governmentRouter = router({
           status: 'success',
           shipment,
         };
-      } catch (error: any) {
+      } catch (error: ErrorType) {
         console.error('خطأ في تتبع الشحنة:', error);
         return {
           status: 'error',
-          message: error.message,
+          message: getErrorMessage(error),
         };
       }
     }),
@@ -216,12 +220,12 @@ export const governmentRouter = router({
           operations: [],
           total: 0,
         };
-      } catch (error: any) {
+      } catch (error: ErrorType) {
         console.error('خطأ في الحصول على السجلات:', error);
         return {
           status: 'error',
           operations: [],
-          message: error.message,
+          message: getErrorMessage(error),
         };
       }
     }),
@@ -263,11 +267,11 @@ export const governmentRouter = router({
           status: 'success',
           message: 'تم إعادة محاولة إرسال البيان',
         };
-      } catch (error: any) {
+      } catch (error: ErrorType) {
         console.error('خطأ في إعادة المحاولة:', error);
         return {
           status: 'error',
-          message: error.message,
+          message: getErrorMessage(error),
         };
       }
     }),
