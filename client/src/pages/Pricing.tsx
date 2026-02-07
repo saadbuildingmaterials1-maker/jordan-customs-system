@@ -1,32 +1,35 @@
 import { useLocation } from "wouter";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Zap } from "lucide-react";
+import { useState } from "react";
 
 export default function Pricing() {
   const [, navigate] = useLocation();
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   const plans = [
     {
       name: "الخطة الأساسية",
-      price: "99",
-      description: "للشركات الصغيرة والناشئة",
+      price: billingCycle === "yearly" ? "0" : "0",
+      description: "للمستخدمين الجدد",
       features: [
-        "إدارة حتى 100 بيان جمركي شهرياً",
+        "حاسبة أسعار الشحن والجمارك",
+        "مقارنة الأسعار بين الدول",
+        "حفظ الحسابات المفضلة",
         "تقارير أساسية",
         "تتبع الشحنات",
-        "دعم بريد إلكتروني",
-        "نسخة احتياطية يومية"
+        "دعم بريد إلكتروني"
       ],
       cta: "ابدأ الآن",
       highlighted: false
     },
     {
       name: "الخطة المتقدمة",
-      price: "299",
+      price: billingCycle === "yearly" ? "479.92" : "49.99",
       description: "للشركات المتوسطة",
       features: [
-        "إدارة حتى 1000 بيان جمركي شهرياً",
+        "كل ميزات الخطة الأساسية",
         "تقارير متقدمة مع رسوم بيانية",
-        "تتبع فوري للشحنات",
+        "إشعارات الأسعار الفورية",
         "دعم أولويتي",
         "نسخة احتياطية كل ساعة",
         "استيراد من PDF",
@@ -37,22 +40,27 @@ export default function Pricing() {
     },
     {
       name: "الخطة المؤسسية",
-      price: "999",
+      price: billingCycle === "yearly" ? "1919.92" : "199.99",
       description: "للشركات الكبرى",
       features: [
-        "إدارة غير محدودة للبيانات",
+        "كل ميزات الخطة المتقدمة",
         "تقارير مخصصة وتحليلات عميقة",
-        "تتبع متقدم مع خرائط تفاعلية",
+        "تنبؤات الأسعار بالذكاء الاصطناعي",
         "دعم هاتفي 24/7",
         "نسخة احتياطية في الوقت الفعلي",
         "API مخصص",
-        "إدارة متقدمة للمستخدمين",
         "تكامل مع الأنظمة الخارجية"
       ],
       cta: "اتصل بنا",
       highlighted: false
     }
   ];
+
+  const handleSubscribe = (planName: string) => {
+    console.log(`اشتراك في الخطة: ${planName}`);
+    // هنا يتم إعادة التوجيه إلى صفحة الدفع Stripe
+    alert(`سيتم نقلك إلى صفحة الدفع للخطة ${planName}`);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white">
@@ -68,6 +76,30 @@ export default function Pricing() {
           </button>
           <h1 className="text-4xl md:text-5xl font-bold mb-4">الأسعار والخطط</h1>
           <p className="text-blue-100/70">اختر الخطة المناسبة لاحتياجات شركتك</p>
+
+          {/* تبديل الفترة الزمنية */}
+          <div className="flex justify-center gap-4 mt-8">
+            <button
+              onClick={() => setBillingCycle("monthly")}
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                billingCycle === "monthly"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+              }`}
+            >
+              شهري
+            </button>
+            <button
+              onClick={() => setBillingCycle("yearly")}
+              className={`px-6 py-2 rounded-lg font-medium transition-colors ${
+                billingCycle === "yearly"
+                  ? "bg-blue-600 text-white"
+                  : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+              }`}
+            >
+              سنوي (توفير 20%)
+            </button>
+          </div>
         </div>
       </header>
 
@@ -100,7 +132,7 @@ export default function Pricing() {
                   </div>
 
                   <button
-                    onClick={() => navigate("/contact")}
+                    onClick={() => handleSubscribe(plan.name)}
                     className={`w-full py-3 rounded-lg font-semibold transition-all duration-300 mb-8 ${
                       plan.highlighted
                         ? "bg-white text-blue-600 hover:bg-white/90"
