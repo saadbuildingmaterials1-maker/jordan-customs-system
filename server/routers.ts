@@ -50,6 +50,7 @@ import { couponsRouter } from "./routers/coupons";
 import { billingRouter } from "./routers/billing";
 import { operationsRouter } from "./routers/operations";
 import { localPaymentGatewaysRouter } from "./routers/local-payment-gateways";
+import { webhooksRouter } from "./routers/webhooks";
 
 /**
  * Main Application Router
@@ -660,6 +661,7 @@ export const appRouter = router({
   billing: billingRouter,
   operations: operationsRouter,
   localPaymentGateways: localPaymentGatewaysRouter,
+  webhooks: webhooksRouter,
 });
 
 export type AppRouter = typeof appRouter;
