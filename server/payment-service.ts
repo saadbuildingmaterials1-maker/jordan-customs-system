@@ -3,7 +3,8 @@
  * @module ./server/payment-service
  */
 import { z } from 'zod';
-/**
+import Stripe from 'stripe';
+import type { Stripe as StripeType } from 'stripe';/**
  * Payment Service Module
  * 
  * يحتوي على جميع عمليات معالجة الدفعات
@@ -397,3 +398,117 @@ export class PaymentService {
 }
 
 export default PaymentService;
+
+
+/**
+ * خدمة Stripe المتقدمة
+ */
+export class StripeService {
+  private static stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_mock');
+
+  /**
+   * إنشاء جلسة دفع
+   */
+  static async createCheckoutSession(params: {
+    userId: number;
+    userEmail: string;
+    planId: string;
+    planName: string;
+    amount: number;
+    currency: string;
+  }): Promise<{ sessionId: string; url: string }> {
+    try {
+      const session = await this.stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: params.currency.toLowerCase(),
+              product_data: {
+                name: params.planName,
+                description: `اشتراك في ${params.planName}`,
+              },
+              unit_amount: Math.round(params.amount * 100),
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/pricing`,
+        customer_email: params.userEmail,
+        metadata: {
+          userId: params.userId.toString(),
+          planId: params.planId,
+        },
+      });
+
+      return {
+        sessionId: session.id,
+        url: session.url || '',
+      };
+    } catch (error) {
+      console.error('خطأ في إنشاء جلسة الدفع:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * استرجاع جلسة الدفع
+   */
+  static async getCheckoutSession(sessionId: string) {
+    try {
+      return await this.stripe.checkout.sessions.retrieve(sessionId);
+    } catch (error) {
+      console.error('خطأ في استرجاع جلسة الدفع:', error);
+      return null;
+    }
+  }
+
+  /**
+   * معالجة webhook من Stripe
+   */
+  static async handleWebhook(event: StripeType.Event) {
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object as StripeType.Checkout.Session;
+          console.log(`✓ تم إكمال جلسة الدفع: ${session.id}`);
+          return { success: true, message: 'تم معالجة جلسة الدفع بنجاح' };
+        }
+        case 'invoice.payment_succeeded': {
+          const invoice = event.data.object as Stripe.Invoice;
+          console.log(`✓ تم دفع الفاتورة: ${invoice.id}`);
+          return { success: true, message: 'تم دفع الفاتورة بنجاح' };
+        }
+        case 'invoice.payment_failed': {
+          const invoice = event.data.object as Stripe.Invoice;
+          console.log(`✗ فشل دفع الفاتورة: ${invoice.id}`);
+          return { success: false, message: 'فشل دفع الفاتورة' };
+        }
+        default:
+          console.log(`⚠️ حدث غير معالج: ${event.type}`);
+          return { success: true, message: `تم استقبال الحدث: ${event.type}` };
+      }
+    } catch (error) {
+      console.error('خطأ في معالجة webhook:', error);
+      return { success: false, message: 'خطأ في معالجة webhook' };
+    }
+  }
+
+  /**
+   * التحقق من توقيع webhook
+   */
+  static verifyWebhookSignature(body: string, signature: string) {
+    try {
+      return this.stripe.webhooks.constructEvent(
+        body,
+        signature,
+        process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test_mock'
+      );
+    } catch (error) {
+      console.error('خطأ في التحقق من توقيع webhook:', error);
+      return null;
+    }
+  }
+}
