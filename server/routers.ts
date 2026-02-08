@@ -54,6 +54,7 @@ import { webhooksRouter } from "./routers/webhooks";
 import { notificationsAccountingRouter } from "./routers/notifications-accounting";
 import { paymentApisRouter } from "./routers/payment-apis";
 import { invoicesRouter } from "./routers/invoices";
+import { advancedFeaturesRouter } from "./routers/advanced-features";
 
 /**
  * Main Application Router
@@ -668,6 +669,7 @@ export const appRouter = router({
   notificationsAccounting: notificationsAccountingRouter,
   paymentApis: paymentApisRouter,
   invoices: invoicesRouter,
+  advancedFeatures: advancedFeaturesRouter,
 });
 
 export type AppRouter = typeof appRouter;
