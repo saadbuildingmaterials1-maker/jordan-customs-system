@@ -3481,5 +3481,86 @@
     "timestamp": 1770510478626,
     "expiresAt": 1773102478626,
     "checksum": "606de384fa46e8df44717d812f6b6dcccead4dee0378742f17bf9a8022607993"
+  },
+  {
+    "id": "3117228c-c7f1-4109-96f3-3e202b470094",
+    "name": "test-backup",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511101850,
+    "expiresAt": 1773103101850,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "43b13f5d-1749-410f-b431-7392a4609123",
+    "name": "restore-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511101927,
+    "expiresAt": 1773103101927,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "0f2c62a7-ef89-4e60-9286-caaee04faaec",
+    "name": "wrong-password-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511102086,
+    "expiresAt": 1773103102086,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "4229001a-e399-4bf8-b7e5-259f81f44926",
+    "name": "list-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511102219,
+    "expiresAt": 1773103102219,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "ed15acd2-660d-4a9d-b075-e0720064a62f",
+    "name": "list-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511102287,
+    "expiresAt": 1773103102287,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "32ffc491-c120-42c0-8b32-154ca98e2a55",
+    "name": "stats-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511102372,
+    "expiresAt": 1773103102372,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "a49e1cc7-12c1-496d-a2bc-de419f9e7d8b",
+    "name": "stats-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1770511102553,
+    "expiresAt": 1773103102553,
+    "checksum": "108a97f0fd3f4b0b89e20d700954f13355c9db5015e22d5c7ab711d9726bea48"
+  },
+  {
+    "id": "439c33d3-a867-4d17-9989-a1494bed4f3d",
+    "name": "empty-backup",
+    "size": 0,
+    "encrypted": true,
+    "timestamp": 1770511103840,
+    "expiresAt": 1773103103840,
+    "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "id": "250ead67-78b7-42d3-a4bd-45bccb215ab2",
+    "name": "special-backup",
+    "size": 142,
+    "encrypted": true,
+    "timestamp": 1770511104044,
+    "expiresAt": 1773103104044,
+    "checksum": "606de384fa46e8df44717d812f6b6dcccead4dee0378742f17bf9a8022607993"
   }
 ]

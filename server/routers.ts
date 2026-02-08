@@ -51,6 +51,7 @@ import { billingRouter } from "./routers/billing";
 import { operationsRouter } from "./routers/operations";
 import { localPaymentGatewaysRouter } from "./routers/local-payment-gateways";
 import { webhooksRouter } from "./routers/webhooks";
+import { notificationsAccountingRouter } from "./routers/notifications-accounting";
 
 /**
  * Main Application Router
@@ -662,6 +663,7 @@ export const appRouter = router({
   operations: operationsRouter,
   localPaymentGateways: localPaymentGatewaysRouter,
   webhooks: webhooksRouter,
+  notificationsAccounting: notificationsAccountingRouter,
 });
 
 export type AppRouter = typeof appRouter;
