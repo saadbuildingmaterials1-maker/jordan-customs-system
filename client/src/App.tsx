@@ -65,10 +65,11 @@ const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const PaymentSystem = lazy(() => import('@/pages/PaymentSystem'));
 const ClickPayment = lazy(() => import('@/pages/ClickPayment'));
-const AdvancedPaymentGateway = lazy(() => import('@/pages/AdvancedPaymentGateway'));
+const AdvancedPaymentGatewayPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
 const SubscriptionPlans = lazy(() => import('@/pages/SubscriptionPlans'));
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 const ConfirmPlan = lazy(() => import('@/pages/ConfirmPlan'));
+const AdvancedPaymentPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -135,7 +136,7 @@ function Router() {
         <Route path="/payment" component={PaymentPage} />
         <Route path="/payment-system" component={PaymentSystem} />
         <Route path="/click-payment" component={ClickPayment} />
-        <Route path="/advanced-payment" component={AdvancedPaymentGateway} />
+        <Route path="/advanced-payment" component={AdvancedPaymentPage} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
         <Route path="/subscription-plans" component={SubscriptionPlans} />
         <Route path="/subscription-dashboard" component={SubscriptionDashboard} />
