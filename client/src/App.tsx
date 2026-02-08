@@ -71,6 +71,7 @@ const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard')
 const ConfirmPlan = lazy(() => import('@/pages/ConfirmPlan'));
 const AdvancedPaymentPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
+const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -139,6 +140,7 @@ function Router() {
         <Route path="/click-payment" component={ClickPayment} />
         <Route path="/advanced-payment" component={AdvancedPaymentPage} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
+        <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
         <Route path="/subscription-plans" component={SubscriptionPlans} />
         <Route path="/subscription-dashboard" component={SubscriptionDashboard} />
