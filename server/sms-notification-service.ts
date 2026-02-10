@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * sms-notification-service
  * @module ./server/sms-notification-service
@@ -115,7 +116,7 @@ class SMSNotificationService {
     try {
       // التحقق من صحة رقم الهاتف
       if (!this.isValidPhoneNumber(notification.phoneNumber)) {
-        console.error(`Invalid phone number: ${notification.phoneNumber}`);
+        logger.error(`Invalid phone number: ${notification.phoneNumber}`);
         return false;
       }
 
@@ -125,7 +126,7 @@ class SMSNotificationService {
       // محاكاة إرسال SMS (في الإنتاج، ستتصل بـ Twilio أو خدمة SMS أخرى)
       return await this.processSMSQueue();
     } catch (error) {
-      console.error('Error sending SMS:', error);
+      logger.error('Error sending SMS:', error);
       return false;
     }
   }
@@ -143,7 +144,7 @@ class SMSNotificationService {
     try {
       const template = this.templates.get(templateId);
       if (!template) {
-        console.error(`Template not found: ${templateId}`);
+        logger.error(`Template not found: ${templateId}`);
         return false;
       }
 
@@ -164,7 +165,7 @@ class SMSNotificationService {
 
       return await this.sendSMS(notification);
     } catch (error) {
-      console.error('Error sending SMS from template:', error);
+      logger.error('Error sending SMS from template:', error);
       return false;
     }
   }
@@ -191,7 +192,7 @@ class SMSNotificationService {
 
       return true;
     } catch (error) {
-      console.error('Error processing SMS queue:', error);
+      logger.error('Error processing SMS queue:', error);
       // إعادة محاولة الإرسال
       return await this.retryNotification(notification);
     }
@@ -205,7 +206,7 @@ class SMSNotificationService {
     retryCount: number = 0
   ): Promise<boolean> {
     if (retryCount >= this.maxRetries) {
-      console.error(`Failed to send SMS after ${this.maxRetries} retries`);
+      logger.error(`Failed to send SMS after ${this.maxRetries} retries`);
       return false;
     }
 
@@ -216,7 +217,7 @@ class SMSNotificationService {
       console.log(`[SMS] Retrying (${retryCount + 1}/${this.maxRetries}): ${notification.phoneNumber}`);
       return await this.processSMSQueue();
     } catch (error) {
-      console.error('Error retrying SMS:', error);
+      logger.error('Error retrying SMS:', error);
       return await this.retryNotification(notification, retryCount + 1);
     }
   }
@@ -242,7 +243,7 @@ class SMSNotificationService {
         isRead: false,
       });
     } catch (error) {
-      console.error('Error saving notification to database:', error);
+      logger.error('Error saving notification to database:', error);
     }
   }
 

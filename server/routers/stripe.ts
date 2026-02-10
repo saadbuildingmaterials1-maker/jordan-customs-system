@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Stripe Payment Router
  * 
@@ -215,7 +216,7 @@ export const stripeRouter = router({
         paidAt: p.paidAt,
       }));
     } catch (error) {
-      console.error('خطأ في جلب الدفعات:', error);
+      logger.error('خطأ في جلب الدفعات:', error);
       return [];
     }
   }),
@@ -237,7 +238,7 @@ export const stripeRouter = router({
         dueDate: i.dueDate,
       }));
     } catch (error) {
-      console.error('خطأ في جلب الفواتير:', error);
+      logger.error('خطأ في جلب الفواتير:', error);
       return [];
     }
   }),
@@ -261,7 +262,7 @@ export const stripeRouter = router({
         createdAt: s.createdAt,
       }));
     } catch (error) {
-      console.error('خطأ في جلب الاشتراكات:', error);
+      logger.error('خطأ في جلب الاشتراكات:', error);
       return [];
     }
   }),

@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * payment-service
  * @module ./server/payment-service
@@ -316,7 +317,7 @@ export class PaymentService {
       schema.parse(data);
       return true;
     } catch (error) {
-      console.error('[Payment Service] خطأ في التحقق:', error);
+      logger.error('[Payment Service] خطأ في التحقق:', error);
       return false;
     }
   }
@@ -448,7 +449,7 @@ export class StripeService {
         url: session.url || '',
       };
     } catch (error) {
-      console.error('خطأ في إنشاء جلسة الدفع:', error);
+      logger.error('خطأ في إنشاء جلسة الدفع:', error);
       throw error;
     }
   }
@@ -460,7 +461,7 @@ export class StripeService {
     try {
       return await this.stripe.checkout.sessions.retrieve(sessionId);
     } catch (error) {
-      console.error('خطأ في استرجاع جلسة الدفع:', error);
+      logger.error('خطأ في استرجاع جلسة الدفع:', error);
       return null;
     }
   }
@@ -491,7 +492,7 @@ export class StripeService {
           return { success: true, message: `تم استقبال الحدث: ${event.type}` };
       }
     } catch (error) {
-      console.error('خطأ في معالجة webhook:', error);
+      logger.error('خطأ في معالجة webhook:', error);
       return { success: false, message: 'خطأ في معالجة webhook' };
     }
   }
@@ -507,7 +508,7 @@ export class StripeService {
         process.env.STRIPE_WEBHOOK_SECRET || 'whsec_test_mock'
       );
     } catch (error) {
-      console.error('خطأ في التحقق من توقيع webhook:', error);
+      logger.error('خطأ في التحقق من توقيع webhook:', error);
       return null;
     }
   }

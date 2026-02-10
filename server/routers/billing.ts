@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Billing Router
  * 
@@ -76,7 +77,7 @@ export const billingRouter = router({
           pdfSize: pdfBuffer.length,
         };
       } catch (error) {
-        console.error('❌ خطأ في إنشاء الفاتورة:', error);
+        logger.error('❌ خطأ في إنشاء الفاتورة:', error);
         throw new Error('فشل في إنشاء الفاتورة');
       }
     }),
@@ -107,7 +108,7 @@ export const billingRouter = router({
           ...taxCalculation,
         };
       } catch (error) {
-        console.error('❌ خطأ في حساب الضرائب:', error);
+        logger.error('❌ خطأ في حساب الضرائب:', error);
         throw new Error('فشل في حساب الضرائب');
       }
     }),
@@ -130,7 +131,7 @@ export const billingRouter = router({
           ...taxInfo,
         };
       } catch (error) {
-        console.error('❌ خطأ في جلب معلومات الضريبة:', error);
+        logger.error('❌ خطأ في جلب معلومات الضريبة:', error);
         throw new Error('فشل في جلب معلومات الضريبة');
       }
     }),
@@ -147,7 +148,7 @@ export const billingRouter = router({
         rates,
       };
     } catch (error) {
-      console.error('❌ خطأ في جلب معدلات الضريبة:', error);
+      logger.error('❌ خطأ في جلب معدلات الضريبة:', error);
       throw new Error('فشل في جلب معدلات الضريبة');
     }
   }),
@@ -164,7 +165,7 @@ export const billingRouter = router({
         fees,
       };
     } catch (error) {
-      console.error('❌ خطأ في جلب رسوم الشحن:', error);
+      logger.error('❌ خطأ في جلب رسوم الشحن:', error);
       throw new Error('فشل في جلب رسوم الشحن');
     }
   }),
@@ -181,7 +182,7 @@ export const billingRouter = router({
         fees,
       };
     } catch (error) {
-      console.error('❌ خطأ في جلب رسوم البضاعة:', error);
+      logger.error('❌ خطأ في جلب رسوم البضاعة:', error);
       throw new Error('فشل في جلب رسوم البضاعة');
     }
   }),
@@ -212,7 +213,7 @@ export const billingRouter = router({
             : 'فشل في تحديث معدل الضريبة',
         };
       } catch (error) {
-        console.error('❌ خطأ في تحديث معدل الضريبة:', error);
+        logger.error('❌ خطأ في تحديث معدل الضريبة:', error);
         throw new Error('فشل في تحديث معدل الضريبة');
       }
     }),
@@ -271,7 +272,7 @@ export const billingRouter = router({
           },
         };
       } catch (error) {
-        console.error('❌ خطأ في إنشاء التقرير:', error);
+        logger.error('❌ خطأ في إنشاء التقرير:', error);
         throw new Error('فشل في إنشاء التقرير الضريبي');
       }
     }),

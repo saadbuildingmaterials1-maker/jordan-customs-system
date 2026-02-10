@@ -68,7 +68,7 @@ export const corsOptions: any = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     const allowedOrigins = [
       'http://localhost:3000',
-      'http://localhost:5173',
+      CORS_ORIGINS[0],
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173',
       process.env.FRONTEND_URL,

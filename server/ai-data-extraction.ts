@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * ai-data-extraction
  * @module ./server/ai-data-extraction
@@ -141,7 +142,7 @@ export async function extractDataFromText(text: string): Promise<ExtractedData> 
     }
     return content as ExtractedData;
   } catch (error) {
-    console.error('خطأ في استخراج البيانات:', error);
+    logger.error('خطأ في استخراج البيانات:', error);
     return {
       confidence: 0,
       errors: [`فشل استخراج البيانات: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`],
@@ -250,7 +251,7 @@ export async function enhanceExtractedData(data: ExtractedData): Promise<Extract
     }
     return content as ExtractedData;
   } catch (error) {
-    console.error('خطأ في تحسين البيانات:', error);
+    logger.error('خطأ في تحسين البيانات:', error);
     return data;
   }
 }
@@ -326,7 +327,7 @@ export async function compareExtractedData(
       recommendation: 'فشل المقارنة',
     };
   } catch (error) {
-    console.error('خطأ في مقارنة البيانات:', error);
+    logger.error('خطأ في مقارنة البيانات:', error);
     return {
       differences: [],
       recommendation: 'فشل المقارنة',

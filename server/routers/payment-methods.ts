@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Payment Methods Router
  * 
@@ -122,7 +123,7 @@ export const paymentMethodsRouter = router({
         created: m.created,
       }));
     } catch (error) {
-      console.error('خطأ في جلب طرق الدفع:', error);
+      logger.error('خطأ في جلب طرق الدفع:', error);
       return [];
     }
   }),

@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * Advanced Analytics Service
  */
@@ -16,7 +17,7 @@ export class AnalyticsService {
 
       return { success: true, report };
     } catch (error) {
-      console.error('Analytics error:', error);
+      logger.error('Analytics error:', error);
       return { success: false, error: 'Failed to generate report' };
     }
   }
@@ -32,7 +33,7 @@ export class AnalyticsService {
 
       return { success: true, prediction };
     } catch (error) {
-      console.error('Demand prediction error:', error);
+      logger.error('Demand prediction error:', error);
       return { success: false, error: 'Failed to predict demand' };
     }
   }
@@ -47,7 +48,7 @@ export class AnalyticsService {
 
       return { success: true, optimization };
     } catch (error) {
-      console.error('Inventory optimization error:', error);
+      logger.error('Inventory optimization error:', error);
       return { success: false, error: 'Failed to optimize inventory' };
     }
   }
@@ -68,7 +69,7 @@ export class ComplianceService {
 
       return { success: true, audit };
     } catch (error) {
-      console.error('Audit error:', error);
+      logger.error('Audit error:', error);
       return { success: false, error: 'Failed to audit declaration' };
     }
   }
@@ -83,7 +84,7 @@ export class ComplianceService {
 
       return { success: true, validation };
     } catch (error) {
-      console.error('Compliance validation error:', error);
+      logger.error('Compliance validation error:', error);
       return { success: false, error: 'Failed to validate compliance' };
     }
   }
@@ -98,7 +99,7 @@ export class ComplianceService {
 
       return { success: true, trail };
     } catch (error) {
-      console.error('Audit trail error:', error);
+      logger.error('Audit trail error:', error);
       return { success: false, error: 'Failed to generate audit trail' };
     }
   }
@@ -121,7 +122,7 @@ export class DocumentManagementService {
 
       return { success: true, document };
     } catch (error) {
-      console.error('Document upload error:', error);
+      logger.error('Document upload error:', error);
       return { success: false, error: 'Failed to upload document' };
     }
   }
@@ -136,7 +137,7 @@ export class DocumentManagementService {
 
       return { success: true, extractedData };
     } catch (error) {
-      console.error('Data extraction error:', error);
+      logger.error('Data extraction error:', error);
       return { success: false, error: 'Failed to extract data' };
     }
   }
@@ -151,7 +152,7 @@ export class DocumentManagementService {
 
       return { success: true, report };
     } catch (error) {
-      console.error('Document report error:', error);
+      logger.error('Document report error:', error);
       return { success: false, error: 'Failed to generate document report' };
     }
   }
@@ -166,7 +167,7 @@ export class PerformanceService {
       // Cache data in Redis or similar
       return { success: true, cached: true };
     } catch (error) {
-      console.error('Caching error:', error);
+      logger.error('Caching error:', error);
       return { success: false, error: 'Failed to cache data' };
     }
   }
@@ -176,7 +177,7 @@ export class PerformanceService {
       // Retrieve cached data
       return { success: true, data: null };
     } catch (error) {
-      console.error('Cache retrieval error:', error);
+      logger.error('Cache retrieval error:', error);
       return { success: false, error: 'Failed to retrieve cached data' };
     }
   }
@@ -192,7 +193,7 @@ export class PerformanceService {
 
       return { success: true, optimization };
     } catch (error) {
-      console.error('Query optimization error:', error);
+      logger.error('Query optimization error:', error);
       return { success: false, error: 'Failed to optimize query' };
     }
   }
@@ -213,7 +214,7 @@ export class WorkflowAutomationService {
 
       return { success: true, workflow };
     } catch (error) {
-      console.error('Workflow creation error:', error);
+      logger.error('Workflow creation error:', error);
       return { success: false, error: 'Failed to create workflow' };
     }
   }
@@ -229,7 +230,7 @@ export class WorkflowAutomationService {
 
       return { success: true, execution };
     } catch (error) {
-      console.error('Workflow execution error:', error);
+      logger.error('Workflow execution error:', error);
       return { success: false, error: 'Failed to execute workflow' };
     }
   }
@@ -245,7 +246,7 @@ export class WorkflowAutomationService {
 
       return { success: true, scheduled };
     } catch (error) {
-      console.error('Workflow scheduling error:', error);
+      logger.error('Workflow scheduling error:', error);
       return { success: false, error: 'Failed to schedule workflow' };
     }
   }
@@ -263,7 +264,7 @@ export class LocalizationService {
       const translations = this.translations.get(language) || {};
       return { success: true, translations };
     } catch (error) {
-      console.error('Translation loading error:', error);
+      logger.error('Translation loading error:', error);
       return { success: false, error: 'Failed to load translations' };
     }
   }
@@ -275,7 +276,7 @@ export class LocalizationService {
 
       return { success: true, translated };
     } catch (error) {
-      console.error('Translation error:', error);
+      logger.error('Translation error:', error);
       return { success: false, error: 'Failed to translate text' };
     }
   }
@@ -290,7 +291,7 @@ export class LocalizationService {
       const formatted = formatter.format(amount);
       return { success: true, formatted };
     } catch (error) {
-      console.error('Currency formatting error:', error);
+      logger.error('Currency formatting error:', error);
       return { success: false, error: 'Failed to format currency' };
     }
   }
@@ -310,7 +311,7 @@ export class AdvancedSecurityService {
 
       return { success: true, anomalies };
     } catch (error) {
-      console.error('Anomaly detection error:', error);
+      logger.error('Anomaly detection error:', error);
       return { success: false, error: 'Failed to detect anomalies' };
     }
   }
@@ -324,7 +325,7 @@ export class AdvancedSecurityService {
 
       return { success: true, validation };
     } catch (error) {
-      console.error('Data integrity validation error:', error);
+      logger.error('Data integrity validation error:', error);
       return { success: false, error: 'Failed to validate data integrity' };
     }
   }
@@ -336,7 +337,7 @@ export class AdvancedSecurityService {
 
       return { success: true, encrypted };
     } catch (error) {
-      console.error('Encryption error:', error);
+      logger.error('Encryption error:', error);
       return { success: false, error: 'Failed to encrypt data' };
     }
   }

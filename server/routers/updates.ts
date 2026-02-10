@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Router للتحديثات
  * يوفر endpoints للتحقق من التحديثات والحصول على معلومات الإصدار
@@ -19,7 +20,7 @@ export const updatesRouter = router({
         data: status,
       };
     } catch (error) {
-      console.error("Error checking for updates:", error);
+      logger.error("Error checking for updates:", error);
       return {
         success: false,
         error: "فشل التحقق من التحديثات",

@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * خدمة التصدير والتشفير المتقدمة
  * Export and Encryption Service
@@ -153,7 +154,7 @@ export function verifyDataIntegrity(data: string, hash: string): boolean {
     const calculatedHash = createHash(data);
     return calculatedHash === hash;
   } catch (error) {
-    console.error('فشل التحقق من السلامة:', error);
+    logger.error('فشل التحقق من السلامة:', error);
     return false;
   }
 }

@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * notification-websocket
  * 
@@ -76,7 +77,7 @@ export class NotificationService {
         }
         next();
       } catch (error) {
-        console.error('خطأ في التحقق من الاتصال:', error);
+        logger.error('خطأ في التحقق من الاتصال:', error);
         next(new Error('فشل التحقق من الاتصال'));
       }
     });
@@ -114,7 +115,7 @@ export class NotificationService {
           const notifications = await db.getNotificationsByUserId(userId);
           socket.emit('notifications_list', notifications);
         } catch (error: any) {
-          console.error('خطأ في جلب الإشعارات:', error);
+          logger.error('خطأ في جلب الإشعارات:', error);
           socket.emit('error', 'فشل جلب الإشعارات');
         }
       });
@@ -124,7 +125,7 @@ export class NotificationService {
           await db.markNotificationAsRead(parseInt(notificationId));
           this.io.to(`user:${userId}`).emit('notification_read', { notificationId });
         } catch (error: any) {
-          console.error('خطأ في تحديث الإشعار:', error);
+          logger.error('خطأ في تحديث الإشعار:', error);
         }
       });
 
@@ -133,7 +134,7 @@ export class NotificationService {
           await db.markAllNotificationsAsRead(userId);
           this.io.to(`user:${userId}`).emit('all_notifications_read');
         } catch (error: any) {
-          console.error('خطأ في تحديث جميع الإشعارات:', error);
+          logger.error('خطأ في تحديث جميع الإشعارات:', error);
         }
       });
 
@@ -143,7 +144,7 @@ export class NotificationService {
       });
 
       socket.on('error', (error: any) => {
-        console.error(`[WebSocket] خطأ من المستخدم ${userId}:`, error);
+        logger.error(`[WebSocket] خطأ من المستخدم ${userId}:`, error);
       });
     });
   }
@@ -218,7 +219,7 @@ export class NotificationService {
       };
       await db.createNotification(notifData as any);
     } catch (error: any) {
-      console.error('خطأ في حفظ الإشعار:', error);
+      logger.error('خطأ في حفظ الإشعار:', error);
     }
 
     // إرسال الإشعار عبر WebSocket

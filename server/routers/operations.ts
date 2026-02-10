@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Operations Router
  * 
@@ -28,7 +29,7 @@ export const operationsRouter = router({
         count: warehouses.length,
       };
     } catch (error) {
-      console.error('❌ خطأ في جلب المستودعات:', error);
+      logger.error('❌ خطأ في جلب المستودعات:', error);
       throw new Error('فشل في جلب المستودعات');
     }
   }),
@@ -55,7 +56,7 @@ export const operationsRouter = router({
           alerts,
         };
       } catch (error) {
-        console.error('❌ خطأ في جلب المستودع:', error);
+        logger.error('❌ خطأ في جلب المستودع:', error);
         throw new Error('فشل في جلب المستودع');
       }
     }),
@@ -77,7 +78,7 @@ export const operationsRouter = router({
           report,
         };
       } catch (error) {
-        console.error('❌ خطأ في جلب التقرير:', error);
+        logger.error('❌ خطأ في جلب التقرير:', error);
         throw new Error('فشل في جلب تقرير المستودع');
       }
     }),
@@ -117,7 +118,7 @@ export const operationsRouter = router({
           count: quotes.length,
         };
       } catch (error) {
-        console.error('❌ خطأ في حساب أسعار الشحن:', error);
+        logger.error('❌ خطأ في حساب أسعار الشحن:', error);
         throw new Error('فشل في حساب أسعار الشحن');
       }
     }),
@@ -148,7 +149,7 @@ export const operationsRouter = router({
           tracking,
         };
       } catch (error) {
-        console.error('❌ خطأ في تتبع الشحنة:', error);
+        logger.error('❌ خطأ في تتبع الشحنة:', error);
         throw new Error('فشل في تتبع الشحنة');
       }
     }),
@@ -175,7 +176,7 @@ export const operationsRouter = router({
           report,
         };
       } catch (error) {
-        console.error('❌ خطأ في جلب تقرير الشحن:', error);
+        logger.error('❌ خطأ في جلب تقرير الشحن:', error);
         throw new Error('فشل في جلب تقرير الشحن');
       }
     }),
@@ -196,7 +197,7 @@ export const operationsRouter = router({
           unreadCount: alerts.filter((a) => !a.readAt).length,
         };
       } catch (error) {
-        console.error('❌ خطأ في جلب التنبيهات:', error);
+        logger.error('❌ خطأ في جلب التنبيهات:', error);
         throw new Error('فشل في جلب التنبيهات');
       }
     }),
@@ -216,7 +217,7 @@ export const operationsRouter = router({
           count: reminders.length,
         };
       } catch (error) {
-        console.error('❌ خطأ في جلب التذكيرات:', error);
+        logger.error('❌ خطأ في جلب التذكيرات:', error);
         throw new Error('فشل في جلب التذكيرات');
       }
     }),
@@ -235,7 +236,7 @@ export const operationsRouter = router({
           message: success ? 'تم وضع علامة على التنبيه كمقروء' : 'فشل في وضع العلامة',
         };
       } catch (error) {
-        console.error('❌ خطأ في وضع العلامة:', error);
+        logger.error('❌ خطأ في وضع العلامة:', error);
         throw new Error('فشل في وضع العلامة على التنبيه');
       }
     }),
@@ -254,7 +255,7 @@ export const operationsRouter = router({
           message: success ? 'تم إكمال التذكير' : 'فشل في إكمال التذكير',
         };
       } catch (error) {
-        console.error('❌ خطأ في إكمال التذكير:', error);
+        logger.error('❌ خطأ في إكمال التذكير:', error);
         throw new Error('فشل في إكمال التذكير');
       }
     }),
@@ -285,7 +286,7 @@ export const operationsRouter = router({
           message: 'تم تحديث التفضيلات بنجاح',
         };
       } catch (error) {
-        console.error('❌ خطأ في تحديث التفضيلات:', error);
+        logger.error('❌ خطأ في تحديث التفضيلات:', error);
         throw new Error('فشل في تحديث التفضيلات');
       }
     }),
@@ -302,7 +303,7 @@ export const operationsRouter = router({
         statistics,
       };
     } catch (error) {
-      console.error('❌ خطأ في جلب الإحصائيات:', error);
+      logger.error('❌ خطأ في جلب الإحصائيات:', error);
       throw new Error('فشل في جلب إحصائيات التنبيهات');
     }
   }),

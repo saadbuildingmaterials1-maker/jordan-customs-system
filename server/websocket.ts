@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * websocket
  * 
@@ -62,7 +63,7 @@ export class WebSocketManager {
       });
 
       ws.on('error', (error: Error) => {
-        console.error('[WebSocket] خطأ:', error.message);
+        logger.error('[WebSocket] خطأ:', error.message);
       });
 
       // إرسال رسالة ترحيب
@@ -101,7 +102,7 @@ export class WebSocketManager {
         console.log(`[WebSocket] معرف المستخدم: ${data.userId}`);
       }
     } catch (error) {
-      console.error('[WebSocket] خطأ في معالجة الرسالة:', error);
+      logger.error('[WebSocket] خطأ في معالجة الرسالة:', error);
     }
   }
 

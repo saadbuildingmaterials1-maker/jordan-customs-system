@@ -80,7 +80,7 @@ export default function SupplierInvoice() {
       localStorage.setItem('supplierInvoices', JSON.stringify(invoices));
       return true;
     } catch (error) {
-      console.error('Error saving invoice:', error);
+      logger.error('Error saving invoice:', error);
       return false;
     }
   };

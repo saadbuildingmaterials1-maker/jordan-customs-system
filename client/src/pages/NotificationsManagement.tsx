@@ -96,7 +96,7 @@ export default function NotificationsManagement() {
       setNotifications(mockNotifications);
       setUnreadCount(mockNotifications.filter((n) => !n.isRead).length);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      logger.error('Error loading notifications:', error);
     } finally {
       setLoading(false);
     }
@@ -118,7 +118,7 @@ export default function NotificationsManagement() {
         weeklyReport: false,
       });
     } catch (error) {
-      console.error('Error loading preferences:', error);
+      logger.error('Error loading preferences:', error);
     }
   };
 
@@ -131,7 +131,7 @@ export default function NotificationsManagement() {
       );
       setUnreadCount(Math.max(0, unreadCount - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      logger.error('Error marking notification as read:', error);
     }
   };
 
@@ -139,7 +139,7 @@ export default function NotificationsManagement() {
     try {
       setNotifications(notifications.filter((n) => n.id !== notificationId));
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      logger.error('Error deleting notification:', error);
     }
   };
 
@@ -152,7 +152,7 @@ export default function NotificationsManagement() {
       setPreferences(updated);
       // حفظ التفضيلات في الحالة المحلية
     } catch (error) {
-      console.error('Error updating preferences:', error);
+      logger.error('Error updating preferences:', error);
     }
   };
 

@@ -35,7 +35,7 @@ export default function UserDashboard() {
         const user = JSON.parse(storedUser);
         setUserName(user.name || "المستخدم");
       } catch (e) {
-        console.error("Failed to parse user data");
+        logger.error("Failed to parse user data");
       }
     }
   }, []);

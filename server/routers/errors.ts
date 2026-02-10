@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Router للإبلاغ عن الأخطاء
  * يوفر endpoints لإرسال تقارير الأخطاء
@@ -55,7 +56,7 @@ export const errorsRouter = router({
           localPath,
         };
       } catch (error) {
-        console.error("Error submitting error report:", error);
+        logger.error("Error submitting error report:", error);
         return {
           success: false,
           error: "فشل إرسال التقرير. يرجى المحاولة لاحقاً.",
@@ -74,7 +75,7 @@ export const errorsRouter = router({
         data: systemInfo,
       };
     } catch (error) {
-      console.error("Error getting system info:", error);
+      logger.error("Error getting system info:", error);
       return {
         success: false,
         error: "فشل الحصول على معلومات النظام",

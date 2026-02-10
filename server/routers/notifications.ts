@@ -1,3 +1,4 @@
+import { logger } from '../_core/logger-service';
 /**
  * Notifications Router
  * 
@@ -41,7 +42,7 @@ export const notificationsRouter = router({
           smsSent,
         };
       } catch (error) {
-        console.error('❌ خطأ في إرسال الإشعار:', error);
+        logger.error('❌ خطأ في إرسال الإشعار:', error);
         throw new Error('فشل في إرسال الإشعار');
       }
     }),
@@ -75,7 +76,7 @@ export const notificationsRouter = router({
           smsSent,
         };
       } catch (error) {
-        console.error('❌ خطأ في إرسال التنبيه:', error);
+        logger.error('❌ خطأ في إرسال التنبيه:', error);
         throw new Error('فشل في إرسال التنبيه');
       }
     }),
@@ -109,7 +110,7 @@ export const notificationsRouter = router({
           smsSent,
         };
       } catch (error) {
-        console.error('❌ خطأ في إرسال الإشعار:', error);
+        logger.error('❌ خطأ في إرسال الإشعار:', error);
         throw new Error('فشل في إرسال الإشعار');
       }
     }),
@@ -143,7 +144,7 @@ export const notificationsRouter = router({
           smsSent,
         };
       } catch (error) {
-        console.error('❌ خطأ في إرسال التنبيه:', error);
+        logger.error('❌ خطأ في إرسال التنبيه:', error);
         throw new Error('فشل في إرسال التنبيه');
       }
     }),
@@ -177,7 +178,7 @@ export const notificationsRouter = router({
           smsSent,
         };
       } catch (error) {
-        console.error('❌ خطأ في إرسال الإشعار:', error);
+        logger.error('❌ خطأ في إرسال الإشعار:', error);
         throw new Error('فشل في إرسال الإشعار');
       }
     }),

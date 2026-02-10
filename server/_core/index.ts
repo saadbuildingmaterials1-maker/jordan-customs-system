@@ -1,3 +1,4 @@
+import { logger } from './logger-service';
 /**
  * index
  * 
@@ -105,7 +106,7 @@ async function startServer() {
       
       const response = await fetch(downloadUrl);
       if (!response.ok) {
-        console.error(`[Download] Failed: ${response.status}`);
+        logger.error(`[Download] Failed: ${response.status}`);
         return res.status(404).json({ error: "File not found" });
       }
       
@@ -119,7 +120,7 @@ async function startServer() {
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.send(Buffer.from(buffer));
     } catch (error) {
-      console.error("[Download] Error:", error);
+      logger.error("[Download] Error:", error);
       res.status(500).json({ error: "Download failed" });
     }
   });
@@ -219,3 +220,12 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
+// Memory monitoring
+import { memoryOptimizer } from '../memory-optimization';
+setInterval(() => {
+  const mem = memoryOptimizer.monitorMemory();
+  if (mem.percent > 80) {
+    console.warn(`⚠️ High memory usage: ${mem.percent}%`);
+  }
+}, 30000);

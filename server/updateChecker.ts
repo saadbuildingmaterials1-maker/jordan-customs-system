@@ -1,3 +1,4 @@
+import { logger } from './_core/logger-service';
 /**
  * نظام التحديثات التلقائي
  * يفحص GitHub Releases كل 7 أيام ويخطر المستخدم بالإصدارات الجديدة
@@ -47,7 +48,7 @@ export async function fetchLatestRelease(): Promise<Release | null> {
     });
 
     if (!response.ok) {
-      console.error(`Failed to fetch release: ${response.statusText}`);
+      logger.error(`Failed to fetch release: ${response.statusText}`);
       return null;
     }
 
@@ -63,7 +64,7 @@ export async function fetchLatestRelease(): Promise<Release | null> {
       changeLog: data.body || "لا توجد معلومات عن التغييرات",
     };
   } catch (error) {
-    console.error("Error fetching latest release:", error);
+    logger.error("Error fetching latest release:", error);
     return null;
   }
 }
@@ -127,7 +128,7 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
       nextCheckDate,
     };
   } catch (error) {
-    console.error("Error checking for updates:", error);
+    logger.error("Error checking for updates:", error);
     return {
       hasUpdate: false,
       currentVersion: CURRENT_VERSION,
@@ -147,7 +148,7 @@ export function getStoredUpdateInfo(): UpdateStatus | null {
     // لكن يمكن تخزين المعلومات في قاعدة البيانات
     return null;
   } catch (error) {
-    console.error("Error getting stored update info:", error);
+    logger.error("Error getting stored update info:", error);
     return null;
   }
 }

@@ -86,7 +86,7 @@ export default function BankAccountManagement() {
       ];
       setAccounts(mockAccounts);
     } catch (error) {
-      console.error('Error loading accounts:', error);
+      logger.error('Error loading accounts:', error);
     } finally {
       setLoading(false);
     }
@@ -121,7 +121,7 @@ export default function BankAccountManagement() {
       });
       setShowAddDialog(false);
     } catch (error) {
-      console.error('Error adding account:', error);
+      logger.error('Error adding account:', error);
     } finally {
       setLoading(false);
     }
@@ -147,7 +147,7 @@ export default function BankAccountManagement() {
       setShowVerifyDialog(false);
       setVerificationCode('');
     } catch (error) {
-      console.error('Error verifying account:', error);
+      logger.error('Error verifying account:', error);
     } finally {
       setLoading(false);
     }
@@ -158,7 +158,7 @@ export default function BankAccountManagement() {
       try {
         setAccounts(accounts.filter((acc) => acc.id !== accountId));
       } catch (error) {
-        console.error('Error deleting account:', error);
+        logger.error('Error deleting account:', error);
       }
     }
   };
