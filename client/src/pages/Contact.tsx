@@ -49,8 +49,8 @@ export default function Contact() {
                 <Mail className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold mb-1">البريد الإلكتروني</h3>
-                  <a href="mailto:support@customs-jordan.com" className="text-blue-100/70 hover:text-blue-200">
-                    support@customs-jordan.com
+                  <a href="mailto:saad.building.materials1@gmail.com" className="text-blue-100/70 hover:text-blue-200">
+                    saad.building.materials1@gmail.com
                   </a>
                 </div>
               </div>
@@ -59,8 +59,8 @@ export default function Contact() {
                 <Phone className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
                 <div>
                   <h3 className="font-semibold mb-1">رقم الهاتف</h3>
-                  <a href="tel:+962796123456" className="text-blue-100/70 hover:text-blue-200">
-                    +962 79 6123456
+                  <a href="tel:+962795917424" className="text-blue-100/70 hover:text-blue-200">
+                    +962 795 917 424
                   </a>
                 </div>
               </div>
