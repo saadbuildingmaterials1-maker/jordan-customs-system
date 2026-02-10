@@ -1,3 +1,4 @@
+import { CORS_ORIGINS } from '../config/urls';
 /**
  * Security Middleware
  * يوفر حماية شاملة ضد الهجمات والاستخدام غير المصرح

@@ -5,7 +5,8 @@ import { logger } from '../_core/logger-service';
  */
 
 import { router, publicProcedure } from "../_core/trpc";
-import { checkForUpdates, getUpdateInfo, resetCheckInterval } from "../updateChecker";
+import { checkForUpdates } from "../updateChecker";
+import { logger } from "../_core/logger-service";
 import { z } from "zod";
 
 export const updatesRouter = router({
@@ -14,7 +15,7 @@ export const updatesRouter = router({
    */
   checkForUpdates: publicProcedure.query(async () => {
     try {
-      const status = await getUpdateInfo();
+      const status = await checkForUpdates();
       return {
         success: true,
         data: status,
@@ -49,7 +50,7 @@ export const updatesRouter = router({
    * تجاهل التحديث (إعادة تعيين فترة الفحص)
    */
   dismissUpdate: publicProcedure.mutation(() => {
-    const nextCheckDate = resetCheckInterval();
+    const nextCheckDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     return {
       success: true,
       nextCheckDate,

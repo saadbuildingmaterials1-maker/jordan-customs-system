@@ -101,8 +101,9 @@ export class WebSocketManager {
         client.userId = data.userId;
         console.log(`[WebSocket] معرف المستخدم: ${data.userId}`);
       }
-    } catch (error) {
-      logger.error('[WebSocket] خطأ في معالجة الرسالة:', error);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('[WebSocket] خطأ في معالجة الرسالة:', errorMessage);
     }
   }
 

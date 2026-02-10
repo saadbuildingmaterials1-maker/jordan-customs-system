@@ -231,7 +231,8 @@ export const subscriptionRouter = router({
           message: 'تم تجديد الاشتراك بنجاح',
         };
       } catch (error) {
-        logger.error('❌ خطأ في تجديد الاشتراك:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        logger.error('❌ خطأ في تجديد الاشتراك:', errMsg);
         throw new Error('فشل في تجديد الاشتراك');
       }
     }),

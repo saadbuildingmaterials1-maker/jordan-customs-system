@@ -1,13 +1,9 @@
 import { logger } from './_core/logger-service';
-/**
- * نظام التحديثات التلقائي
- * يفحص GitHub Releases كل 7 أيام ويخطر المستخدم بالإصدارات الجديدة
- */
 
-import { z } from "zod";
+const CURRENT_VERSION = '1.0.0';
+const CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 ساعة
 
-// تعريف نوع الإصدار
-export interface Release {
+export interface ReleaseInfo {
   version: string;
   name: string;
   description: string;
@@ -17,54 +13,48 @@ export interface Release {
   changeLog: string;
 }
 
-// تعريف حالة التحديث
 export interface UpdateStatus {
   hasUpdate: boolean;
   currentVersion: string;
   latestVersion?: string;
-  release?: Release;
+  release?: ReleaseInfo;
   lastChecked: string;
   nextCheckDate: string;
 }
 
-// ثابت الفترة الزمنية بين الفحوصات (7 أيام بالميلي ثانية)
-const CHECK_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-// الإصدار الحالي (يجب تحديثه مع كل إصدار جديد)
-const CURRENT_VERSION = "1.0.1";
-
-// رابط GitHub API
-const GITHUB_API_URL = "https://api.github.com/repos/saadbuildingmaterials1-maker/jordan-customs-system/releases/latest";
-
 /**
- * جلب آخر إصدار من GitHub
+ * جلب أحدث إصدار من GitHub
  */
-export async function fetchLatestRelease(): Promise<Release | null> {
+async function fetchLatestRelease(): Promise<ReleaseInfo | null> {
   try {
-    const response = await fetch(GITHUB_API_URL, {
-      headers: {
-        "Accept": "application/vnd.github.v3+json",
-      },
-    });
+    const response = await fetch(
+      'https://api.github.com/repos/jordan-customs/system/releases/latest',
+      {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+        },
+      }
+    );
 
     if (!response.ok) {
-      logger.error(`Failed to fetch release: ${response.statusText}`);
+      const errorMsg = response.statusText || 'Unknown error';
+      logger.error(`Failed to fetch release: ${errorMsg}`);
       return null;
     }
 
-    const data = await response.json();
-
+    const data = await response.json() as Record<string, unknown>;
     return {
-      version: data.tag_name.replace(/^v/, ""), // إزالة البادئة 'v'
-      name: data.name,
-      description: data.body || "",
-      releaseDate: data.published_at,
-      downloadUrl: data.html_url,
-      isPrerelease: data.prerelease,
-      changeLog: data.body || "لا توجد معلومات عن التغييرات",
+      version: (data.tag_name as string || '').replace(/^v/, ''),
+      name: data.name as string || '',
+      description: data.description as string || '',
+      releaseDate: data.published_at as string || '',
+      downloadUrl: data.html_url as string || '',
+      isPrerelease: (data.prerelease as boolean) || false,
+      changeLog: (data.body as string) || 'لا توجد معلومات عن التغييرات',
     };
-  } catch (error) {
-    logger.error("Error fetching latest release:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error fetching latest release:', errorMessage);
     return null;
   }
 }
@@ -73,17 +63,15 @@ export async function fetchLatestRelease(): Promise<Release | null> {
  * مقارنة إصدارات (مثال: "1.0.1" > "1.0.0")
  */
 export function compareVersions(version1: string, version2: string): number {
-  const v1Parts = version1.split(".").map(Number);
-  const v2Parts = version2.split(".").map(Number);
+  const v1Parts = version1.split('.').map(Number);
+  const v2Parts = version2.split('.').map(Number);
 
   for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
     const v1 = v1Parts[i] || 0;
     const v2 = v2Parts[i] || 0;
-
     if (v1 > v2) return 1; // version1 أحدث
     if (v1 < v2) return -1; // version2 أحدث
   }
-
   return 0; // متساوية
 }
 
@@ -107,16 +95,6 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
       };
     }
 
-    // تجاهل الإصدارات التجريبية
-    if (latestRelease.isPrerelease) {
-      return {
-        hasUpdate: false,
-        currentVersion: CURRENT_VERSION,
-        lastChecked,
-        nextCheckDate,
-      };
-    }
-
     const versionComparison = compareVersions(latestRelease.version, CURRENT_VERSION);
 
     return {
@@ -127,8 +105,9 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
       lastChecked,
       nextCheckDate,
     };
-  } catch (error) {
-    logger.error("Error checking for updates:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Error checking for updates:', errorMessage);
     return {
       hasUpdate: false,
       currentVersion: CURRENT_VERSION,
@@ -136,68 +115,4 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
       nextCheckDate,
     };
   }
-}
-
-/**
- * الحصول على معلومات التحديث المخزنة محلياً
- * (يتم تخزينها في localStorage على جانب العميل)
- */
-export function getStoredUpdateInfo(): UpdateStatus | null {
-  try {
-    // هذه الدالة تُستدعى من جانب الخادم
-    // لكن يمكن تخزين المعلومات في قاعدة البيانات
-    return null;
-  } catch (error) {
-    logger.error("Error getting stored update info:", error);
-    return null;
-  }
-}
-
-/**
- * التحقق من الحاجة لفحص التحديثات
- * (بناءً على آخر فحص)
- */
-export function shouldCheckForUpdates(lastChecked?: string): boolean {
-  if (!lastChecked) {
-    return true; // لم يتم الفحص من قبل
-  }
-
-  const lastCheckTime = new Date(lastChecked).getTime();
-  const now = new Date().getTime();
-  const timeSinceLastCheck = now - lastCheckTime;
-
-  return timeSinceLastCheck >= CHECK_INTERVAL;
-}
-
-/**
- * تسجيل سجل التحديثات
- */
-export function logUpdateCheck(status: UpdateStatus): void {
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    hasUpdate: status.hasUpdate,
-    currentVersion: status.currentVersion,
-    latestVersion: status.latestVersion,
-    lastChecked: status.lastChecked,
-  };
-
-  console.log("Update check log:", logEntry);
-  // يمكن حفظ السجل في قاعدة البيانات أو ملف
-}
-
-/**
- * إعادة تعيين فترة الفحص (عند تجاهل التحديث)
- */
-export function resetCheckInterval(): string {
-  const nextCheckDate = new Date(Date.now() + CHECK_INTERVAL).toISOString();
-  return nextCheckDate;
-}
-
-/**
- * الحصول على معلومات التحديث الكاملة
- */
-export async function getUpdateInfo(): Promise<UpdateStatus> {
-  const status = await checkForUpdates();
-  logUpdateCheck(status);
-  return status;
 }
