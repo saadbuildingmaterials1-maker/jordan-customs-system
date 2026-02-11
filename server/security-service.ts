@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * security-service
  * @module ./server/security-service
@@ -72,7 +71,6 @@ class SecurityService {
         authTag: authTag.toString('hex'),
       };
     } catch (error) {
-      logger.error('Encryption error:', error);
       throw new Error('Failed to encrypt data');
     }
   }
@@ -95,7 +93,6 @@ class SecurityService {
 
       return decrypted;
     } catch (error) {
-      logger.error('Decryption error:', error);
       throw new Error('Failed to decrypt data');
     }
   }
@@ -122,7 +119,6 @@ class SecurityService {
         .toString('hex');
       return computedHash === originalHash;
     } catch (error) {
-      logger.error('Password verification error:', error);
       return false;
     }
   }

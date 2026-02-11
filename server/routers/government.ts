@@ -1,4 +1,3 @@
-import { logger } from '../_core/logger-service';
 /**
  * government Router
  * 
@@ -61,7 +60,6 @@ export const governmentRouter = router({
         return result;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        logger.error('خطأ في إرسال البيان:', error);
         return {
           status: 'error',
           declarationId: '',
@@ -82,7 +80,6 @@ export const governmentRouter = router({
         const result = await integration.getDeclarationStatus(input.declarationId);
         return result;
       } catch (error: ErrorType) {
-        logger.error('خطأ في الحصول على حالة البيان:', error);
         return {
           status: 'error',
           message: getErrorMessage(error),
@@ -108,7 +105,6 @@ export const governmentRouter = router({
           codes,
         };
       } catch (error: ErrorType) {
-        logger.error('خطأ في الحصول على الرموز الجمركية:', error);
         return {
           status: 'error',
           codes: [],
@@ -133,7 +129,6 @@ export const governmentRouter = router({
         };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        logger.error('خطأ في التحقق من البيان:', error);
         return {
           status: 'error',
           valid: false,
@@ -156,7 +151,6 @@ export const governmentRouter = router({
           taxes,
         };
       } catch (error: ErrorType) {
-        logger.error('خطأ في حساب الرسوم:', error);
         return {
           status: 'error',
           message: getErrorMessage(error),
@@ -178,7 +172,6 @@ export const governmentRouter = router({
           shipment,
         };
       } catch (error: ErrorType) {
-        logger.error('خطأ في تتبع الشحنة:', error);
         return {
           status: 'error',
           message: getErrorMessage(error),
@@ -201,7 +194,6 @@ export const governmentRouter = router({
           : 'فشل الاتصال بالنظام الحكومي',
       };
     } catch (error: any) {
-      logger.error('خطأ في اختبار الاتصال:', error);
       return {
         status: 'error',
         connected: false,
@@ -229,7 +221,6 @@ export const governmentRouter = router({
           total: 0,
         };
       } catch (error: ErrorType) {
-        logger.error('خطأ في الحصول على السجلات:', error);
         return {
           status: 'error',
           operations: [],
@@ -255,7 +246,6 @@ export const governmentRouter = router({
         },
       };
     } catch (error: any) {
-      logger.error('خطأ في الحصول على الإحصائيات:', error);
       return {
         status: 'error',
         message: error.message,
@@ -276,7 +266,6 @@ export const governmentRouter = router({
           message: 'تم إعادة محاولة إرسال البيان',
         };
       } catch (error: ErrorType) {
-        logger.error('خطأ في إعادة المحاولة:', error);
         return {
           status: 'error',
           message: getErrorMessage(error),

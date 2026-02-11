@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * accounting-service
  * 
@@ -47,7 +46,6 @@ export async function createAccount(
 
     return result;
   } catch (error) {
-    logger.error("[Accounting] Failed to create account:", error);
     throw error;
   }
 }
@@ -65,7 +63,6 @@ export async function getAccount(accountCode: string) {
 
     return result.length > 0 ? result[0] : undefined;
   } catch (error) {
-    logger.error("[Accounting] Failed to get account:", error);
     return undefined;
   }
 }
@@ -86,7 +83,6 @@ export async function getAllAccounts(accountType?: string) {
 
     return await db.select().from(chartOfAccounts).where(whereCondition);
   } catch (error) {
-    logger.error("[Accounting] Failed to get accounts:", error);
     return [];
   }
 }
@@ -145,7 +141,6 @@ export async function postJournalEntry(
 
     return result;
   } catch (error) {
-    logger.error("[Accounting] Failed to post journal entry:", error);
     throw error;
   }
 }
@@ -189,7 +184,6 @@ export async function updateLedger(
 
     return result;
   } catch (error) {
-    logger.error("[Accounting] Failed to update ledger:", error);
     throw error;
   }
 }
@@ -225,7 +219,6 @@ export async function getAccountBalance(accountCode: string, asOfDate?: Date) {
     const lastBalance = entries[entries.length - 1].balance || "0";
     return parseFloat(lastBalance);
   } catch (error) {
-    logger.error("[Accounting] Failed to get account balance:", error);
     return 0;
   }
 }
@@ -260,7 +253,6 @@ export async function generateTrialBalance(asOfDate: Date) {
 
     return balances;
   } catch (error) {
-    logger.error("[Accounting] Failed to generate trial balance:", error);
     throw error;
   }
 }
@@ -327,7 +319,6 @@ export async function generateIncomeStatement(fromDate: Date, toDate: Date) {
 
     return reportData;
   } catch (error) {
-    logger.error("[Accounting] Failed to generate income statement:", error);
     throw error;
   }
 }
@@ -385,7 +376,6 @@ export async function generateBalanceSheet(asOfDate: Date) {
 
     return reportData;
   } catch (error) {
-    logger.error("[Accounting] Failed to generate balance sheet:", error);
     throw error;
   }
 }
@@ -427,7 +417,6 @@ export async function logAuditEvent(
       timestamp: new Date(),
     });
   } catch (error) {
-    logger.error("[Accounting] Failed to log audit event:", error);
   }
 }
 
@@ -469,7 +458,6 @@ export async function closePeriod(year: number, month: number) {
 
     return balances;
   } catch (error) {
-    logger.error("[Accounting] Failed to close period:", error);
     throw error;
   }
 }

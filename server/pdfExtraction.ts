@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * pdfExtraction
  * @module ./server/pdfExtraction
@@ -39,7 +38,6 @@ export async function extractTextFromPDF(filePath: string): Promise<string> {
     const pdfData = await (pdfParse as any).default(fileBuffer);
     return pdfData.text;
   } catch (error) {
-    logger.error('Error extracting text from PDF:', error);
     throw new Error('فشل استخراج النص من ملف PDF');
   }
 }
@@ -119,7 +117,6 @@ export async function extractInvoiceDataFromPDF(filePath: string): Promise<Extra
     const text = await extractTextFromPDF(filePath);
     return parseInvoiceText(text);
   } catch (error) {
-    logger.error('Error extracting invoice data:', error);
     throw error;
   }
 }

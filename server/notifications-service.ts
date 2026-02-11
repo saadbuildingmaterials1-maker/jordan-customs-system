@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * notifications-service
  * 
@@ -52,7 +51,6 @@ export async function sendNotification(payload: NotificationPayload) {
 
     return { success: true, notificationId: notification.id };
   } catch (error) {
-    logger.error('Error sending notification:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -72,7 +70,6 @@ export async function sendEmailNotification(payload: EmailPayload) {
 
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    logger.error('Error sending email:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -93,7 +90,6 @@ export async function sendSMSNotification(phoneNumber: string, message: string) 
 
     return { success: true, message: 'SMS sent successfully' };
   } catch (error) {
-    logger.error('Error sending SMS:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -119,7 +115,6 @@ export async function sendPushNotification(userId: string, payload: Notification
 
     return { success: true, message: 'Push notification sent successfully' };
   } catch (error) {
-    logger.error('Error sending push notification:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -144,7 +139,6 @@ export async function getUserNotifications(userId: string, limit = 20, offset = 
 
     return { success: true, notifications: userNotifications };
   } catch (error) {
-    logger.error('Error fetching notifications:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -157,7 +151,6 @@ export async function markNotificationAsRead(notificationId: string) {
     // Simulate database update
     return { success: true };
   } catch (error) {
-    logger.error('Error marking notification as read:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -170,7 +163,6 @@ export async function deleteNotification(notificationId: string) {
     // Simulate database delete
     return { success: true };
   } catch (error) {
-    logger.error('Error deleting notification:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -193,7 +185,6 @@ export async function scheduleNotification(
 
     return { success: true, message: 'Notification scheduled successfully' };
   } catch (error) {
-    logger.error('Error scheduling notification:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
@@ -217,7 +208,6 @@ export async function sendBulkNotifications(userIds: string[], payload: Omit<Not
 
     return { success: true, successful, failed };
   } catch (error) {
-    logger.error('Error sending bulk notifications:', error);
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }

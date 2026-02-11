@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * نظام الإبلاغ عن الأخطاء
  * يجمع معلومات النظام والسجلات ويرسلها للدعم الفني
@@ -198,7 +197,6 @@ export async function sendErrorReport(report: ErrorReport): Promise<boolean> {
     // يمكن تطبيق خدمة بريد حقيقية هنا (nodemailer, SendGrid, etc)
     return true;
   } catch (error) {
-    logger.error("Error sending error report:", error);
     return false;
   }
 }
@@ -224,7 +222,6 @@ export function saveErrorReportLocally(report: ErrorReport): string {
 
     return filePath;
   } catch (error) {
-    logger.error("Error saving error report locally:", error);
     return "";
   }
 }

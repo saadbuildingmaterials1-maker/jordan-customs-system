@@ -1,4 +1,3 @@
-import { logger } from '../_core/logger-service';
 /**
  * Router للتحديثات
  * يوفر endpoints للتحقق من التحديثات والحصول على معلومات الإصدار
@@ -6,7 +5,6 @@ import { logger } from '../_core/logger-service';
 
 import { router, publicProcedure } from "../_core/trpc";
 import { checkForUpdates } from "../updateChecker";
-import { logger } from "../_core/logger-service";
 import { z } from "zod";
 
 export const updatesRouter = router({
@@ -21,7 +19,7 @@ export const updatesRouter = router({
         data: status,
       };
     } catch (error) {
-      logger.error("Error checking for updates:", error);
+      const errMsg = error instanceof Error ? error.message : String(error);
       return {
         success: false,
         error: "فشل التحقق من التحديثات",

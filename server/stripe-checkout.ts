@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * Stripe Checkout Handler
  * 
@@ -16,7 +15,6 @@ interface AuthenticatedRequest extends Request {
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) {
-  logger.error('⚠️ تحذير: مفتاح Stripe السري غير مضبوط.');
 }
 
 const stripe = new Stripe(stripeSecretKey || 'sk_test_placeholder', {
@@ -128,7 +126,6 @@ export async function createCheckoutSession(req: AuthenticatedRequest, res: Resp
       checkoutUrl: session.url,
     });
   } catch (error) {
-    logger.error('❌ خطأ في إنشاء جلسة الدفع:', error);
 
     if (error instanceof Stripe.errors.StripeError) {
       return res.status(400).json({
@@ -169,7 +166,6 @@ export async function getCheckoutSession(req: AuthenticatedRequest, res: Respons
       },
     });
   } catch (error) {
-    logger.error('❌ خطأ في جلب معلومات الجلسة:', error);
 
     return res.status(500).json({
       error: 'خطأ في جلب معلومات الجلسة',
@@ -207,7 +203,6 @@ export async function handlePaymentSuccess(req: AuthenticatedRequest, res: Respo
       message: 'تم تفعيل الاشتراك بنجاح',
     });
   } catch (error) {
-    logger.error('❌ خطأ في معالجة نجاح الدفع:', error);
 
     return res.status(500).json({
       error: 'خطأ في معالجة الدفع',

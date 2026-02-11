@@ -1,4 +1,3 @@
-import { logger } from './logger-service';
 /**
  * vite
  * 
@@ -46,7 +45,6 @@ export async function setupVite(app: Express, server: Server) {
       const page = await vite.transformIndexHtml("/", template);
       res.set({ "Content-Type": "text/html; charset=utf-8" }).end(page);
     } catch (e) {
-      logger.error("[Vite] Error serving index.html:", e);
       vite.ssrFixStacktrace(e as Error);
       res.status(500).send("Internal Server Error");
     }
@@ -79,7 +77,6 @@ export async function setupVite(app: Express, server: Server) {
       const page = await vite.transformIndexHtml(req.originalUrl, template);
       res.set({ "Content-Type": "text/html; charset=utf-8" }).end(page);
     } catch (e) {
-      logger.error("[Vite] Error serving SPA:", e);
       vite.ssrFixStacktrace(e as Error);
       res.status(500).send("Internal Server Error");
     }
@@ -91,7 +88,7 @@ export async function setupVite(app: Express, server: Server) {
 export function serveStatic(app: Express) {
   const distPath = path.resolve(import.meta.dirname, "../..", "dist", "public");
   if (!fs.existsSync(distPath)) {
-    logger.error(
+    throw new Error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
     );
   }

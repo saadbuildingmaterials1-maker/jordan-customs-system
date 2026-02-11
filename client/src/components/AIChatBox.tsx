@@ -92,7 +92,6 @@ export type AIChatBoxProps = {
  *       }]);
  *     },
  *     onError: (error) => {
- *       logger.error("Chat error:", error);
  *       // Optionally show error message to user
  *     }
  *   });

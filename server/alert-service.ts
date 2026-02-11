@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * alert-service
  * 
@@ -333,7 +332,6 @@ export class AlertService {
       const recommendation = typeof content === 'string' ? content : "يرجى مراجعة البيانات والتحقق من الأسباب المحتملة.";
       return recommendation.substring(0, 200); // تحديد الطول الأقصى
     } catch (error) {
-      logger.error("خطأ في توليد التوصية:", error);
       return "يرجى مراجعة البيانات والتحقق من الأسباب المحتملة.";
     }
   }
@@ -379,10 +377,8 @@ export class AlertService {
           content: content,
         });
       } catch (notifyError) {
-        logger.error("خطأ في خدمة الإشعارات:", notifyError);
       }
     } catch (error) {
-      logger.error("خطأ في إرسال إشعار البريد الإلكتروني:", error);
     }
   }
 
@@ -405,7 +401,6 @@ export class AlertService {
       // يمكن إضافة جدول للتنبيهات في قاعدة البيانات
       // await db.insert(alerts).values({...});
     } catch (error) {
-      logger.error("خطأ في حفظ التنبيه:", error);
     }
   }
 

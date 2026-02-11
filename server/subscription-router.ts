@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * Subscription Router
  * 
@@ -27,7 +26,7 @@ export const subscriptionRouter = router({
         message: 'تم جلب الخطط بنجاح',
       };
     } catch (error) {
-      logger.error('❌ خطأ في جلب الخطط:', error);
+      const errMsg = error instanceof Error ? error.message : String(error);
       throw new Error('فشل في جلب الخطط');
     }
   }),
@@ -49,7 +48,6 @@ export const subscriptionRouter = router({
           message: 'تم جلب الخطة بنجاح',
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب الخطة:', error);
         throw new Error('فشل في جلب الخطة');
       }
     }),
@@ -84,7 +82,7 @@ export const subscriptionRouter = router({
           message: `تم تفعيل الفترة التجريبية لمدة ${plan?.trialDays} أيام بنجاح`,
         };
       } catch (error) {
-        logger.error('❌ خطأ في إنشاء الفترة التجريبية:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
         throw new Error('فشل في إنشاء الفترة التجريبية');
       }
     }),
@@ -125,7 +123,7 @@ export const subscriptionRouter = router({
           message: `حالة الفترة التجريبية: ${status}`,
         };
       } catch (error) {
-        logger.error('❌ خطأ في التحقق من حالة الفترة التجريبية:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
         throw new Error('فشل في التحقق من حالة الفترة التجريبية');
       }
     }),
@@ -164,7 +162,7 @@ export const subscriptionRouter = router({
           message: `تم تحويل الفترة التجريبية إلى اشتراك ${interval === 'month' ? 'شهري' : 'سنوي'} بنجاح`,
         };
       } catch (error) {
-        logger.error('❌ خطأ في تحويل الفترة التجريبية:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
         throw new Error('فشل في تحويل الفترة التجريبية');
       }
     }),
@@ -203,7 +201,7 @@ export const subscriptionRouter = router({
           message: refundInfo.message,
         };
       } catch (error) {
-        logger.error('❌ خطأ في إلغاء الاشتراك:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
         throw new Error('فشل في إلغاء الاشتراك');
       }
     }),
@@ -232,7 +230,6 @@ export const subscriptionRouter = router({
         };
       } catch (error) {
         const errMsg = error instanceof Error ? error.message : String(error);
-        logger.error('❌ خطأ في تجديد الاشتراك:', errMsg);
         throw new Error('فشل في تجديد الاشتراك');
       }
     }),
@@ -258,9 +255,9 @@ export const subscriptionRouter = router({
         subscription,
         message: 'تم جلب معلومات الاشتراك بنجاح',
       };
-    } catch (error) {
-      logger.error('❌ خطأ في جلب معلومات الاشتراك:', error);
-      throw new Error('فشل في جلب معلومات الاشتراك');
+      } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
+        throw new Error('فشل في جلب معلومات الاشتراك');
     }
   }),
 
@@ -294,7 +291,7 @@ export const subscriptionRouter = router({
           message: 'تم جلب السعر بنجاح',
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب السعر:', error);
+        const errMsg = error instanceof Error ? error.message : String(error);
         throw new Error('فشل في جلب السعر');
       }
     }),
@@ -326,7 +323,7 @@ export const subscriptionRouter = router({
         message: 'تم جلب مقارنة الخطط بنجاح',
       };
     } catch (error) {
-      logger.error('❌ خطأ في جلب مقارنة الخطط:', error);
+      const errMsg = error instanceof Error ? error.message : String(error);
       throw new Error('فشل في جلب مقارنة الخطط');
     }
   }),

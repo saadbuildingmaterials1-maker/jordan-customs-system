@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * ai-service
  * @module ./server/ai-service
@@ -119,7 +118,6 @@ ${description ? `الوصف: ${description}` : ""}
       ...parsed,
     };
   } catch (error) {
-    logger.error("خطأ في تصنيف الصنف:", error);
     throw error;
   }
 }
@@ -217,7 +215,6 @@ ${itemsList}
     const contentStr = typeof content === "string" ? content : JSON.stringify(content);
     return JSON.parse(contentStr);
   } catch (error) {
-    logger.error("خطأ في تحليل البيان:", error);
     throw error;
   }
 }
@@ -324,7 +321,6 @@ ${itemsList}
     const contentStr = typeof content === "string" ? content : JSON.stringify(content);
     return JSON.parse(contentStr);
   } catch (error) {
-    logger.error("خطأ في توقع التكاليف:", error);
     throw error;
   }
 }

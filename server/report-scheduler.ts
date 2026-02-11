@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 import cron from "node-cron";
 import { sendReportNotification } from "./email-service";
 
@@ -139,10 +138,8 @@ async function sendScheduledReport(reportId: string): Promise<void> {
       console.log(`✓ تم إرسال التقرير "${report.reportName}" إلى ${report.userEmail}`);
       console.log(`  التشغيل التالي: ${report.nextRunAt.toLocaleString("ar-JO")}`);
     } else {
-      logger.error(`✗ فشل إرسال التقرير "${report.reportName}" إلى ${report.userEmail}`);
     }
   } catch (error) {
-    logger.error(`✗ خطأ في إرسال التقرير "${report.reportName}":`, error);
   }
 }
 
@@ -236,7 +233,6 @@ export async function sendImmediateReport(
 
     return success;
   } catch (error) {
-    logger.error(`✗ خطأ في إرسال التقرير الفوري:`, error);
     return false;
   }
 }

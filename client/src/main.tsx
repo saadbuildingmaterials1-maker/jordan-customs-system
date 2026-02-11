@@ -34,7 +34,6 @@ queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
-    logger.error("[API Query Error]", error);
   }
 });
 
@@ -42,7 +41,6 @@ queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
     redirectToLoginIfUnauthorized(error);
-    logger.error("[API Mutation Error]", error);
   }
 });
 
@@ -65,7 +63,6 @@ console.log("[main.tsx] Creating React root...");
 const rootElement = document.getElementById("root");
 console.log("[main.tsx] Root element:", rootElement);
 if (!rootElement) {
-  logger.error("[main.tsx] ERROR: Root element not found!");
   throw new Error("Root element not found");
 }
 createRoot(rootElement).render(

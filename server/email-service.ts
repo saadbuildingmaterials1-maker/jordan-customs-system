@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 import nodemailer from "nodemailer";
 
 /**
@@ -270,7 +269,6 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     console.log(`✓ تم إرسال بريد إلى ${options.to}`);
     return true;
   } catch (error) {
-    logger.error(`✗ فشل إرسال البريد إلى ${options.to}:`, error);
     return false;
   }
 }

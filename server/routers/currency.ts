@@ -1,4 +1,3 @@
-import { logger } from '../_core/logger-service';
 /**
  * Currency Router
  * 
@@ -26,7 +25,6 @@ export const currencyRouter = router({
         currencies,
       };
     } catch (error) {
-      logger.error('❌ خطأ في جلب العملات:', error);
       throw new Error('فشل في جلب العملات');
     }
   }),
@@ -62,7 +60,6 @@ export const currencyRouter = router({
           ),
         };
       } catch (error) {
-        logger.error('❌ خطأ في تحويل العملة:', error);
         throw new Error('فشل في تحويل العملة');
       }
     }),
@@ -79,7 +76,6 @@ export const currencyRouter = router({
         lastUpdated: new Date(),
       };
     } catch (error) {
-      logger.error('❌ خطأ في جلب معدلات الصرف:', error);
       throw new Error('فشل في جلب معدلات الصرف');
     }
   }),
@@ -101,7 +97,6 @@ export const currencyRouter = router({
           info,
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب معلومات العملة:', error);
         throw new Error('فشل في جلب معلومات العملة');
       }
     }),
@@ -131,7 +126,6 @@ export const currencyRouter = router({
           formatted: currencyService.formatAmount(price, input.targetCurrency as Currency),
         };
       } catch (error) {
-        logger.error('❌ خطأ في حساب السعر:', error);
         throw new Error('فشل في حساب السعر');
       }
     }),
@@ -160,7 +154,6 @@ export const currencyRouter = router({
           formatted,
         };
       } catch (error) {
-        logger.error('❌ خطأ في تنسيق المبلغ:', error);
         throw new Error('فشل في تنسيق المبلغ');
       }
     }),

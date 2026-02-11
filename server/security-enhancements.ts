@@ -32,20 +32,21 @@ export class RateLimiter {
 export function validateInput(input: any, rules: any): boolean {
   for (const [key, rule] of Object.entries(rules)) {
     const value = input[key];
+    const ruleObj = rule as any;
     
-    if (rule.required && !value) {
+    if (ruleObj.required && !value) {
       return false;
     }
 
-    if (rule.type && typeof value !== rule.type) {
+    if (ruleObj.type && typeof value !== ruleObj.type) {
       return false;
     }
 
-    if (rule.maxLength && value.length > rule.maxLength) {
+    if (ruleObj.maxLength && value?.length > ruleObj.maxLength) {
       return false;
     }
 
-    if (rule.pattern && !rule.pattern.test(value)) {
+    if (ruleObj.pattern && !ruleObj.pattern.test(value)) {
       return false;
     }
   }

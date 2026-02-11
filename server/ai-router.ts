@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * AI Router
  * 
@@ -35,7 +34,6 @@ export const aiRouter = router({
       try {
         return await suggestItemClassification(input.itemName, input.description);
       } catch (error) {
-        logger.error("خطأ في الاقتراح الذكي:", error);
         throw new Error("فشل الحصول على اقتراح ذكي. يرجى محاولة مجددا");
       }
     }),
@@ -71,7 +69,6 @@ export const aiRouter = router({
           exportCountry: input.exportCountry,
         });
       } catch (error) {
-        logger.error("خطأ في التحليل الذكي:", error);
         throw new Error("فشل التحليل الذكي. يرجى محاولة مجددا");
       }
     }),
@@ -101,7 +98,6 @@ export const aiRouter = router({
         
         return enhanced;
       } catch (error) {
-        logger.error('خطأ في استخراج البيانات:', error);
         throw new Error('فشل استخراج البيانات من الملف. يرجى محاولة مجددا');
       }
     }),
@@ -138,7 +134,6 @@ export const aiRouter = router({
           exportCountry: input.exportCountry,
         })
       } catch (error) {
-        logger.error("خطأ في توقع التكاليف:", error);
         throw new Error("فشل توقع التكاليف. يرجى محاولة مجددا");
       }
     }),

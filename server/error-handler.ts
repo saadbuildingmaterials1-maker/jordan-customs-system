@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * معالج الأخطاء المركزي
  * يوفر معالجة موحدة لجميع أنواع الأخطاء في التطبيق
@@ -83,7 +82,6 @@ export class ErrorHandler {
    * معالجة خطأ وإرجاع استجابة موحدة
    */
   static handle(error: unknown, requestId?: string): ErrorResponse {
-    logger.error('[ErrorHandler]', error);
 
     if (error instanceof AppError) {
       return {

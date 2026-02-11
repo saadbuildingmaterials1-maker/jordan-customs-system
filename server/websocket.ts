@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * websocket
  * 
@@ -63,7 +62,6 @@ export class WebSocketManager {
       });
 
       ws.on('error', (error: Error) => {
-        logger.error('[WebSocket] خطأ:', error.message);
       });
 
       // إرسال رسالة ترحيب
@@ -103,7 +101,6 @@ export class WebSocketManager {
       }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
-      logger.error('[WebSocket] خطأ في معالجة الرسالة:', errorMessage);
     }
   }
 

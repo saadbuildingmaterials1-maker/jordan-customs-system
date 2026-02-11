@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import Stripe from 'stripe';
 
@@ -45,7 +44,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(customer.email).toBe('test-customer@example.com');
         expect(customer.name).toBe('Test Customer');
       } catch (error) {
-        logger.error('خطأ في إنشاء عميل:', error);
         throw error;
       }
     });
@@ -62,7 +60,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(retrieved.id).toBe(customer.id);
         expect(retrieved.email).toBe('get-test@example.com');
       } catch (error) {
-        logger.error('خطأ في الحصول على بيانات العميل:', error);
         throw error;
       }
     });
@@ -82,7 +79,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(updated.name).toBe('Updated Name');
         expect(updated.phone).toBe('+962795917424');
       } catch (error) {
-        logger.error('خطأ في تحديث بيانات العميل:', error);
         throw error;
       }
     });
@@ -108,7 +104,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(paymentMethod.id).toMatch(/^pm_/);
         expect(paymentMethod.type).toBe('card');
       } catch (error) {
-        logger.error('خطأ في إنشاء طريقة دفع:', error);
         throw error;
       }
     });
@@ -135,7 +130,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
 
         expect(attached.customer).toBe(customer.id);
       } catch (error) {
-        logger.error('خطأ في ربط طريقة الدفع:', error);
         throw error;
       }
     });
@@ -156,7 +150,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
 
         expect(detached.id).toBe(paymentMethod.id);
       } catch (error) {
-        logger.error('خطأ في حذف طريقة الدفع:', error);
         throw error;
       }
     });
@@ -182,7 +175,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(paymentIntent.amount).toBe(2000);
         expect(paymentIntent.currency).toBe('jod');
       } catch (error) {
-        logger.error('خطأ في إنشاء نية الدفع:', error);
         throw error;
       }
     });
@@ -199,7 +191,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(retrieved.id).toBe(paymentIntent.id);
         expect(retrieved.amount).toBe(1500);
       } catch (error) {
-        logger.error('خطأ في الحصول على تفاصيل نية الدفع:', error);
         throw error;
       }
     });
@@ -225,7 +216,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
 
         expect(paymentIntent.status).toMatch(/succeeded|requires_action/);
       } catch (error) {
-        logger.error('خطأ في تأكيد نية الدفع:', error);
         throw error;
       }
     });
@@ -251,7 +241,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(invoice.id).toMatch(/^in_/);
         expect(invoice.customer).toBe(customer.id);
       } catch (error) {
-        logger.error('خطأ في إنشاء فاتورة:', error);
         throw error;
       }
     });
@@ -271,7 +260,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(retrieved.id).toBe(invoice.id);
         expect(retrieved.customer).toBe(customer.id);
       } catch (error) {
-        logger.error('خطأ في الحصول على تفاصيل الفاتورة:', error);
         throw error;
       }
     });
@@ -291,7 +279,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(sent.id).toBe(invoice.id);
         expect(sent.status).toMatch(/sent|open/);
       } catch (error) {
-        logger.error('خطأ في إرسال الفاتورة:', error);
         throw error;
       }
     });
@@ -330,7 +317,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
           expect(refund.payment_intent).toBe(paymentIntent.id);
         }
       } catch (error) {
-        logger.error('خطأ في إنشاء استرجاع:', error);
         throw error;
       }
     });
@@ -363,7 +349,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
           expect(refund.amount).toBe(2000);
         }
       } catch (error) {
-        logger.error('خطأ في استرجاع جزء من المبلغ:', error);
         throw error;
       }
     });
@@ -402,7 +387,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(subscription.id).toMatch(/^sub_/);
         expect(subscription.customer).toBe(customer.id);
       } catch (error) {
-        logger.error('خطأ في إنشاء اشتراك:', error);
         throw error;
       }
     });
@@ -435,7 +419,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
 
         expect(canceled.status).toBe('canceled');
       } catch (error) {
-        logger.error('خطأ في إلغاء الاشتراك:', error);
         throw error;
       }
     });
@@ -470,7 +453,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(session.id).toMatch(/^cs_/);
         expect(session.payment_method_types).toContain('card');
       } catch (error) {
-        logger.error('خطأ في إنشاء جلسة الدفع:', error);
         throw error;
       }
     });
@@ -501,7 +483,6 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
         expect(retrieved.id).toBe(session.id);
         expect(retrieved.mode).toBe('payment');
       } catch (error) {
-        logger.error('خطأ في الحصول على تفاصيل جلسة الدفع:', error);
         throw error;
       }
     });

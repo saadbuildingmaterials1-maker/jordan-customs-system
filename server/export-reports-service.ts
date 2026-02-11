@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * export-reports-service
  * @module ./server/export-reports-service
@@ -83,7 +82,6 @@ export async function generatePDFReport(
     const pdfBytes = await pdfDoc.save();
     return Buffer.from(pdfBytes);
   } catch (error) {
-    logger.error('Error generating PDF report:', error);
     throw new Error('Failed to generate PDF report');
   }
 }
@@ -153,7 +151,6 @@ export async function generateExcelReport(
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
   } catch (error) {
-    logger.error('Error generating Excel report:', error);
     throw new Error('Failed to generate Excel report');
   }
 }
@@ -193,7 +190,6 @@ export async function generateCSVReport(
 
     return Buffer.from(csv, 'utf-8');
   } catch (error) {
-    logger.error('Error generating CSV report:', error);
     throw new Error('Failed to generate CSV report');
   }
 }
@@ -218,7 +214,6 @@ export async function generateJSONReport(
     const json = JSON.stringify(report, null, 2);
     return Buffer.from(json, 'utf-8');
   } catch (error) {
-    logger.error('Error generating JSON report:', error);
     throw new Error('Failed to generate JSON report');
   }
 }
@@ -358,7 +353,6 @@ export async function sendReportByEmail(
 
     return true;
   } catch (error) {
-    logger.error('Error sending report by email:', error);
     return false;
   }
 }
@@ -371,6 +365,5 @@ export async function scheduleAutomaticReports(): Promise<void> {
     // جدولة التقارير التلقائية
     console.log('Automatic reports scheduled');
   } catch (error) {
-    logger.error('Error scheduling automatic reports:', error);
   }
 }

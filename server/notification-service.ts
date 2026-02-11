@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * notification-service
  * @module ./server/notification-service
@@ -79,7 +78,6 @@ export class NotificationService {
           return false;
       }
     } catch (error) {
-      logger.error(`خطأ في إرسال الإشعار (${config.type}):`, error);
       return false;
     }
   }
@@ -100,7 +98,6 @@ export class NotificationService {
       console.log(`✅ تم إرسال بريد إلكتروني إلى ${config.recipient}`);
       return true;
     } catch (error) {
-      logger.error('خطأ في إرسال البريد الإلكتروني:', error);
       return false;
     }
   }
@@ -140,7 +137,6 @@ export class NotificationService {
       console.log(`✅ تم إرسال رسالة Slack`);
       return true;
     } catch (error) {
-      logger.error('خطأ في إرسال رسالة Slack:', error);
       return false;
     }
   }
@@ -175,7 +171,6 @@ export class NotificationService {
       console.log(`✅ تم إرسال رسالة Discord`);
       return true;
     } catch (error) {
-      logger.error('خطأ في إرسال رسالة Discord:', error);
       return false;
     }
   }
@@ -199,7 +194,6 @@ export class NotificationService {
       console.log(`✅ تم إرسال رسالة Telegram`);
       return true;
     } catch (error) {
-      logger.error('خطأ في إرسال رسالة Telegram:', error);
       return false;
     }
   }

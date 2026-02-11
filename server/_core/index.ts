@@ -1,4 +1,3 @@
-import { logger } from './logger-service';
 /**
  * index
  * 
@@ -106,7 +105,6 @@ async function startServer() {
       
       const response = await fetch(downloadUrl);
       if (!response.ok) {
-        logger.error(`[Download] Failed: ${response.status}`);
         return res.status(404).json({ error: "File not found" });
       }
       
@@ -120,7 +118,6 @@ async function startServer() {
       res.setHeader("Access-Control-Allow-Origin", "*");
       res.send(Buffer.from(buffer));
     } catch (error) {
-      logger.error("[Download] Error:", error);
       res.status(500).json({ error: "Download failed" });
     }
   });

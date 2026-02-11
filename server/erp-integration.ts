@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * ERP Integration Service
  * موصلات للتكامل مع أنظمة ERP الشهيرة (SAP, Oracle, NetSuite)
@@ -46,7 +45,6 @@ export class SAPIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('SAP Authentication Error:', error);
       return false;
     }
   }
@@ -64,7 +62,6 @@ export class SAPIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('SAP Shipment Sync Error:', error);
       return false;
     }
   }
@@ -82,7 +79,6 @@ export class SAPIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('SAP Invoice Sync Error:', error);
       return false;
     }
   }
@@ -101,7 +97,6 @@ export class SAPIntegration {
       if (!response.ok) throw new Error('Failed to fetch shipment status');
       return await response.json();
     } catch (error) {
-      logger.error('SAP Get Shipment Error:', error);
       return null;
     }
   }
@@ -134,7 +129,6 @@ export class OracleIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('Oracle Authentication Error:', error);
       return false;
     }
   }
@@ -155,7 +149,6 @@ export class OracleIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('Oracle Declaration Sync Error:', error);
       return false;
     }
   }
@@ -174,7 +167,6 @@ export class OracleIntegration {
       if (!response.ok) throw new Error('Failed to fetch declaration');
       return await response.json();
     } catch (error) {
-      logger.error('Oracle Get Declaration Error:', error);
       return null;
     }
   }
@@ -198,7 +190,6 @@ export class OracleIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('Oracle Update Declaration Error:', error);
       return false;
     }
   }
@@ -234,7 +225,6 @@ export class NetSuiteIntegration {
       const data = await response.json();
       return data.access_token;
     } catch (error) {
-      logger.error('NetSuite Authentication Error:', error);
       return null;
     }
   }
@@ -255,7 +245,6 @@ export class NetSuiteIntegration {
 
       return response.ok;
     } catch (error) {
-      logger.error('NetSuite Transaction Sync Error:', error);
       return false;
     }
   }
@@ -274,7 +263,6 @@ export class NetSuiteIntegration {
       if (!response.ok) throw new Error('Failed to fetch transaction');
       return await response.json();
     } catch (error) {
-      logger.error('NetSuite Get Transaction Error:', error);
       return null;
     }
   }
@@ -332,7 +320,6 @@ export class ERPManager {
           throw new Error(`Unknown ERP system: ${system}`);
       }
     } catch (error) {
-      logger.error(`Error syncing with ${system}:`, error);
       syncItem.status = 'failed';
       return false;
     }

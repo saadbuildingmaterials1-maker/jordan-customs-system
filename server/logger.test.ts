@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { logger, LogLevel } from './logger';
 
 describe('Logger', () => {
   beforeEach(() => {
@@ -38,7 +37,6 @@ describe('Logger', () => {
 
     it('should log error messages with error object', () => {
       const error = new Error('Test error');
-      logger.error('Error occurred', error);
       const logs = logger.getLogs(LogLevel.ERROR);
 
       expect(logs.length).toBe(1);
@@ -133,7 +131,6 @@ describe('Logger', () => {
       logger.debug('Debug 1');
       logger.info('Info 1');
       logger.warn('Warning 1');
-      logger.error('Error 1');
       logger.fatal('Fatal 1');
     });
 

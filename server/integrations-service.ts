@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * integrations-service
  * @module ./server/integrations-service
@@ -29,7 +28,6 @@ export class PaymentGatewayIntegration {
 
       return { success: true, paymentId: response.data.id };
     } catch (error) {
-      logger.error('Stripe payment error:', error);
       return { success: false, error: 'Failed to create Stripe payment' };
     }
   }
@@ -49,7 +47,6 @@ export class PaymentGatewayIntegration {
 
       return { success: true, paymentId: response.data.id };
     } catch (error) {
-      logger.error('PayPal payment error:', error);
       return { success: false, error: 'Failed to create PayPal payment' };
     }
   }
@@ -77,7 +74,6 @@ export class ShippingIntegration {
 
       return { success: true, trackingNumber: response.data.output.transactionShipments[0].shipmentDocuments[0].trackingNumber };
     } catch (error) {
-      logger.error('FedEx shipment error:', error);
       return { success: false, error: 'Failed to create FedEx shipment' };
     }
   }
@@ -104,7 +100,6 @@ export class ShippingIntegration {
 
       return { success: true, trackingInfo: response?.data };
     } catch (error) {
-      logger.error('Shipment tracking error:', error);
       return { success: false, error: 'Failed to track shipment' };
     }
   }
@@ -130,7 +125,6 @@ export class CustomsIntegration {
 
       return { success: true, declarationId: response.data.id, status: response.data.status };
     } catch (error) {
-      logger.error('Customs declaration error:', error);
       return { success: false, error: 'Failed to submit customs declaration' };
     }
   }
@@ -143,7 +137,6 @@ export class CustomsIntegration {
 
       return { success: true, status: response.data.status, details: response.data };
     } catch (error) {
-      logger.error('Customs status error:', error);
       return { success: false, error: 'Failed to get customs status' };
     }
   }
@@ -156,7 +149,6 @@ export class CustomsIntegration {
 
       return { success: true, valid: response.data.valid, details: response.data };
     } catch (error) {
-      logger.error('HS Code validation error:', error);
       return { success: false, error: 'Failed to validate HS Code' };
     }
   }
@@ -187,7 +179,6 @@ export class BankIntegration {
 
       return { success: true, transferId: response.data.id, status: response.data.status };
     } catch (error) {
-      logger.error('Bank transfer error:', error);
       return { success: false, error: 'Failed to transfer funds' };
     }
   }
@@ -200,7 +191,6 @@ export class BankIntegration {
 
       return { success: true, balance: response.data.balance, currency: response.data.currency };
     } catch (error) {
-      logger.error('Account balance error:', error);
       return { success: false, error: 'Failed to get account balance' };
     }
   }
@@ -225,7 +215,6 @@ export class CurrencyExchangeIntegration {
       const rate = response.data.rates[toCurrency];
       return { success: true, rate, timestamp: response.data.time_last_updated };
     } catch (error) {
-      logger.error('Exchange rate error:', error);
       return { success: false, error: 'Failed to get exchange rate' };
     }
   }
@@ -240,7 +229,6 @@ export class CurrencyExchangeIntegration {
       const convertedAmount = amount * (rateResult.rate as number);
       return { success: true, amount: convertedAmount, rate: rateResult.rate };
     } catch (error) {
-      logger.error('Currency conversion error:', error);
       return { success: false, error: 'Failed to convert currency' };
     }
   }
@@ -279,7 +267,6 @@ export class SMSGatewayIntegration {
 
       return { success: true, messageId: response.data.sid };
     } catch (error) {
-      logger.error('SMS sending error:', error);
       return { success: false, error: 'Failed to send SMS' };
     }
   }

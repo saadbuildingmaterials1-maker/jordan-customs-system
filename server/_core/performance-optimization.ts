@@ -1,4 +1,3 @@
-import { logger } from './logger-service';
 /**
  * performance-optimization Core
  * أداة أساسية
@@ -73,7 +72,6 @@ export function setupPerformanceMonitoring(app: Express) {
       }
 
       if (status >= 400) {
-        logger.error(`[Error] ${method} ${path} - ${status} (${duration}ms)`);
       }
     });
 

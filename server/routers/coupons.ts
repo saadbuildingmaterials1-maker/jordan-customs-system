@@ -1,4 +1,3 @@
-import { logger } from '../_core/logger-service';
 /**
  * Coupons Router
  * 
@@ -26,7 +25,6 @@ export const couponsRouter = router({
         coupons,
       };
     } catch (error) {
-      logger.error('❌ خطأ في جلب الكوبونات:', error);
       throw new Error('فشل في جلب الكوبونات');
     }
   }),
@@ -52,7 +50,6 @@ export const couponsRouter = router({
 
         return result;
       } catch (error) {
-        logger.error('❌ خطأ في تطبيق الكوبون:', error);
         throw new Error('فشل في تطبيق الكوبون');
       }
     }),
@@ -94,7 +91,6 @@ export const couponsRouter = router({
           message: valid ? 'الكوبون صحيح' : 'الكوبون غير صالح للاستخدام',
         };
       } catch (error) {
-        logger.error('❌ خطأ في التحقق من الكوبون:', error);
         throw new Error('فشل في التحقق من الكوبون');
       }
     }),
@@ -124,7 +120,6 @@ export const couponsRouter = router({
           stats,
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب إحصائيات الكوبون:', error);
         throw new Error('فشل في جلب إحصائيات الكوبون');
       }
     }),
@@ -169,7 +164,6 @@ export const couponsRouter = router({
           coupon,
         };
       } catch (error) {
-        logger.error('❌ خطأ في إنشاء الكوبون:', error);
         throw new Error('فشل في إنشاء الكوبون');
       }
     }),
@@ -211,7 +205,6 @@ export const couponsRouter = router({
           coupon,
         };
       } catch (error) {
-        logger.error('❌ خطأ في تحديث الكوبون:', error);
         throw new Error('فشل في تحديث الكوبون');
       }
     }),
@@ -239,7 +232,6 @@ export const couponsRouter = router({
           message: deleted ? 'تم حذف الكوبون بنجاح' : 'الكوبون غير موجود',
         };
       } catch (error) {
-        logger.error('❌ خطأ في حذف الكوبون:', error);
         throw new Error('فشل في حذف الكوبون');
       }
     }),
@@ -260,7 +252,6 @@ export const couponsRouter = router({
         coupons,
       };
     } catch (error) {
-      logger.error('❌ خطأ في جلب الكوبونات:', error);
       throw new Error('فشل في جلب الكوبونات');
     }
   }),

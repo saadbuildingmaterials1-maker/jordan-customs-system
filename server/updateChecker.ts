@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 
 const CURRENT_VERSION = '1.0.0';
 const CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 ساعة
@@ -38,7 +37,6 @@ async function fetchLatestRelease(): Promise<ReleaseInfo | null> {
 
     if (!response.ok) {
       const errorMsg = response.statusText || 'Unknown error';
-      logger.error(`Failed to fetch release: ${errorMsg}`);
       return null;
     }
 
@@ -54,7 +52,6 @@ async function fetchLatestRelease(): Promise<ReleaseInfo | null> {
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error fetching latest release:', errorMessage);
     return null;
   }
 }
@@ -107,7 +104,6 @@ export async function checkForUpdates(): Promise<UpdateStatus> {
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logger.error('Error checking for updates:', errorMessage);
     return {
       hasUpdate: false,
       currentVersion: CURRENT_VERSION,

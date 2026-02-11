@@ -42,7 +42,6 @@ export default function ExportButtons({
       });
       toast.success("تم تصدير الملف إلى Excel بنجاح");
     } catch (error) {
-      logger.error("Excel export error:", error);
       toast.error("حدث خطأ أثناء تصدير الملف إلى Excel");
     } finally {
       setIsExportingExcel(false);
@@ -70,7 +69,6 @@ export default function ExportButtons({
       }
       toast.success("تم تصدير الملف إلى PDF بنجاح");
     } catch (error) {
-      logger.error("PDF export error:", error);
       toast.error("حدث خطأ أثناء تصدير الملف إلى PDF");
     } finally {
       setIsExportingPDF(false);

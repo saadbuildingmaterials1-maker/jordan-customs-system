@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * Stripe Payment Router
  * 
@@ -73,7 +72,6 @@ export const stripePaymentRouter = router({
           message: 'تم إنشاء جلسة الدفع بنجاح',
         };
       } catch (error) {
-        logger.error('❌ خطأ في إنشاء جلسة الدفع:', error);
         throw new Error(`فشل في إنشاء جلسة الدفع: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
       }
     }),
@@ -115,7 +113,6 @@ export const stripePaymentRouter = router({
           },
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب معلومات الاشتراك:', error);
         throw new Error(`فشل في جلب معلومات الاشتراك: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
       }
     }),
@@ -151,7 +148,6 @@ export const stripePaymentRouter = router({
           },
         };
       } catch (error) {
-        logger.error('❌ خطأ في إلغاء الاشتراك:', error);
         throw new Error(`فشل في إلغاء الاشتراك: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
       }
     }),
@@ -198,8 +194,8 @@ export const stripePaymentRouter = router({
           })),
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب قائمة الفواتير:', error);
-        throw new Error(`فشل في جلب قائمة الفواتير: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل في جلب قائمة الفواتير: ${errMsg}`);
       }
     }),
 
@@ -239,8 +235,8 @@ export const stripePaymentRouter = router({
           },
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب الفاتورة:', error);
-        throw new Error(`فشل في جلب الفاتورة: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل في جلب الفاتورة: ${errMsg}`);
       }
     }),
 
@@ -267,8 +263,8 @@ export const stripePaymentRouter = router({
           message: 'جاري معالجة الدفع',
         };
       } catch (error) {
-        logger.error('❌ خطأ في التحقق من حالة الدفع:', error);
-        throw new Error(`فشل في التحقق من حالة الدفع: ${error instanceof Error ? error.message : 'خطأ غير معروف'}`);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        throw new Error(`فشل في التحقق من حالة الدفع: ${errMsg}`);
       }
     }),
 });

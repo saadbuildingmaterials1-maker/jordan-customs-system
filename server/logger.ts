@@ -1,4 +1,3 @@
-import { logger } from './_core/logger-service';
 /**
  * نظام السجلات المركزي
  * يوفر تسجيل موحد لجميع أحداث التطبيق
@@ -104,9 +103,7 @@ class Logger {
         break;
       case LogLevel.ERROR:
       case LogLevel.FATAL:
-        logger.error(message);
         if (entry.error) {
-          logger.error(entry.error.stack);
         }
         break;
     }

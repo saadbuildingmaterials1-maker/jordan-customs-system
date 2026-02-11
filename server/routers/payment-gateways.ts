@@ -1,4 +1,3 @@
-import { logger } from '../_core/logger-service';
 /**
  * Payment Gateways Router
  * 
@@ -49,7 +48,6 @@ export const paymentGatewaysRouter = router({
           payment,
         };
       } catch (error) {
-        logger.error('❌ خطأ في معالجة دفع Click Payment:', error);
         throw new Error('فشل في معالجة الدفع');
       }
     }),
@@ -84,7 +82,6 @@ export const paymentGatewaysRouter = router({
           payment,
         };
       } catch (error) {
-        logger.error('❌ خطأ في معالجة دفع Apple Pay:', error);
         throw new Error('فشل في معالجة الدفع');
       }
     }),
@@ -119,7 +116,6 @@ export const paymentGatewaysRouter = router({
           payment,
         };
       } catch (error) {
-        logger.error('❌ خطأ في معالجة دفع Google Pay:', error);
         throw new Error('فشل في معالجة الدفع');
       }
     }),
@@ -154,7 +150,6 @@ export const paymentGatewaysRouter = router({
           payment,
         };
       } catch (error) {
-        logger.error('❌ خطأ في معالجة دفع QR Code:', error);
         throw new Error('فشل في إنشاء رمز QR');
       }
     }),
@@ -177,7 +172,6 @@ export const paymentGatewaysRouter = router({
           status,
         };
       } catch (error) {
-        logger.error('❌ خطأ في التحقق من الدفع:', error);
         throw new Error('فشل في التحقق من الدفع');
       }
     }),
@@ -200,7 +194,6 @@ export const paymentGatewaysRouter = router({
           message: success ? 'تم إلغاء الدفع بنجاح' : 'فشل في إلغاء الدفع',
         };
       } catch (error) {
-        logger.error('❌ خطأ في إلغاء الدفع:', error);
         throw new Error('فشل في إلغاء الدفع');
       }
     }),
@@ -227,7 +220,6 @@ export const paymentGatewaysRouter = router({
           message: success ? 'تم استرجاع الأموال بنجاح' : 'فشل في استرجاع الأموال',
         };
       } catch (error) {
-        logger.error('❌ خطأ في استرجاع الأموال:', error);
         throw new Error('فشل في استرجاع الأموال');
       }
     }),
@@ -253,7 +245,6 @@ export const paymentGatewaysRouter = router({
           payments,
         };
       } catch (error) {
-        logger.error('❌ خطأ في جلب سجل الدفعات:', error);
         throw new Error('فشل في جلب سجل الدفعات');
       }
     }),
