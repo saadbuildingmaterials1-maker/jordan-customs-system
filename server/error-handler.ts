@@ -336,3 +336,127 @@ export function createErrorHandler() {
     res.status(statusCode).json(errorResponse);
   };
 }
+
+
+/**
+ * رسائل الأخطاء المحسّنة للمستخدم
+ * توفر رسائل واضحة وسهلة الفهم مع اقتراحات للحل
+ */
+export const USER_FRIENDLY_MESSAGES: Record<ErrorCode, { message: string; suggestions: string[] }> = {
+  [ErrorCode.UNAUTHORIZED]: {
+    message: '❌ يجب عليك تسجيل الدخول أولاً',
+    suggestions: ['اضغط على زر تسجيل الدخول', 'أنشئ حساباً جديداً إذا لم يكن لديك واحد'],
+  },
+  [ErrorCode.FORBIDDEN]: {
+    message: '❌ ليس لديك صلاحية للوصول إلى هذا المورد',
+    suggestions: ['تواصل مع مسؤول النظام', 'تحقق من صلاحياتك'],
+  },
+  [ErrorCode.INVALID_INPUT]: {
+    message: '❌ البيانات المدخلة غير صحيحة',
+    suggestions: ['تحقق من جميع الحقول', 'تأكد من صيغة البيانات'],
+  },
+  [ErrorCode.MISSING_REQUIRED_FIELD]: {
+    message: '❌ يوجد حقول مطلوبة لم تملأها',
+    suggestions: ['ملء جميع الحقول المطلوبة', 'ابحث عن الحقول المحددة بـ (*)'],
+  },
+  [ErrorCode.INVALID_FORMAT]: {
+    message: '❌ صيغة البيانات غير صحيحة',
+    suggestions: ['تحقق من صيغة التاريخ (YYYY-MM-DD)', 'تأكد من صيغة رقم الهاتف'],
+  },
+  [ErrorCode.RECORD_NOT_FOUND]: {
+    message: '❌ لم نتمكن من العثور على السجل المطلوب',
+    suggestions: ['تحقق من رقم البيان', 'جرب البحث مرة أخرى'],
+  },
+  [ErrorCode.DUPLICATE_RECORD]: {
+    message: '❌ هذا السجل موجود بالفعل',
+    suggestions: ['تحقق من البيانات المدخلة', 'جرب بيانات مختلفة'],
+  },
+  [ErrorCode.DATABASE_ERROR]: {
+    message: '❌ حدث خطأ في قاعدة البيانات',
+    suggestions: ['أعد تحميل الصفحة', 'تواصل مع فريق الدعم إذا استمرت المشكلة'],
+  },
+  [ErrorCode.PAYMENT_FAILED]: {
+    message: '❌ فشلت عملية الدفع',
+    suggestions: ['تحقق من بيانات البطاقة', 'جرب طريقة دفع أخرى', 'تأكد من وجود رصيد كافي'],
+  },
+  [ErrorCode.INSUFFICIENT_FUNDS]: {
+    message: '❌ رصيد غير كافي',
+    suggestions: ['تحقق من رصيد حسابك', 'جرب بطاقة أخرى'],
+  },
+  [ErrorCode.INVALID_PAYMENT_METHOD]: {
+    message: '❌ طريقة الدفع غير صحيحة',
+    suggestions: ['تحقق من بيانات البطاقة', 'جرب بطاقة أخرى'],
+  },
+  [ErrorCode.FILE_NOT_FOUND]: {
+    message: '❌ الملف غير موجود',
+    suggestions: ['تحقق من اسم الملف', 'جرب رفع الملف مرة أخرى'],
+  },
+  [ErrorCode.FILE_UPLOAD_ERROR]: {
+    message: '❌ فشل رفع الملف',
+    suggestions: ['تحقق من حجم الملف', 'جرب ملف آخر', 'تأكد من اتصالك بالإنترنت'],
+  },
+  [ErrorCode.INVALID_FILE_TYPE]: {
+    message: '❌ نوع الملف غير مدعوم',
+    suggestions: ['استخدم ملف PDF أو صورة', 'تحقق من امتداد الملف'],
+  },
+  [ErrorCode.FILE_SIZE_EXCEEDED]: {
+    message: '❌ حجم الملف كبير جداً',
+    suggestions: ['استخدم ملف أصغر من 10 MB', 'ضغط الملف قبل الرفع'],
+  },
+  [ErrorCode.TIMEOUT_ERROR]: {
+    message: '❌ انتهت المهلة الزمنية للعملية',
+    suggestions: ['تحقق من اتصالك بالإنترنت', 'جرب العملية مرة أخرى'],
+  },
+  [ErrorCode.EXTERNAL_SERVICE_ERROR]: {
+    message: '❌ خدمة خارجية غير متاحة حالياً',
+    suggestions: ['جرب مرة أخرى بعد قليل', 'تواصل مع فريق الدعم'],
+  },
+  [ErrorCode.INTERNAL_SERVER_ERROR]: {
+    message: '❌ حدث خطأ في الخادم',
+    suggestions: ['أعد تحميل الصفحة', 'تواصل مع فريق الدعم'],
+  },
+  [ErrorCode.SERVICE_UNAVAILABLE]: {
+    message: '❌ الخدمة غير متاحة حالياً',
+    suggestions: ['جرب مرة أخرى بعد قليل', 'تحقق من حالة الخدمة'],
+  },
+  [ErrorCode.STRIPE_ERROR]: {
+    message: '❌ حدث خطأ في معالجة الدفع',
+    suggestions: ['تحقق من بيانات البطاقة', 'جرب طريقة دفع أخرى'],
+  },
+  [ErrorCode.INVALID_TOKEN]: {
+    message: '❌ الرمز غير صحيح أو منتهي الصلاحية',
+    suggestions: ['سجّل الدخول مرة أخرى', 'أعد تحميل الصفحة'],
+  },
+  [ErrorCode.TOKEN_EXPIRED]: {
+    message: '❌ انتهت صلاحية الجلسة',
+    suggestions: ['سجّل الدخول مرة أخرى', 'اضغط على زر تحديث الجلسة'],
+  },
+  [ErrorCode.DATABASE_CONNECTION_ERROR]: {
+    message: '❌ فشل الاتصال بقاعدة البيانات',
+    suggestions: ['تحقق من اتصالك بالإنترنت', 'جرب مرة أخرى بعد قليل'],
+  },
+  [ErrorCode.API_ERROR]: {
+    message: '❌ خطأ في واجهة البرمجة',
+    suggestions: ['جرب العملية مرة أخرى', 'تواصل مع فريق الدعم'],
+  },
+  [ErrorCode.NOT_IMPLEMENTED]: {
+    message: '❌ هذه الميزة غير متاحة حالياً',
+    suggestions: ['انتظر التحديثات القادمة', 'تواصل مع فريق الدعم للمزيد من المعلومات'],
+  },
+};
+
+/**
+ * دالة للحصول على رسالة خطأ محسّنة
+ */
+export function getUserFriendlyError(code: ErrorCode, defaultMessage?: string): { message: string; suggestions: string[] } {
+  const friendlyError = USER_FRIENDLY_MESSAGES[code];
+  
+  if (friendlyError) {
+    return friendlyError;
+  }
+
+  return {
+    message: defaultMessage || '❌ حدث خطأ غير متوقع',
+    suggestions: ['أعد تحميل الصفحة', 'تواصل مع فريق الدعم'],
+  };
+}
