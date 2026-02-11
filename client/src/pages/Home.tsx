@@ -125,7 +125,14 @@ export default function Home() {
                 </div>
               </button>
               <button
-                onClick={() => window.open('/releases/jordan-customs-system-setup.exe', '_blank')}
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = '/releases/jordan-customs-windows.zip';
+                  link.download = 'jordan-customs-windows.zip';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
                 className="group relative px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg font-semibold text-lg overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/50 hover:-translate-y-1"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-green-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
