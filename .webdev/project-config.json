@@ -1,0 +1,48 @@
+{
+  "project": {
+    "name": "jordan-customs-system",
+    "displayName": "نظام إدارة تكاليف الشحن والجمارك الأردنية",
+    "description": "منصة متكاملة لإدارة البيانات الجمركية والشحنات",
+    "version": "1.0.0",
+    "status": "active"
+  },
+  "domain": {
+    "primary": "mp3-app.com",
+    "subdomain": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
+    "ssl": true,
+    "autoRenew": true,
+    "status": "pending"
+  },
+  "dns": {
+    "provider": "manus",
+    "records": [
+      {
+        "type": "CNAME",
+        "name": "mp3-app.com",
+        "value": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
+        "ttl": 3600
+      },
+      {
+        "type": "A",
+        "name": "@",
+        "value": "34.159.200.1",
+        "ttl": 3600
+      }
+    ],
+    "status": "pending_update"
+  },
+  "server": {
+    "host": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
+    "port": 3000,
+    "protocol": "https",
+    "status": "running"
+  },
+  "features": {
+    "database": true,
+    "server": true,
+    "user": true,
+    "ssl": true,
+    "customDomain": true
+  },
+  "lastUpdated": "2026-02-11T14:45:00Z"
+}

@@ -1,0 +1,54 @@
+{
+  "domain": "mp3-app.com",
+  "registrar": "manus",
+  "dnsProvider": "manus-dns",
+  "records": [
+    {
+      "id": "dns-cname-1",
+      "type": "CNAME",
+      "name": "mp3-app.com",
+      "value": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
+      "ttl": 3600,
+      "priority": 1,
+      "status": "pending"
+    },
+    {
+      "id": "dns-a-1",
+      "type": "A",
+      "name": "@",
+      "value": "34.159.200.1",
+      "ttl": 3600,
+      "status": "pending"
+    },
+    {
+      "id": "dns-mx-1",
+      "type": "MX",
+      "name": "@",
+      "value": "mail.mp3-app.com",
+      "priority": 10,
+      "ttl": 3600,
+      "status": "pending"
+    },
+    {
+      "id": "dns-txt-1",
+      "type": "TXT",
+      "name": "@",
+      "value": "v=spf1 include:_spf.google.com ~all",
+      "ttl": 3600,
+      "status": "pending"
+    }
+  ],
+  "ssl": {
+    "enabled": true,
+    "provider": "letsencrypt",
+    "certificate": "mp3-app.com",
+    "autoRenew": true,
+    "expiryDate": "2027-02-11",
+    "status": "pending"
+  },
+  "propagation": {
+    "status": "pending",
+    "estimatedTime": "24-48 hours",
+    "lastChecked": "2026-02-11T14:45:00Z"
+  }
+}
