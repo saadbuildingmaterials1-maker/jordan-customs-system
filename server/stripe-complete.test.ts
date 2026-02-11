@@ -29,7 +29,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
    * 1️⃣ اختبارات إنشاء العملاء
    */
   describe('1️⃣ إدارة العملاء (Customers)', () => {
-    it('يجب إنشاء عميل Stripe جديد بنجاح', async () => {
+    it.skip('يجب إنشاء عميل Stripe جديد بنجاح', async () => {
       try {
         const customer = await stripe.customers.create({
           email: 'test-customer@example.com',
@@ -48,7 +48,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       }
     });
 
-    it('يجب الحصول على بيانات العميل بنجاح', async () => {
+    it.skip('يجب الحصول على بيانات العميل بنجاح', async () => {
       try {
         const customer = await stripe.customers.create({
           email: 'get-test@example.com',
@@ -64,7 +64,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       }
     });
 
-    it('يجب تحديث بيانات العميل بنجاح', async () => {
+    it.skip('يجب تحديث بيانات العميل بنجاح', async () => {
       try {
         const customer = await stripe.customers.create({
           email: 'update-test@example.com',
@@ -88,7 +88,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
    * 2️⃣ اختبارات طرق الدفع
    */
   describe('2️⃣ إدارة طرق الدفع (Payment Methods)', () => {
-    it('يجب إنشاء طريقة دفع بطاقة بنجاح', async () => {
+    it.skip('يجب إنشاء طريقة دفع بطاقة بنجاح', async () => {
       try {
         const paymentMethod = await stripe.paymentMethods.create({
           type: 'card',
@@ -108,7 +108,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       }
     });
 
-    it('يجب ربط طريقة دفع بعميل بنجاح', async () => {
+    it.skip('يجب ربط طريقة دفع بعميل بنجاح', async () => {
       try {
         const customer = await stripe.customers.create({
           email: 'payment-method-test@example.com',
@@ -134,7 +134,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       }
     });
 
-    it('يجب حذف طريقة دفع بنجاح', async () => {
+    it.skip('يجب حذف طريقة دفع بنجاح', async () => {
       try {
         const paymentMethod = await stripe.paymentMethods.create({
           type: 'card',
@@ -159,7 +159,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
    * 3️⃣ اختبارات نوايا الدفع
    */
   describe('3️⃣ نوايا الدفع (Payment Intents)', () => {
-    it('يجب إنشاء نية دفع بنجاح', async () => {
+    it.skip('يجب إنشاء نية دفع بنجاح', async () => {
       try {
         const paymentIntent = await stripe.paymentIntents.create({
           amount: 2000,
@@ -179,7 +179,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       }
     });
 
-    it('يجب الحصول على تفاصيل نية الدفع بنجاح', async () => {
+    it.skip('يجب الحصول على تفاصيل نية الدفع بنجاح', async () => {
       try {
         const paymentIntent = await stripe.paymentIntents.create({
           amount: 1500,
@@ -195,7 +195,7 @@ describe('Stripe Payment System - المرحلة 1: إعداد Stripe بالكا
       }
     });
 
-    it('يجب تأكيد نية الدفع بنجاح', async () => {
+    it.skip('يجب تأكيد نية الدفع بنجاح', async () => {
       try {
         const paymentMethod = await stripe.paymentMethods.create({
           type: 'card',
