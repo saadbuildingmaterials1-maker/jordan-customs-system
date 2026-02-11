@@ -44,7 +44,7 @@ const paymentOptions: PaymentOption[] = [
     color: '#1e40af',
     bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600',
     description: 'بنك الأردن - الدفع الفوري',
-    link: URLs.BANK_AUDI
+    link: 'https://bank-audi.com.jo'
   },
   {
     id: 'paypal',

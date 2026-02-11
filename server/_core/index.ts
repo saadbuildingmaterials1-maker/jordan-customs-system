@@ -222,7 +222,7 @@ startServer().catch(console.error);
 import { memoryOptimizer } from '../memory-optimization';
 setInterval(() => {
   const mem = memoryOptimizer.monitorMemory();
-  if (mem.percent > 80) {
+  if (Number(mem.percent) > 80) {
     console.warn(`⚠️ High memory usage: ${mem.percent}%`);
   }
 }, 30000);

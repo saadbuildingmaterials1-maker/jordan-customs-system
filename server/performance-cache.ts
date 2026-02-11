@@ -15,8 +15,8 @@ export class PerformanceCache {
 
   set<T>(key: string, value: T, ttl: number = 3600000): void {
     if (this.cache.size >= this.maxEntries) {
-      const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      const firstKey = this.cache.keys().next().value as string | undefined;
+      if (firstKey) this.cache.delete(firstKey);
     }
 
     this.cache.set(key, {
