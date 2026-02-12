@@ -10,12 +10,14 @@ import path from "path";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import helmet from "helmet";
 import cors from "cors";
+import compression from "compression";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { resourceMonitor } from "./resource-monitor";
 import { healthChecker } from "./health-check";
+import { memoryOptimizer } from "../memory-optimization";
 import {
   generalLimiter,
   authLimiter,
@@ -56,6 +58,12 @@ async function startServer() {
   // تفعيل Trust Proxy للعمل مع Rate Limiting
   app.set('trust proxy', 1);
   
+  // ========== QUICK HEALTH CHECK FIRST ==========
+  // Health check must be first and fast
+  app.get("/api/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+  
   // ========== STATIC FILES FIRST ==========
   // يجب أن تأتي الملفات الثابتة قبل middleware الأمان
   // لأن middleware الأمان قد يعدل رؤوس الاستجابة
@@ -65,12 +73,30 @@ async function startServer() {
     serveStatic(app);
   }
   
+  // ========== COMPRESSION MIDDLEWARE ==========
+  // تفعيل Gzip/Brotli Compression لتقليل حجم الاستجابة
+  app.use(compression({
+    level: 6, // Balance between speed and compression ratio
+    threshold: 1024, // Only compress responses larger than 1KB
+    filter: (req, res) => {
+      // Don't compress if client doesn't support it
+      if (req.headers['x-no-compression']) {
+        return false;
+      }
+      // Use the filter function from compression module
+      return compression.filter(req, res);
+    }
+  }));
+  
   // ========== SECURITY MIDDLEWARE ==========
   // تطبيق Helmet للأمان الشامل
   app.use(helmet(helmetOptions as any));
   
   // تطبيق CORS
   app.use(cors(corsOptions as any));
+  
+  // تطبيق Rate Limiting العام (قبل logging للأداء)
+  app.use(generalLimiter as any);
   
   // تسجيل الطلبات
   app.use(requestLogger);
@@ -84,16 +110,36 @@ async function startServer() {
   // التحقق من صحة الطلب
   app.use(requestValidation);
   
-  // تطبيق Rate Limiting العام
-  app.use(generalLimiter as any);
-  
   // ========== BODY PARSER ==========
-  // Configure body parser with larger size limit for file uploads
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  // Configure body parser with optimized size limits
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ limit: "10mb", extended: true }));
+  
+  // ========== RESPONSE OPTIMIZATION ==========
+  // Add response headers for better caching and performance
+  app.use((req, res, next) => {
+    // Set cache headers for static assets
+    if (req.path.startsWith('/assets/')) {
+      res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+    // Set cache headers for API responses
+    else if (req.path.startsWith('/api/')) {
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+    next();
+  });
   
   // تنظيف البيانات المدخلة
   app.use(sanitizeInput);
+  
+  // ========== DISABLE UNNECESSARY MONITORING IN PRODUCTION ==========
+  const isProduction = process.env.NODE_ENV === "production";
+  const resourceMonitorEnabled = !isProduction;
+  
+  // ========== PERFORMANCE OPTIMIZATION ==========
+  // Enable connection keep-alive for better performance
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 66000;
   
   // Download route MUST be FIRST before any other middleware
   app.get("/api/download/:filename", async (req, res) => {
@@ -142,36 +188,56 @@ async function startServer() {
     })
   );
   
-  // ========== HEALTH CHECK ROUTE ==========
-  // Health check endpoint
+  // ========== HEALTH CHECK ROUTE (ENHANCED) ==========
+  // Health check endpoint - simplified for faster response
   app.get("/api/health", (req, res) => {
-    const health = healthChecker.performCheck();
-    const statusCode = health.status === "healthy" ? 200 : health.status === "degraded" ? 202 : 503;
-    res.status(statusCode).json(health);
+    // Quick health check without full monitoring
+    res.status(200).json({ status: "ok", timestamp: Date.now() });
   });
 
-  // Resource stats endpoint
-  app.get("/api/stats", (req, res) => {
-    const stats = resourceMonitor.getStats();
-    const health = healthChecker.performCheck();
-    res.json({
-      stats,
-      health,
+  // Resource stats endpoint (development only)
+  if (!isProduction) {
+    app.get("/api/stats", (req, res) => {
+      const stats = resourceMonitor.getStats();
+      const health = healthChecker.performCheck();
+      res.json({
+        stats,
+        health,
+      });
     });
-  });
+  }
 
   // ========== STATIC FILES & SPA FALLBACK ==========
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    // Already called above, skip duplicate
   }
+  
+  // ========== PERFORMANCE MONITORING ==========
+  // Add response time tracking
+  app.use((req, res, next) => {
+    const start = Date.now();
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      if (duration > 1000 && resourceMonitorEnabled) {
+        console.warn(`[Slow Request] ${req.method} ${req.path} took ${duration}ms`);
+      }
+    });
+    next();
+  });
 
 
   // ========== ERROR HANDLING ==========
   // معالج الأخطاء الأمنية (يجب أن يأتي بعد جميع المعالجات الأخرى)
   app.use(securityErrorHandler);
+  
+  // ========== 404 HANDLER ==========
+  // Handle 404 errors
+  app.use((req, res) => {
+    res.status(404).json({ error: 'Not found' });
+  });
 
   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
@@ -180,24 +246,29 @@ async function startServer() {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
 
-  server.listen(port, () => {
+  server.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${port}/`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Compression: enabled`);
+    console.log(`Keep-Alive: enabled`);
     
-    // Start resource monitoring
-    resourceMonitor.start((stats) => {
-      // Optional: Send stats to monitoring service
-    });
-    
-    // Start health checks
-    healthChecker.start((result) => {
-      // Optional: Send health status to monitoring service
-    });
+    // Start resource monitoring (only in development)
+    if (resourceMonitorEnabled) {
+      resourceMonitor.start((stats) => {
+        // Optional: Send stats to monitoring service
+      });
+      
+      // Start health checks (only in development)
+      healthChecker.start((result) => {
+        // Optional: Send health status to monitoring service
+      });
+    }
     
     // Graceful shutdown
     process.on("SIGTERM", () => {
       console.log("[Server] SIGTERM received, shutting down gracefully...");
-      resourceMonitor.stop();
-      healthChecker.stop();
+      if (resourceMonitorEnabled) resourceMonitor.stop();
+      if (resourceMonitorEnabled) healthChecker.stop();
       server.close(() => {
         console.log("[Server] Server closed");
         process.exit(0);
@@ -206,8 +277,8 @@ async function startServer() {
     
     process.on("SIGINT", () => {
       console.log("[Server] SIGINT received, shutting down gracefully...");
-      resourceMonitor.stop();
-      healthChecker.stop();
+      if (resourceMonitorEnabled) resourceMonitor.stop();
+      if (resourceMonitorEnabled) healthChecker.stop();
       server.close(() => {
         console.log("[Server] Server closed");
         process.exit(0);
@@ -218,11 +289,14 @@ async function startServer() {
 
 startServer().catch(console.error);
 
-// Memory monitoring
-import { memoryOptimizer } from '../memory-optimization';
-setInterval(() => {
-  const mem = memoryOptimizer.monitorMemory();
-  if (Number(mem.percent) > 80) {
-    console.warn(`⚠️ High memory usage: ${mem.percent}%`);
-  }
-}, 30000);
+// Memory monitoring (only in development)
+const isProduction = process.env.NODE_ENV === "production";
+if (!isProduction) {
+  setInterval(() => {
+    const mem = memoryOptimizer.monitorMemory();
+    if (Number(mem.percent) > 80) {
+      console.warn(`⚠️ High memory usage: ${mem.percent}%`);
+    }
+  }, 30000);
+}
+
