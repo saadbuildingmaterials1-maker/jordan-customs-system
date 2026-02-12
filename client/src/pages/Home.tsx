@@ -34,7 +34,8 @@ export default function Home() {
       links: [
         { label: "المميزات", action: () => navigate("/#features") },
         { label: "الأسعار", action: () => navigate("/pricing") },
-        { label: "الدعم", action: () => navigate("/support") }
+        { label: "الدعم", action: () => navigate("/support") },
+        { label: "من نحن", action: () => navigate("/about") }
       ]
     },
     {
@@ -58,7 +59,8 @@ export default function Home() {
       links: [
         { label: "سياسة الخصوصية", action: () => navigate("/privacy") },
         { label: "شروط الاستخدام", action: () => navigate("/terms") },
-        { label: "اتصل بنا", action: () => navigate("/contact") }
+        { label: "اتصل بنا", action: () => navigate("/contact") },
+        { label: "من نحن", action: () => navigate("/about") }
       ]
     }
   ];

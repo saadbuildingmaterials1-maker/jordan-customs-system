@@ -13,7 +13,7 @@ export default function LiveChat() {
   useEffect(() => {
     // Initialize Crisp Live Chat
     // Replace with your actual Crisp website ID
-    const CRISP_WEBSITE_ID = process.env.VITE_CRISP_WEBSITE_ID || 'default-id';
+    const CRISP_WEBSITE_ID = import.meta.env.VITE_CRISP_WEBSITE_ID || 'default-id';
 
     if (CRISP_WEBSITE_ID && CRISP_WEBSITE_ID !== 'default-id') {
       // Load Crisp script
@@ -164,6 +164,6 @@ function useInput(initial: string) {
 
 declare global {
   interface Window {
-    $crisp: any;
+    $crisp?: any;
   }
 }
