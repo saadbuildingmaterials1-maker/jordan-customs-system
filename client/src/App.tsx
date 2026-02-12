@@ -79,6 +79,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import { ToastContainer } from "./components/ToastContainer";
+import LiveChat from "./components/LiveChat";
 
 // Loading component
 function PageLoader() {
@@ -194,6 +195,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <ToastContainer />
+            <LiveChat />
             <Router />
           </TooltipProvider>
         </ToastProvider>
