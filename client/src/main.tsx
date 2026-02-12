@@ -13,9 +13,30 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
+import { initializePerformanceMonitoring } from "@/lib/performance";
+import { initializeAnalytics } from "@/lib/analytics";
 import "./index.css";
 
 console.log("[main.tsx] Starting application...");
+
+// Initialize performance monitoring
+initializePerformanceMonitoring();
+
+// Initialize analytics (Google Analytics and Sentry)
+if (typeof window !== 'undefined') {
+  initializeAnalytics({
+    googleAnalytics: {
+      measurementId: import.meta.env.VITE_GA_MEASUREMENT_ID || '',
+      enabled: !!import.meta.env.VITE_GA_MEASUREMENT_ID,
+    },
+    sentry: {
+      dsn: import.meta.env.VITE_SENTRY_DSN || '',
+      environment: import.meta.env.MODE,
+      tracesSampleRate: 0.1,
+      enabled: !!import.meta.env.VITE_SENTRY_DSN,
+    },
+  }).catch(err => console.warn('[Analytics] Failed to initialize:', err));
+}
 
 const queryClient = new QueryClient();
 
@@ -59,19 +80,18 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-// Intercom initialization removed temporarily
-// Will be re-enabled after proper configuration
-
 console.log("[main.tsx] Creating React root...");
 const rootElement = document.getElementById("root");
-console.log("[main.tsx] Root element:", rootElement);
 if (!rootElement) {
   throw new Error("Root element not found");
 }
-createRoot(rootElement).render(
+const root = createRoot(rootElement);
+root.render(
   <trpc.Provider client={trpcClient} queryClient={queryClient}>
     <QueryClientProvider client={queryClient}>
       <App />
     </QueryClientProvider>
   </trpc.Provider>
 );
+
+console.log("[main.tsx] Application rendered successfully");

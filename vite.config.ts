@@ -179,6 +179,7 @@ export default defineConfig({
     sourcemap: false,
     target: 'esnext',
     rollupOptions: {
+      external: ['@sentry/react'],
       output: {
         manualChunks: (id) => {
           // Split large utility libraries
