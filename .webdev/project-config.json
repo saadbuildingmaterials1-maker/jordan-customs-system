@@ -11,7 +11,8 @@
     "subdomain": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
     "ssl": true,
     "autoRenew": true,
-    "status": "pending"
+    "status": "active",
+    "environment": "production"
   },
   "dns": {
     "provider": "manus",
@@ -29,7 +30,7 @@
         "ttl": 3600
       }
     ],
-    "status": "pending_update"
+    "status": "active"
   },
   "server": {
     "host": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
