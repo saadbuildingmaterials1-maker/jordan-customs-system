@@ -90,8 +90,11 @@ export default function Home() {
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-cyan-200 to-blue-200">
               نظام إدارة تكاليف الشحن والجمارك الأردنية
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto leading-relaxed">
+            <h2 className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto leading-relaxed font-semibold">
               منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية وسهولة استخدام فائقة
+            </h2>
+            <p className="text-lg text-blue-100/70 mb-8 max-w-3xl mx-auto leading-relaxed">
+              احسب الرسوم الجمركية والضرائب تلقائياً، أدر الشحنات بكفاءة، وتتبع التكاليف بدقة من خلال نظام متقدم مصمم خصيصاً للشركات الأردنية
             </p>
 
             {/* CTA Buttons */}
