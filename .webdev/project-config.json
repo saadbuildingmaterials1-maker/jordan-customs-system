@@ -7,7 +7,8 @@
     "status": "active"
   },
   "domain": {
-    "primary": "mp3-app.com",
+    "primary": "www.mp3-app.com",
+    "secondary": "mp3-app.com",
     "subdomain": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
     "ssl": true,
     "autoRenew": true,
