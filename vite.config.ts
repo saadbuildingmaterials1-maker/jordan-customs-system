@@ -172,7 +172,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
     minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
@@ -181,6 +181,11 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
+          // Split large utility libraries
+          if (id.includes("node_modules/lodash")) return "vendor-lodash";
+          if (id.includes("node_modules/moment")) return "vendor-moment";
+          if (id.includes("node_modules/echarts")) return "vendor-echarts";
+          
           // Vendor chunks - React
           if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
             return "vendor-react";
@@ -221,8 +226,11 @@ export default defineConfig({
             return "vendor-http";
           }
 
-          // Vendor chunks - Other utilities
+          // Vendor chunks - Other utilities (split into smaller chunks)
           if (id.includes("node_modules")) {
+            if (id.includes("node_modules/@")) {
+              return "vendor-scoped";
+            }
             return "vendor-utils";
           }
 
