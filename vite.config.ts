@@ -278,6 +278,8 @@ export default defineConfig({
       ".manusvm.computer",
       "localhost",
       "127.0.0.1",
+      "mp3-app.com",
+      "www.mp3-app.com",
     ],
     fs: {
       strict: true,

@@ -59,26 +59,8 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-// Initialize Intercom for live support chat
-if (typeof window !== 'undefined') {
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = 'https://widget.intercom.io/widget/w7f8q2k9';
-  document.head.appendChild(script);
-  
-  // Initialize Intercom when script loads
-  (window as any).intercomSettings = {
-    api_base: 'https://api-iam.intercom.io',
-    app_id: 'w7f8q2k9',
-    name: 'Jordan Customs System',
-    email: 'support@mp3-app.com',
-    created_at: Math.floor(Date.now() / 1000),
-    custom_data: {
-      app_name: 'Jordan Customs System',
-      environment: 'production',
-    },
-  };
-}
+// Intercom initialization removed temporarily
+// Will be re-enabled after proper configuration
 
 console.log("[main.tsx] Creating React root...");
 const rootElement = document.getElementById("root");
