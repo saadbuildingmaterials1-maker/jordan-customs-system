@@ -44,10 +44,13 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
+  // تفعيل Secure + SameSite=None لجميع البيئات
+  const isSecure = isSecureRequest(req);
+  
   return {
     httpOnly: true,
     path: "/",
     sameSite: "none",
-    secure: isSecureRequest(req),
+    secure: isSecure || process.env.NODE_ENV === "production", // فرض Secure في الإنتاج
   };
 }
