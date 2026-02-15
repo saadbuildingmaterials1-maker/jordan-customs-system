@@ -7,13 +7,15 @@
     "status": "active"
   },
   "domain": {
-    "primary": "www.mp3-app.com",
-    "secondary": "mp3-app.com",
+    "primary": "jordan-customs-system.manus.space",
+    "secondary": "www.mp3-app.com",
+    "tertiary": "mp3-app.com",
     "subdomain": "3000-iez20yhz3jlh0ce65dmdy-c99488f0.sg1.manus.computer",
     "ssl": true,
     "autoRenew": true,
     "status": "active",
-    "environment": "production"
+    "environment": "production",
+    "allDomainsActive": true
   },
   "dns": {
     "provider": "manus",
@@ -46,5 +48,11 @@
     "ssl": true,
     "customDomain": true
   },
-  "lastUpdated": "2026-02-11T14:45:00Z"
+  "lastUpdated": "2026-02-15T14:15:00Z",
+  "deploymentStatus": {
+    "primaryDomain": "pending",
+    "secondaryDomain": "active",
+    "tertiaryDomain": "active",
+    "ssl": "active"
+  }
 }
