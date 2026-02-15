@@ -1,0 +1,9 @@
+{
+  "projectId": "5j9uG3pftfjEb3akdTmTAd",
+  "checkpointId": "3a5dd1db",
+  "domain": "jordan-customs-system.manus.space",
+  "environment": "production",
+  "ssl": true,
+  "autoRenew": true,
+  "status": "active"
+}
