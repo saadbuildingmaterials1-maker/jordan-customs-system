@@ -86,11 +86,29 @@ export async function setupVite(app: Express, server: Server) {
   app.use(vite.middlewares);
 }
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "../..", "dist", "public");
-  if (!fs.existsSync(distPath)) {
-    throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
+  // محاولة المسارات المختلفة للعثور على dist/public
+  const possiblePaths = [
+    // المسار في الحاوية (Manus)
+    path.resolve("/usr/src/dist/public"),
+    // المسار المحلي أثناء التطوير
+    path.resolve(import.meta.dirname, "../..", "dist", "public"),
+    // المسار البديل
+    path.resolve(process.cwd(), "dist", "public"),
+  ];
+  
+  let distPath = "";
+  for (const possiblePath of possiblePaths) {
+    if (fs.existsSync(possiblePath)) {
+      distPath = possiblePath;
+      console.log(`[serveStatic] Found dist at: ${distPath}`);
+      break;
+    }
+  }
+  
+  if (!distPath) {
+    const errorMsg = `Could not find the build directory in any of these locations: ${possiblePaths.join(", ")}. Make sure to build the client first.`;
+    console.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   // استخدام express.static مع خيارات محسّنة
