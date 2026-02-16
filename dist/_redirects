@@ -1,3 +1,0 @@
-# Redirect all requests to index.html for SPA
-/assets/* /assets/:splat 200
-/* /index.html 200
