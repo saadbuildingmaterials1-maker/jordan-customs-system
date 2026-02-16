@@ -1,5 +1,5 @@
 name = "jordan-customs-system"
-main = "dist/public/_worker.js"
+main = "dist/_worker.js"
 compatibility_date = "2024-12-16"
 
 [env.production]
@@ -17,7 +17,7 @@ watch_paths = ["client/src/**/*.tsx", "client/src/**/*.ts"]
 
 [build.upload]
 format = "modules"
-main = "./dist/public/_worker.js"
+main = "./dist/_worker.js"
 
 [observability]
 enabled = true
