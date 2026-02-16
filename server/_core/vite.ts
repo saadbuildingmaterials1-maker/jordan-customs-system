@@ -36,14 +36,14 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  // محاولة المسارات المختلفة للعثور على dist/public
+  // محاولة المسارات المختلفة للعثور على dist
   const possiblePaths = [
     // المسار الأساسي: المشروع الحالي
-    path.resolve(process.cwd(), "dist", "public"),
+    path.resolve(process.cwd(), "dist"),
     // المسار في الحاوية (Manus)
-    path.resolve("/usr/src/dist/public"),
+    path.resolve("/usr/src/dist"),
     // المسار المحلي أثناء التطوير
-    path.resolve(import.meta.dirname, "../..", "dist", "public"),
+    path.resolve(import.meta.dirname, "../..", "dist"),
   ];
   
   let distPath = "";

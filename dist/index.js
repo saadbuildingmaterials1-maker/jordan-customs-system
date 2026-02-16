@@ -15302,11 +15302,11 @@ async function setupVite(app, server) {
 function serveStatic(app) {
   const possiblePaths = [
     // المسار الأساسي: المشروع الحالي
-    path6.resolve(process.cwd(), "dist", "public"),
+    path6.resolve(process.cwd(), "dist"),
     // المسار في الحاوية (Manus)
-    path6.resolve("/usr/src/dist/public"),
+    path6.resolve("/usr/src/dist"),
     // المسار المحلي أثناء التطوير
-    path6.resolve(import.meta.dirname, "../..", "dist", "public")
+    path6.resolve(import.meta.dirname, "../..", "dist")
   ];
   let distPath = "";
   for (const possiblePath of possiblePaths) {
