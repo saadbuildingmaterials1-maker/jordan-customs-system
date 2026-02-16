@@ -1,0 +1,14 @@
+# Manus Deployment Trigger
+# This file is used to trigger deployment detection
+# Last updated: 2026-02-16 19:30:00 UTC
+
+deployment_version: 2
+status: ready_for_production
+build_hash: index-B_cvKFue.js
+timestamp: 2026-02-16T19:30:00Z
+
+## Changes:
+- Fixed white page issue with Static File Proxy Server
+- Updated all asset hashes
+- MIME types corrected
+- Ready for production deployment
