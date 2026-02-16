@@ -1,21 +1,52 @@
 import { useLocation } from "wouter";
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 
 export default function Contact() {
   const [, navigate] = useLocation();
+  const notifyOwner = trpc.system.notifyOwner.useMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     subject: "",
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    alert("شكراً لتواصلك معنا. سنرد عليك قريباً.");
-    setFormData({ name: "", email: "", subject: "", message: "" });
+    
+    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
+      alert("يرجى ملء جميع الحقول المطلوبة");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // إرسال إشعار للمسؤول
+      await notifyOwner.mutateAsync({
+        title: `رسالة تواصل جديدة من ${formData.name}`,
+        content: `
+البريد الإلكتروني: ${formData.email}
+الهاتف: ${formData.phone || "غير محدد"}
+الموضوع: ${formData.subject}
+
+الرسالة:
+${formData.message}
+        `,
+      });
+
+      alert("تم إرسال رسالتك بنجاح. سنتواصل معك قريباً.");
+
+      // مسح النموذج
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
+    } catch (error) {
+      alert("حدث خطأ في إرسال الرسالة. يرجى المحاولة لاحقاً.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -105,6 +136,17 @@ export default function Contact() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-semibold mb-2">رقم الهاتف</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-blue-400"
+                    placeholder="أدخل رقم هاتفك"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm font-semibold mb-2">الموضوع</label>
                   <input
                     type="text"
@@ -130,9 +172,10 @@ export default function Contact() {
 
                 <button
                   type="submit"
-                  className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors"
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  إرسال الرسالة
+                  {isSubmitting ? "جاري الإرسال..." : "إرسال الرسالة"}
                 </button>
               </form>
             </div>
