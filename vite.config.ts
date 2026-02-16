@@ -179,12 +179,13 @@ export default defineConfig({
     sourcemap: false,
     target: 'esnext',
     assetsInlineLimit: 4096,
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+    // terserOptions removed - use esbuild minify instead
+    // terserOptions: {
+    //   compress: {
+    //     drop_console: true,
+    //     drop_debugger: true,
+    //   },
+    // },
     rollupOptions: {
       external: ['@sentry/react', 'electron'],
       output: {

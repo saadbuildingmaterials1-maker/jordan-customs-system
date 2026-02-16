@@ -14,6 +14,9 @@ export interface GoogleAnalyticsConfig {
 
 let gaConfig: GoogleAnalyticsConfig | null = null;
 
+// Declare gtag function for TypeScript
+declare function gtag(...args: any[]): void;
+
 /**
  * Initialize Google Analytics
  */
@@ -32,10 +35,10 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
   document.head.appendChild(script);
 
   // Initialize gtag
-  window.dataLayer = window.dataLayer || [];
+  (window as any).dataLayer = (window as any).dataLayer || [];
   
   function gtag(...args: any[]) {
-    window.dataLayer.push(arguments);
+    (window as any).dataLayer.push(arguments);
   }
   
   gtag('js', new Date());
