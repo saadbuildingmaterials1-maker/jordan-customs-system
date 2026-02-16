@@ -1,0 +1,58 @@
+{
+  "name": "نظام إدارة تكاليف الشحن والجمارك الأردنية",
+  "short_name": "نظام الجمارك",
+  "description": "نظام متقدم لإدارة تكاليف الشحن والجمارك والحسابات المالية",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1a1a2e",
+  "background_color": "#ffffff",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "finance"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "إنشاء بيان جمركي جديد",
+      "short_name": "بيان جديد",
+      "description": "إنشاء بيان جمركي جديد بسرعة",
+      "url": "/customs-declaration",
+      "icons": []
+    },
+    {
+      "name": "عرض التقارير",
+      "short_name": "التقارير",
+      "description": "عرض التقارير المالية والجمركية",
+      "url": "/reports",
+      "icons": []
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "file",
+          "accept": ["application/pdf", ".pdf"]
+        }
+      ]
+    }
+  }
+}
