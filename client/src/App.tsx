@@ -51,6 +51,7 @@ const BackupAndNotifications = lazy(() => import('./pages/BackupAndNotifications
 const PaymentPage = lazy(() => import('./pages/PaymentPage'));
 const BankAccountManagement = lazy(() => import('@/pages/BankAccountManagement'));
 const NotificationsManagement = lazy(() => import('@/pages/NotificationsManagement'));
+const Notifications = lazy(() => import('@/pages/Notifications'));
 const HelpCenter = lazy(() => import('@/pages/HelpCenter'));
 const VideoTutorials = lazy(() => import('@/pages/VideoTutorials'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
@@ -164,6 +165,7 @@ function Router() {
         
         {/* النسخ الاحتياطي */}
         <Route path="/backup-notifications" component={BackupAndNotifications} />
+        <Route path="/notifications" component={Notifications} />
         
         {/* المساعدة والمعلومات */}
         <Route path="/login" component={Login} />

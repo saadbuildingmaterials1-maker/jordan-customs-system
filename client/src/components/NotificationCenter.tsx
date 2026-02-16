@@ -1,15 +1,20 @@
 /**
  * NotificationCenter Component
  * 
- * مكون React
+ * مكون مركز الإشعارات المتقدم
+ * - عرض الإشعارات مع bell icon
+ * - عداد الإشعارات غير المقروءة
+ * - قائمة منسدلة للإشعارات
+ * - تحديث الحالة والحذف
+ * - تكامل مع قاعدة البيانات عبر tRPC
  * 
- * @module ./client/src/components/NotificationCenter
+ * @component
  */
+
 import { useEffect, useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Bell,
   X,
@@ -20,143 +25,92 @@ import {
   Trash2,
   Check,
 } from 'lucide-react';
-
-interface Notification {
-  id: string;
-  type: 'container_status' | 'declaration_status' | 'payment' | 'alert' | 'system';
-  title: string;
-  message: string;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  timestamp: number;
-  read: boolean;
-  data?: Record<string, any>;
-}
+import { trpc } from '@/lib/trpc';
+import { useQueryClient } from '@tanstack/react-query';
 
 /**
  * مركز الإشعارات
- * يعرض الإشعارات الفورية والتنبيهات
+ * يعرض الإشعارات الفورية والتنبيهات من قاعدة البيانات
  */
 export function NotificationCenter() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
 
-  // محاكاة الإشعارات (في التطبيق الحقيقي ستأتي من WebSocket)
-  useEffect(() => {
-    const mockNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'container_status',
-        title: 'تحديث حالة الحاوية',
-        message: 'الحاوية CONT-001 وصلت إلى ميناء عمّان',
-        priority: 'high',
-        timestamp: Date.now() - 1000 * 60 * 5,
-        read: false,
-        data: { containerId: 'CONT-001', status: 'arrived' },
-      },
-      {
-        id: '2',
-        type: 'declaration_status',
-        title: 'تحديث البيان الجمركي',
-        message: 'تم تخليص البيان DEC-2024-001 بنجاح',
-        priority: 'medium',
-        timestamp: Date.now() - 1000 * 60 * 15,
-        read: false,
-        data: { declarationId: 'DEC-2024-001', status: 'cleared' },
-      },
-      {
-        id: '3',
-        type: 'alert',
-        title: 'تنبيه مهم',
-        message: 'الشحنة CONT-002 متأخرة عن الموعد المتوقع',
-        priority: 'critical',
-        timestamp: Date.now() - 1000 * 60 * 30,
-        read: false,
-        data: { containerId: 'CONT-002', delay: '2 days' },
-      },
-      {
-        id: '4',
-        type: 'payment',
-        title: 'تأكيد الدفع',
-        message: 'تم استلام دفعتك بنجاح',
-        priority: 'low',
-        timestamp: Date.now() - 1000 * 60 * 60,
-        read: true,
-        data: { amount: 5000, currency: 'JOD' },
-      },
-    ];
+  // جلب الإشعارات من قاعدة البيانات
+  const { data: notificationsData, isLoading } = trpc.notificationsCenter.getNotifications.useQuery(
+    { limit: 20, unreadOnly: false },
+    { enabled: isOpen }
+  );
 
-    setNotifications(mockNotifications);
-    updateUnreadCount(mockNotifications);
-  }, []);
+  // جلب عدد الإشعارات غير المقروءة
+  const { data: unreadData } = trpc.notificationsCenter.getUnreadCount.useQuery(
+    undefined,
+    { refetchInterval: 30000 } // تحديث كل 30 ثانية
+  );
 
-  // تحديث عدد الإشعارات غير المقروءة
-  const updateUnreadCount = (notifs: Notification[]) => {
-    const count = notifs.filter(n => !n.read).length;
-    setUnreadCount(count);
-  };
+  // تحديث الإشعار كمقروء
+  const markAsReadMutation = trpc.notificationsCenter.markAsRead.useMutation({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getNotifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getUnreadCount'] });
+    },
+  });
+
+  // حذف الإشعار
+  const deleteNotificationMutation = trpc.notificationsCenter.deleteNotification.useMutation({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getNotifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getUnreadCount'] });
+    },
+  });
+
+  // تحديث جميع الإشعارات كمقروءة
+  const markAllAsReadMutation = trpc.notificationsCenter.markAllAsRead.useMutation({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getNotifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getUnreadCount'] });
+    },
+  });
+
+  // حذف جميع الإشعارات
+  const deleteAllMutation = trpc.notificationsCenter.deleteAllNotifications.useMutation({
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getNotifications'] });
+      queryClient.invalidateQueries({ queryKey: ['notificationsCenter.getUnreadCount'] });
+    },
+  });
+
+  const unreadCount = unreadData?.unreadCount ?? 0;
+  const notifications = notificationsData?.notifications ?? [];
 
   // الحصول على أيقونة الإشعار
   const getNotificationIcon = (type: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      container_status: <AlertCircle className="w-5 h-5 text-blue-600" />,
-      declaration_status: <CheckCircle className="w-5 h-5 text-green-600" />,
-      payment: <CheckCircle className="w-5 h-5 text-purple-600" />,
-      alert: <AlertTriangle className="w-5 h-5 text-red-600" />,
-      system: <Info className="w-5 h-5 text-slate-600" />,
+      success: <CheckCircle className="w-5 h-5 text-green-600" />,
+      error: <AlertCircle className="w-5 h-5 text-red-600" />,
+      warning: <AlertTriangle className="w-5 h-5 text-yellow-600" />,
+      info: <Info className="w-5 h-5 text-blue-600" />,
     };
     return iconMap[type] || <Bell className="w-5 h-5" />;
   };
 
-  // الحصول على لون الأولوية
-  const getPriorityColor = (priority: string): string => {
+  // الحصول على لون الخلفية حسب النوع
+  const getTypeColor = (type: string): string => {
     const colorMap: Record<string, string> = {
-      low: 'bg-gray-100 text-gray-800',
-      medium: 'bg-blue-100 text-blue-800',
-      high: 'bg-orange-100 text-orange-800',
-      critical: 'bg-red-100 text-red-800',
+      success: 'bg-green-50 hover:bg-green-100',
+      error: 'bg-red-50 hover:bg-red-100',
+      warning: 'bg-yellow-50 hover:bg-yellow-100',
+      info: 'bg-blue-50 hover:bg-blue-100',
     };
-    return colorMap[priority] || 'bg-gray-100 text-gray-800';
-  };
-
-  // الحصول على نص الأولوية
-  const getPriorityLabel = (priority: string): string => {
-    const labelMap: Record<string, string> = {
-      low: 'منخفضة',
-      medium: 'متوسطة',
-      high: 'عالية',
-      critical: 'حرجة',
-    };
-    return labelMap[priority] || priority;
-  };
-
-  // تحديد الإشعار كمقروء
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => (n.id === id ? { ...n, read: true } : n))
-    );
-    updateUnreadCount(
-      notifications.map(n => (n.id === id ? { ...n, read: true } : n))
-    );
-  };
-
-  // حذف الإشعار
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    updateUnreadCount(notifications.filter(n => n.id !== id));
-  };
-
-  // تحديد جميع الإشعارات كمقروءة
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setUnreadCount(0);
+    return colorMap[type] || 'bg-gray-50 hover:bg-gray-100';
   };
 
   // حساب الوقت المنقضي
-  const getTimeAgo = (timestamp: number): string => {
-    const now = Date.now();
-    const diff = now - timestamp;
+  const getTimeAgo = (timestamp: Date | string): string => {
+    const now = new Date();
+    const notifTime = new Date(timestamp);
+    const diff = now.getTime() - notifTime.getTime();
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -165,7 +119,7 @@ export function NotificationCenter() {
     if (minutes < 60) return `منذ ${minutes} دقيقة`;
     if (hours < 24) return `منذ ${hours} ساعة`;
     if (days < 7) return `منذ ${days} يوم`;
-    return new Date(timestamp).toLocaleDateString('ar-JO');
+    return notifTime.toLocaleDateString('ar-JO');
   };
 
   // إغلاق عند النقر خارج المركز
@@ -197,7 +151,7 @@ export function NotificationCenter() {
         <Bell className="w-5 h-5" />
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </Button>
@@ -225,15 +179,22 @@ export function NotificationCenter() {
 
           <CardContent className="p-0">
             {/* قائمة الإشعارات */}
-            {notifications.length > 0 ? (
+            {isLoading ? (
+              <div className="p-8 text-center">
+                <div className="animate-spin inline-block">
+                  <Bell className="w-8 h-8 text-slate-400" />
+                </div>
+                <p className="text-slate-600 mt-2">جاري تحميل الإشعارات...</p>
+              </div>
+            ) : notifications.length > 0 ? (
               <div className="max-h-96 overflow-y-auto">
                 {notifications.map((notification) => (
                   <div
                     key={notification.id}
                     className={`p-4 border-b last:border-b-0 transition-colors ${
-                      notification.read
+                      notification.isRead
                         ? 'bg-white hover:bg-slate-50'
-                        : 'bg-blue-50 hover:bg-blue-100'
+                        : getTypeColor(notification.type)
                     }`}
                   >
                     <div className="flex gap-3">
@@ -249,11 +210,11 @@ export function NotificationCenter() {
                             <p className="font-semibold text-slate-900">
                               {notification.title}
                             </p>
-                            <p className="text-sm text-slate-600 mt-1">
+                            <p className="text-sm text-slate-600 mt-1 line-clamp-2">
                               {notification.message}
                             </p>
                           </div>
-                          {!notification.read && (
+                          {!notification.isRead && (
                             <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-2" />
                           )}
                         </div>
@@ -261,30 +222,33 @@ export function NotificationCenter() {
                         {/* معلومات إضافية */}
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">
-                            <Badge className={getPriorityColor(notification.priority)}>
-                              {getPriorityLabel(notification.priority)}
+                            <Badge className="bg-slate-100 text-slate-800">
+                              {notification.type === 'success' && 'نجاح'}
+                              {notification.type === 'error' && 'خطأ'}
+                              {notification.type === 'warning' && 'تحذير'}
+                              {notification.type === 'info' && 'معلومة'}
                             </Badge>
                             <span className="text-xs text-slate-500">
-                              {getTimeAgo(notification.timestamp)}
+                              {getTimeAgo(notification.createdAt)}
                             </span>
                           </div>
 
                           {/* أزرار الإجراءات */}
                           <div className="flex gap-1">
-                            {!notification.read && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => markAsRead(notification.id)}
-                              title="تحديث كمقروء"
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
+                            {!notification.isRead && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => markAsReadMutation.mutate({ notificationId: notification.id })}
+                                title="تحديث كمقروء"
+                              >
+                                <Check className="w-4 h-4" />
+                              </Button>
                             )}
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => deleteNotification(notification.id)}
+                              onClick={() => deleteNotificationMutation.mutate({ notificationId: notification.id })}
                               title="حذف"
                             >
                               <Trash2 className="w-4 h-4 text-red-600" />
@@ -310,8 +274,9 @@ export function NotificationCenter() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={markAllAsRead}
+                    onClick={() => markAllAsReadMutation.mutate()}
                     className="flex-1"
+                    disabled={markAllAsReadMutation.isPending}
                   >
                     تحديد الكل كمقروء
                   </Button>
@@ -319,8 +284,9 @@ export function NotificationCenter() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setNotifications([])}
+                  onClick={() => deleteAllMutation.mutate()}
                   className="flex-1"
+                  disabled={deleteAllMutation.isPending}
                 >
                   مسح الكل
                 </Button>

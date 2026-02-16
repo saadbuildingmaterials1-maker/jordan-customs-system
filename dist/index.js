@@ -1474,7 +1474,7 @@ function registerOAuthRoutes(app) {
 }
 
 // server/routers.ts
-import { z as z20 } from "zod";
+import { z as z21 } from "zod";
 
 // server/_core/systemRouter.ts
 import { z } from "zod";
@@ -13980,6 +13980,391 @@ var advancedOperationsRouter = router({
   })
 });
 
+// server/routers/notifications-center.ts
+import { z as z20 } from "zod";
+import { TRPCError as TRPCError3 } from "@trpc/server";
+import { eq as eq2, and as and2, desc as desc2, sql } from "drizzle-orm";
+var notificationsCenterRouter = router({
+  /**
+   * الحصول على جميع الإشعارات للمستخدم الحالي
+   */
+  getNotifications: protectedProcedure.input(
+    z20.object({
+      limit: z20.number().int().positive().default(20),
+      offset: z20.number().int().nonnegative().default(0),
+      unreadOnly: z20.boolean().default(false)
+    }).optional()
+  ).query(async ({ ctx, input }) => {
+    const limit = input?.limit ?? 20;
+    const offset = input?.offset ?? 0;
+    const unreadOnly = input?.unreadOnly ?? false;
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      let query = db.select().from(notifications).where(eq2(notifications.userId, ctx.user.id));
+      if (unreadOnly) {
+        query = query.where(eq2(notifications.isRead, false));
+      }
+      const allNotifications = await query.orderBy(desc2(notifications.createdAt)).limit(limit).offset(offset);
+      return {
+        success: true,
+        notifications: allNotifications,
+        total: allNotifications.length
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على عدد الإشعارات غير المقروءة
+   */
+  getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const result = await db.select({ count: sql`COUNT(*)` }).from(notifications).where(
+        and2(
+          eq2(notifications.userId, ctx.user.id),
+          eq2(notifications.isRead, false)
+        )
+      );
+      return {
+        success: true,
+        unreadCount: result[0]?.count ?? 0
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062D\u0633\u0627\u0628 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u063A\u064A\u0631 \u0627\u0644\u0645\u0642\u0631\u0648\u0621\u0629:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062D\u0633\u0627\u0628 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u063A\u064A\u0631 \u0627\u0644\u0645\u0642\u0631\u0648\u0621\u0629"
+      });
+    }
+  }),
+  /**
+   * إنشاء إشعار جديد
+   */
+  createNotification: protectedProcedure.input(
+    z20.object({
+      type: z20.enum(["success", "error", "warning", "info"]),
+      title: z20.string().min(1, "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628").max(255),
+      message: z20.string().min(1, "\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u0645\u0637\u0644\u0648\u0628\u0629"),
+      operationType: z20.string().optional(),
+      relatedEntityType: z20.string().optional(),
+      relatedEntityId: z20.number().int().optional(),
+      metadata: z20.record(z20.any()).optional()
+    })
+  ).mutation(async ({ ctx, input }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const notificationData = {
+        userId: ctx.user.id,
+        type: input.type,
+        title: input.title,
+        message: input.message,
+        operationType: input.operationType,
+        relatedEntityType: input.relatedEntityType,
+        relatedEntityId: input.relatedEntityId,
+        metadata: input.metadata ? JSON.stringify(input.metadata) : null,
+        isRead: false
+      };
+      const result = await db.insert(notifications).values(notificationData);
+      return {
+        success: true,
+        message: "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0628\u0646\u062C\u0627\u062D",
+        notificationId: result.insertId
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0625\u0634\u0639\u0627\u0631:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0625\u0634\u0639\u0627\u0631"
+      });
+    }
+  }),
+  /**
+   * تحديث حالة الإشعار (قراءة/عدم قراءة)
+   */
+  markAsRead: protectedProcedure.input(
+    z20.object({
+      notificationId: z20.number().int().positive()
+    })
+  ).mutation(async ({ ctx, input }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const notification = await db.select().from(notifications).where(
+        and2(
+          eq2(notifications.id, input.notificationId),
+          eq2(notifications.userId, ctx.user.id)
+        )
+      );
+      if (!notification.length) {
+        throw new TRPCError3({
+          code: "NOT_FOUND",
+          message: "\u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F"
+        });
+      }
+      await db.update(notifications).set({ isRead: true }).where(eq2(notifications.id, input.notificationId));
+      return {
+        success: true,
+        message: "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0628\u0646\u062C\u0627\u062D"
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0625\u0634\u0639\u0627\u0631:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0625\u0634\u0639\u0627\u0631"
+      });
+    }
+  }),
+  /**
+   * تحديث جميع الإشعارات كمقروءة
+   */
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      await db.update(notifications).set({ isRead: true }).where(
+        and2(
+          eq2(notifications.userId, ctx.user.id),
+          eq2(notifications.isRead, false)
+        )
+      );
+      return {
+        success: true,
+        message: "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u062C\u0645\u064A\u0639 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u0628\u0646\u062C\u0627\u062D"
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * حذف إشعار
+   */
+  deleteNotification: protectedProcedure.input(
+    z20.object({
+      notificationId: z20.number().int().positive()
+    })
+  ).mutation(async ({ ctx, input }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const notification = await db.select().from(notifications).where(
+        and2(
+          eq2(notifications.id, input.notificationId),
+          eq2(notifications.userId, ctx.user.id)
+        )
+      );
+      if (!notification.length) {
+        throw new TRPCError3({
+          code: "NOT_FOUND",
+          message: "\u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F"
+        });
+      }
+      await db.delete(notifications).where(eq2(notifications.id, input.notificationId));
+      return {
+        success: true,
+        message: "\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0628\u0646\u062C\u0627\u062D"
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631"
+      });
+    }
+  }),
+  /**
+   * حذف جميع الإشعارات
+   */
+  deleteAllNotifications: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      await db.delete(notifications).where(eq2(notifications.userId, ctx.user.id));
+      return {
+        success: true,
+        message: "\u062A\u0645 \u062D\u0630\u0641 \u062C\u0645\u064A\u0639 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u0628\u0646\u062C\u0627\u062D"
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على تفضيلات الإشعارات
+   */
+  getPreferences: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const prefs = await db.select().from(notificationPreferences).where(eq2(notificationPreferences.userId, ctx.user.id));
+      if (!prefs.length) {
+        const defaultPrefs = {
+          userId: ctx.user.id,
+          emailNotifications: true,
+          smsNotifications: false,
+          pushNotifications: true,
+          inAppNotifications: true,
+          accountAddedNotification: true,
+          accountVerifiedNotification: true,
+          transactionNotification: true,
+          securityAlertNotification: true,
+          dailyDigest: false,
+          weeklyReport: false
+        };
+        await db.insert(notificationPreferences).values(defaultPrefs);
+        return { success: true, preferences: defaultPrefs };
+      }
+      return { success: true, preferences: prefs[0] };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062A\u0641\u0636\u064A\u0644\u0627\u062A:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062A\u0641\u0636\u064A\u0644\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * تحديث تفضيلات الإشعارات
+   */
+  updatePreferences: protectedProcedure.input(
+    z20.object({
+      emailNotifications: z20.boolean().optional(),
+      smsNotifications: z20.boolean().optional(),
+      pushNotifications: z20.boolean().optional(),
+      inAppNotifications: z20.boolean().optional(),
+      accountAddedNotification: z20.boolean().optional(),
+      accountVerifiedNotification: z20.boolean().optional(),
+      transactionNotification: z20.boolean().optional(),
+      securityAlertNotification: z20.boolean().optional(),
+      dailyDigest: z20.boolean().optional(),
+      weeklyReport: z20.boolean().optional()
+    })
+  ).mutation(async ({ ctx, input }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const existing = await db.select().from(notificationPreferences).where(eq2(notificationPreferences.userId, ctx.user.id));
+      if (!existing.length) {
+        const newPrefs = { userId: ctx.user.id, ...input };
+        await db.insert(notificationPreferences).values(newPrefs);
+      } else {
+        await db.update(notificationPreferences).set(input).where(eq2(notificationPreferences.userId, ctx.user.id));
+      }
+      return {
+        success: true,
+        message: "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u062A\u0641\u0636\u064A\u0644\u0627\u062A \u0628\u0646\u062C\u0627\u062D"
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u062A\u0641\u0636\u064A\u0644\u0627\u062A:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u062A\u0641\u0636\u064A\u0644\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات الإشعارات
+   */
+  getStatistics: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const db = await getDb();
+      if (!db) {
+        throw new TRPCError3({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "\u0642\u0627\u0639\u062F\u0629 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u063A\u064A\u0631 \u0645\u062A\u0627\u062D\u0629"
+        });
+      }
+      const total = await db.select({ count: sql`COUNT(*)` }).from(notifications).where(eq2(notifications.userId, ctx.user.id));
+      const unread = await db.select({ count: sql`COUNT(*)` }).from(notifications).where(
+        and2(
+          eq2(notifications.userId, ctx.user.id),
+          eq2(notifications.isRead, false)
+        )
+      );
+      const byType = await db.select({
+        type: notifications.type,
+        count: sql`COUNT(*)`
+      }).from(notifications).where(eq2(notifications.userId, ctx.user.id)).groupBy(notifications.type);
+      return {
+        success: true,
+        statistics: {
+          total: total[0]?.count ?? 0,
+          unread: unread[0]?.count ?? 0,
+          byType: byType.reduce((acc, item) => {
+            acc[item.type] = item.count;
+            return acc;
+          }, {})
+        }
+      };
+    } catch (error) {
+      console.error("\u274C \u062E\u0637\u0623 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A:", error);
+      throw new TRPCError3({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  })
+});
+
 // server/routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -13992,24 +14377,24 @@ var appRouter = router({
      * إنشاء بيان جمركي جديد
      */
     createDeclaration: protectedProcedure.input(
-      z20.object({
-        declarationNumber: z20.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        registrationDate: z20.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
-        clearanceCenter: z20.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
-        exchangeRate: z20.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        exportCountry: z20.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
-        billOfLadingNumber: z20.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        grossWeight: z20.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        netWeight: z20.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        numberOfPackages: z20.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        packageType: z20.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
-        fobValue: z20.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        freightCost: z20.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        insuranceCost: z20.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
-        customsDuty: z20.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        additionalFees: z20.number().nonnegative().optional().default(0),
-        customsServiceFee: z20.number().nonnegative().optional().default(0),
-        penalties: z20.number().nonnegative().optional().default(0)
+      z21.object({
+        declarationNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        registrationDate: z21.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
+        clearanceCenter: z21.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
+        exchangeRate: z21.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        exportCountry: z21.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
+        billOfLadingNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        grossWeight: z21.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        netWeight: z21.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        numberOfPackages: z21.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        packageType: z21.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
+        fobValue: z21.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        freightCost: z21.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        insuranceCost: z21.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
+        customsDuty: z21.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        additionalFees: z21.number().nonnegative().optional().default(0),
+        customsServiceFee: z21.number().nonnegative().optional().default(0),
+        penalties: z21.number().nonnegative().optional().default(0)
       })
     ).mutation(async ({ ctx, input }) => {
       const calculations = calculateAllCosts({
@@ -14059,7 +14444,7 @@ var appRouter = router({
     /**
      * الحصول على بيان جمركي
      */
-    getDeclaration: protectedProcedure.input(z20.object({ id: z20.number() })).query(async ({ ctx, input }) => {
+    getDeclaration: protectedProcedure.input(z21.object({ id: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u064A\u0647");
@@ -14076,11 +14461,11 @@ var appRouter = router({
      * تحديث بيان جمركي
      */
     updateDeclaration: protectedProcedure.input(
-      z20.object({
-        id: z20.number(),
-        data: z20.object({
-          status: z20.enum(["draft", "submitted", "approved", "cleared"]).optional(),
-          notes: z20.string().optional()
+      z21.object({
+        id: z21.number(),
+        data: z21.object({
+          status: z21.enum(["draft", "submitted", "approved", "cleared"]).optional(),
+          notes: z21.string().optional()
         })
       })
     ).mutation(async ({ ctx, input }) => {
@@ -14093,7 +14478,7 @@ var appRouter = router({
     /**
      * حذف بيان جمركي
      */
-    deleteDeclaration: protectedProcedure.input(z20.object({ id: z20.number() })).mutation(async ({ ctx, input }) => {
+    deleteDeclaration: protectedProcedure.input(z21.object({ id: z21.number() })).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u062D\u0630\u0641\u0647");
@@ -14110,11 +14495,11 @@ var appRouter = router({
      * إضافة صنف جديد
      */
     createItem: protectedProcedure.input(
-      z20.object({
-        declarationId: z20.number(),
-        itemName: z20.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
-        quantity: z20.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        unitPriceForeign: z20.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
+      z21.object({
+        declarationId: z21.number(),
+        itemName: z21.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
+        quantity: z21.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        unitPriceForeign: z21.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -14153,7 +14538,7 @@ var appRouter = router({
     /**
      * الحصول على أصناف البيان الجمركي
      */
-    getItems: protectedProcedure.input(z20.object({ declarationId: z20.number() })).query(async ({ ctx, input }) => {
+    getItems: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14164,14 +14549,14 @@ var appRouter = router({
      * تحديث صنف
      */
     updateItem: protectedProcedure.input(
-      z20.object({
-        id: z20.number(),
-        itemName: z20.string().optional(),
-        itemCode: z20.string().optional(),
-        quantity: z20.number().positive().optional(),
-        unitPriceForeign: z20.number().positive().optional(),
-        description: z20.string().optional(),
-        customsCode: z20.string().optional()
+      z21.object({
+        id: z21.number(),
+        itemName: z21.string().optional(),
+        itemCode: z21.string().optional(),
+        quantity: z21.number().positive().optional(),
+        unitPriceForeign: z21.number().positive().optional(),
+        description: z21.string().optional(),
+        customsCode: z21.string().optional()
       })
     ).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
@@ -14194,7 +14579,7 @@ var appRouter = router({
     /**
      * حذف صنف
      */
-    deleteItem: protectedProcedure.input(z20.object({ id: z20.number() })).mutation(async ({ ctx, input }) => {
+    deleteItem: protectedProcedure.input(z21.object({ id: z21.number() })).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
       if (!item) {
         throw new Error("\u0627\u0644\u0635\u0646\u0641 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14214,13 +14599,13 @@ var appRouter = router({
      * حساب وحفظ الانحرافات
      */
     calculateVariances: protectedProcedure.input(
-      z20.object({
-        declarationId: z20.number(),
-        estimatedFobValue: z20.number().nonnegative(),
-        estimatedFreight: z20.number().nonnegative(),
-        estimatedInsurance: z20.number().nonnegative(),
-        estimatedCustomsDuty: z20.number().nonnegative(),
-        estimatedSalesTax: z20.number().nonnegative()
+      z21.object({
+        declarationId: z21.number(),
+        estimatedFobValue: z21.number().nonnegative(),
+        estimatedFreight: z21.number().nonnegative(),
+        estimatedInsurance: z21.number().nonnegative(),
+        estimatedCustomsDuty: z21.number().nonnegative(),
+        estimatedSalesTax: z21.number().nonnegative()
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -14267,7 +14652,7 @@ var appRouter = router({
     /**
      * الحصول على الانحرافات
      */
-    getVariances: protectedProcedure.input(z20.object({ declarationId: z20.number() })).query(async ({ ctx, input }) => {
+    getVariances: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14282,7 +14667,7 @@ var appRouter = router({
     /**
      * الحصول على الملخص المالي
      */
-    getSummary: protectedProcedure.input(z20.object({ declarationId: z20.number() })).query(async ({ ctx, input }) => {
+    getSummary: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14295,8 +14680,8 @@ var appRouter = router({
    */
   pdfImport: router({
     importDeclaration: protectedProcedure.input(
-      z20.object({
-        filePath: z20.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
+      z21.object({
+        filePath: z21.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
       })
     ).mutation(async ({ ctx, input }) => {
       try {
@@ -14318,9 +14703,9 @@ var appRouter = router({
    */
   notifications: router({
     getNotifications: protectedProcedure.input(
-      z20.object({
-        limit: z20.number().int().positive().default(50),
-        offset: z20.number().int().nonnegative().default(0)
+      z21.object({
+        limit: z21.number().int().positive().default(50),
+        offset: z21.number().int().nonnegative().default(0)
       })
     ).query(async ({ ctx, input }) => {
       return await getNotificationsByUserId(ctx.user.id, input.limit, input.offset);
@@ -14328,7 +14713,7 @@ var appRouter = router({
     getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
       return await getUnreadNotificationCount(ctx.user.id);
     }),
-    markAsRead: protectedProcedure.input(z20.object({ notificationId: z20.number().int().positive() })).mutation(async ({ input }) => {
+    markAsRead: protectedProcedure.input(z21.object({ notificationId: z21.number().int().positive() })).mutation(async ({ input }) => {
       await markNotificationAsRead(input.notificationId);
       return { success: true };
     }),
@@ -14336,7 +14721,7 @@ var appRouter = router({
       await markAllNotificationsAsRead(ctx.user.id);
       return { success: true };
     }),
-    delete: protectedProcedure.input(z20.object({ notificationId: z20.number().int().positive() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z21.object({ notificationId: z21.number().int().positive() })).mutation(async ({ input }) => {
       await deleteNotification(input.notificationId);
       return { success: true };
     })
@@ -14346,17 +14731,17 @@ var appRouter = router({
    */
   tracking: router({
     createContainer: protectedProcedure.input(
-      z20.object({
-        containerNumber: z20.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
-        containerType: z20.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
-        shippingCompany: z20.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        billOfLadingNumber: z20.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        portOfLoading: z20.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        portOfDischarge: z20.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
-        sealNumber: z20.string().optional(),
-        loadingDate: z20.string().optional(),
-        estimatedArrivalDate: z20.string().optional(),
-        notes: z20.string().optional()
+      z21.object({
+        containerNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
+        containerType: z21.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
+        shippingCompany: z21.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        billOfLadingNumber: z21.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        portOfLoading: z21.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        portOfDischarge: z21.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
+        sealNumber: z21.string().optional(),
+        loadingDate: z21.string().optional(),
+        estimatedArrivalDate: z21.string().optional(),
+        notes: z21.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -14377,7 +14762,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    searchContainers: protectedProcedure.input(z20.object({ query: z20.string().min(1) })).query(async ({ input, ctx }) => {
+    searchContainers: protectedProcedure.input(z21.object({ query: z21.string().min(1) })).query(async ({ input, ctx }) => {
       try {
         const results = await searchContainers(ctx.user.id, input.query);
         return results;
@@ -14385,7 +14770,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u0628\u062D\u062B \u0639\u0646 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    getContainerByNumber: protectedProcedure.input(z20.object({ containerNumber: z20.string().min(1) })).query(async ({ input }) => {
+    getContainerByNumber: protectedProcedure.input(z21.object({ containerNumber: z21.string().min(1) })).query(async ({ input }) => {
       try {
         const container = await getContainerByNumber(input.containerNumber);
         return container;
@@ -14394,14 +14779,14 @@ var appRouter = router({
       }
     }),
     addTrackingEvent: protectedProcedure.input(
-      z20.object({
-        containerId: z20.number().int().positive(),
-        eventType: z20.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
-        eventLocation: z20.string().optional(),
-        eventDescription: z20.string().optional(),
-        eventDateTime: z20.string(),
-        documentUrl: z20.string().optional(),
-        notes: z20.string().optional()
+      z21.object({
+        containerId: z21.number().int().positive(),
+        eventType: z21.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
+        eventLocation: z21.string().optional(),
+        eventDescription: z21.string().optional(),
+        eventDateTime: z21.string(),
+        documentUrl: z21.string().optional(),
+        notes: z21.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -14420,7 +14805,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0636\u0627\u0641\u0629 \u062D\u062F\u062B \u0627\u0644\u062A\u062A\u0628\u0639");
       }
     }),
-    getTrackingHistory: protectedProcedure.input(z20.object({ containerId: z20.number().int().positive() })).query(async ({ input }) => {
+    getTrackingHistory: protectedProcedure.input(z21.object({ containerId: z21.number().int().positive() })).query(async ({ input }) => {
       try {
         const history = await getContainerTrackingHistory(input.containerId);
         return history;
@@ -14429,9 +14814,9 @@ var appRouter = router({
       }
     }),
     updateContainerStatus: protectedProcedure.input(
-      z20.object({
-        containerId: z20.number().int().positive(),
-        status: z20.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
+      z21.object({
+        containerId: z21.number().int().positive(),
+        status: z21.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
       })
     ).mutation(async ({ input }) => {
       try {
@@ -14442,20 +14827,20 @@ var appRouter = router({
       }
     }),
     createShipmentDetail: protectedProcedure.input(
-      z20.object({
-        containerId: z20.number().int().positive(),
-        shipmentNumber: z20.string().min(1),
-        totalWeight: z20.number().positive(),
-        totalVolume: z20.number().optional(),
-        numberOfPackages: z20.number().int().positive(),
-        packageType: z20.string().optional(),
-        shipper: z20.string().min(1),
-        consignee: z20.string().min(1),
-        freightCharges: z20.number().optional(),
-        insuranceCharges: z20.number().optional(),
-        handlingCharges: z20.number().optional(),
-        otherCharges: z20.number().optional(),
-        notes: z20.string().optional()
+      z21.object({
+        containerId: z21.number().int().positive(),
+        shipmentNumber: z21.string().min(1),
+        totalWeight: z21.number().positive(),
+        totalVolume: z21.number().optional(),
+        numberOfPackages: z21.number().int().positive(),
+        packageType: z21.string().optional(),
+        shipper: z21.string().min(1),
+        consignee: z21.string().min(1),
+        freightCharges: z21.number().optional(),
+        insuranceCharges: z21.number().optional(),
+        handlingCharges: z21.number().optional(),
+        otherCharges: z21.number().optional(),
+        notes: z21.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -14468,7 +14853,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0634\u062D\u0646\u0629");
       }
     }),
-    getShipmentDetail: protectedProcedure.input(z20.object({ shipmentContainerId: z20.number().int().positive() })).query(async ({ input }) => {
+    getShipmentDetail: protectedProcedure.input(z21.object({ shipmentContainerId: z21.number().int().positive() })).query(async ({ input }) => {
       try {
         const detail = await getShipmentDetail(input.shipmentContainerId);
         return detail;
@@ -14495,7 +14880,8 @@ var appRouter = router({
   paymentApis: paymentApisRouter,
   invoices: invoicesRouter,
   advancedFeatures: advancedFeaturesRouter,
-  advancedOperations: advancedOperationsRouter
+  advancedOperations: advancedOperationsRouter,
+  notificationsCenter: notificationsCenterRouter
 });
 
 // server/_core/context.ts

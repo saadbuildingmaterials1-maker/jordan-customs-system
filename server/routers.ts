@@ -56,6 +56,7 @@ import { paymentApisRouter } from "./routers/payment-apis";
 import { invoicesRouter } from "./routers/invoices";
 import { advancedFeaturesRouter } from "./routers/advanced-features";
 import { advancedOperationsRouter } from "./routers/advanced-operations";
+import { notificationsCenterRouter } from "./routers/notifications-center";
 
 /**
  * Main Application Router
@@ -672,6 +673,7 @@ export const appRouter = router({
   invoices: invoicesRouter,
   advancedFeatures: advancedFeaturesRouter,
   advancedOperations: advancedOperationsRouter,
+  notificationsCenter: notificationsCenterRouter,
 });
 
 export type AppRouter = typeof appRouter;
