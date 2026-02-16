@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
     <title>نظام إدارة تكاليف الشحن والجمارك الأردنية</title>
     
+    <!-- CRITICAL: Dynamically preload React first to avoid createContext errors -->
+    <script>
+      // Find and preload vendor-react dynamically
+      (function() {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'script';
+        link.crossOrigin = 'anonymous';
+        
+        // Try to find vendor-react in the current document
+        const scripts = document.querySelectorAll('script[src*="vendor-react"]');
+        if (scripts.length > 0) {
+          link.href = scripts[0].src;
+          document.head.insertBefore(link, document.head.firstChild);
+        } else {
+          // Fallback: preload any vendor-react file
+          fetch('/assets/')
+            .then(r => r.text())
+            .then(html => {
+              const match = html.match(/vendor-react-[a-zA-Z0-9]+\.js/);
+              if (match) {
+                link.href = '/assets/' + match[0];
+                document.head.insertBefore(link, document.head.firstChild);
+              }
+            })
+            .catch(() => {});
+        }
+      })();
+    </script>
+    
     <!-- App Icons -->
     <link rel="icon" type="image/png" href="/icons/icon.png">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
