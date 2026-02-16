@@ -1,19 +1,41 @@
-# Allow all search engines to crawl the site
+# Robots.txt for Jordan Customs System
+# نظام إدارة تكاليف الشحن والجمارك الأردنية
+
+# Allow all search engines
 User-agent: *
 Allow: /
-
-# Disallow private or sensitive paths
 Disallow: /admin/
 Disallow: /api/
 Disallow: /private/
+Disallow: /*.json$
+Disallow: /node_modules/
 Disallow: /.env
-Disallow: /.git
+Disallow: /config/
 
-# Sitemap location
-Sitemap: https://mp3-app.com/sitemap.xml
+# Specific rules for Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
 
-# Crawl delay (optional - in seconds)
+# Specific rules for Bing
+User-agent: Bingbot
+Allow: /
 Crawl-delay: 1
 
-# Request rate (optional)
-Request-rate: 1/1s
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+# Sitemap locations
+Sitemap: https://jordan-customs-system.manus.space/sitemap.xml
+Sitemap: https://www.mp3-app.com/sitemap.xml
+Sitemap: https://mp3-app.com/sitemap.xml
+
+# Cache settings
+Request-rate: 1 request per 1 second
