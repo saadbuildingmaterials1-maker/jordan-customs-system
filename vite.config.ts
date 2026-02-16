@@ -190,6 +190,11 @@ export default defineConfig({
       external: ['@sentry/react', 'electron'],
       output: {
         manualChunks: (id) => {
+          // IMPORTANT: React must be loaded first!
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+            return "vendor-react";
+          }
+          
           // Split large utility libraries
           if (id.includes("node_modules/lodash")) return "vendor-lodash";
           if (id.includes("node_modules/moment")) return "vendor-moment";

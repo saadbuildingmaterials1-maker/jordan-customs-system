@@ -14668,6 +14668,9 @@ var vite_config_default = defineConfig({
       external: ["@sentry/react", "electron"],
       output: {
         manualChunks: (id) => {
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
+            return "vendor-react";
+          }
           if (id.includes("node_modules/lodash")) return "vendor-lodash";
           if (id.includes("node_modules/moment")) return "vendor-moment";
           if (id.includes("node_modules/echarts")) return "vendor-echarts";
