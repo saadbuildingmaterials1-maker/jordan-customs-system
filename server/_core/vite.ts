@@ -10,6 +10,7 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
+import { setupStaticProxy, setupSPAFallback } from "../static-proxy";
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -17,83 +18,32 @@ export async function setupVite(app: Express, server: Server) {
     hmm: { server },
     allowedHosts: true as const,
   };
-
   const vite = await createViteServer({
     ...viteConfig,
     configFile: false,
     server: serverOptions,
     appType: "mpa",
   });
-
   // تقديم الملفات من client/public
   const clientPath = path.resolve(import.meta.dirname, "../..", "client");
-  app.use(
-    express.static(path.join(clientPath, "public"), {
-      maxAge: "1h",
-      etag: true,
-      lastModified: true,
-    })
-  );
-
-  // معالج لـ index.html (الصفحة الرئيسية)
-  app.get("/", async (req, res, next) => {
-    try {
-      const clientTemplate = path.join(clientPath, "index.html");
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      
-      // استخدام transformIndexHtml لتحويل الملف بشكل صحيح
-      const page = await vite.transformIndexHtml("/", template);
-      res.set({ "Content-Type": "text/html; charset=utf-8" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
-      res.status(500).send("Internal Server Error");
-    }
-  });
-
-  // معالج fallback لـ SPA routing - يجب أن يأتي قبل vite.middlewares
-  // حتى يتمكن من إعادة index.html للصفحات الداخلية قبل أن يحاول Vite معالجتها
-  app.get("*", async (req, res, next) => {
-    // تجاهل طلبات API
-    if (req.path.startsWith("/api")) {
-      return next();
-    }
-    
-    // تجاهل طلبات Vite الخاصة
-    if (req.path.startsWith("/@") || req.path.startsWith("/node_modules/") || req.path.startsWith("/src/")) {
-      return next();
-    }
-    
-    // تجاهل الملفات ذات الامتدادات المعروفة
-    // حتى يتمكن vite.middlewares من معالجتها
-    const knownExtensions = /\.(js|jsx|ts|tsx|css|scss|json|png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot|map|txt|md|mjs)$/i;
-    if (knownExtensions.test(req.path)) {
-      return next();
-    }
-    
-    // إعادة index.html للصفحات الداخلية
-    try {
-      const clientTemplate = path.join(clientPath, "index.html");
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      const page = await vite.transformIndexHtml(req.originalUrl, template);
-      res.set({ "Content-Type": "text/html; charset=utf-8" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
-      res.status(500).send("Internal Server Error");
-    }
-  });
-
-  // استخدام Vite middleware للملفات (بعد معالج SPA)
   app.use(vite.middlewares);
+  app.use(express.static(path.join(clientPath, "public")));
+  // SPA fallback
+  app.use("*", (_req, res) => {
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.sendFile(path.resolve(clientPath, "index.html"));
+  });
 }
+
 export function serveStatic(app: Express) {
   // محاولة المسارات المختلفة للعثور على dist/public
   const possiblePaths = [
+    // المسار الأساسي: المشروع الحالي
+    path.resolve(process.cwd(), "dist", "public"),
     // المسار في الحاوية (Manus)
     path.resolve("/usr/src/dist/public"),
     // المسار المحلي أثناء التطوير
     path.resolve(import.meta.dirname, "../..", "dist", "public"),
-    // المسار البديل
-    path.resolve(process.cwd(), "dist", "public"),
   ];
   
   let distPath = "";
@@ -111,35 +61,8 @@ export function serveStatic(app: Express) {
     throw new Error(errorMsg);
   }
 
-  // استخدام express.static مع خيارات محسّنة
-  app.use(
-    express.static(distPath, {
-      maxAge: "1y",
-      etag: true,
-      lastModified: true,
-      setHeaders: (res, filePath) => {
-        const ext = path.extname(filePath).toLowerCase();
-        // لا تخزن ملفات HTML مؤقتاً
-        if (ext === ".html") {
-          res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-          res.setHeader("Pragma", "no-cache");
-        }
-        // خزّن الملفات المجزأة لمدة طويلة
-        else if (filePath.match(/\.[a-f0-9]{8}\.(js|css)$/)) {
-          res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
-        }
-        // رؤوس مهمة لـ Cloudflare
-        res.setHeader("X-Content-Type-Options", "nosniff");
-      },
-    })
-  );
-
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-    res.setHeader("Pragma", "no-cache");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.sendFile(path.resolve(distPath, "index.html"));
-  });
+  // استخدام Static Proxy بدلاً من express.static
+  console.log('[serveStatic] Using Static Proxy for serving files');
+  setupStaticProxy(app, distPath);
+  setupSPAFallback(app, distPath);
 }

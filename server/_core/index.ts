@@ -18,6 +18,7 @@ import { serveStatic, setupVite } from "./vite";
 import { resourceMonitor } from "./resource-monitor";
 import { healthChecker } from "./health-check";
 import { memoryOptimizer } from "../memory-optimization";
+import { mimeTypeHandler } from "../middleware/mime-type-handler";
 import {
   generalLimiter,
   authLimiter,
@@ -76,17 +77,18 @@ async function startServer() {
   // ========== COMPRESSION MIDDLEWARE ==========
   // تفعيل Gzip/Brotli Compression لتقليل حجم الاستجابة
   app.use(compression({
-    level: 6, // Balance between speed and compression ratio
-    threshold: 1024, // Only compress responses larger than 1KB
+    level: 6,
+    threshold: 1024,
     filter: (req, res) => {
-      // Don't compress if client doesn't support it
       if (req.headers['x-no-compression']) {
         return false;
       }
-      // Use the filter function from compression module
       return compression.filter(req, res);
     }
   }));
+  
+  // MIME Type Handler
+  app.use(mimeTypeHandler);
   
   // ========== SECURITY MIDDLEWARE ==========
   // تطبيق Helmet للأمان الشامل

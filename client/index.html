@@ -47,14 +47,37 @@
       }
     </style>
   </head>
-
   <body>
     <div id="root"></div>
+    
+    <!-- تسجيل Service Worker -->
+    <script>
+      (function() {
+        console.log('[App] Registering Service Worker...');
+        
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+              .then((registration) => {
+                console.log('[App] Service Worker registered successfully:', registration);
+                
+                // التحقق من التحديثات كل 5 دقائق
+                setInterval(() => {
+                  registration.update().catch(err => {
+                    console.warn('[App] Failed to check for SW updates:', err);
+                  });
+                }, 5 * 60 * 1000);
+              })
+              .catch((error) => {
+                console.error('[App] Service Worker registration failed:', error);
+              });
+          });
+        } else {
+          console.warn('[App] Service Workers are not supported');
+        }
+      })();
+    </script>
+    
     <script type="module" src="/src/main.tsx"></script>
-    <script
-      defer
-      src="%VITE_ANALYTICS_ENDPOINT%/umami"
-      data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
-    <!-- تأكد من تشغيل خادم الـ API في الخلفية لضمان عمل الوظائف -->
   </body>
 </html>
