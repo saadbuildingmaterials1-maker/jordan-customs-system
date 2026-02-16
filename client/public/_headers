@@ -1,57 +1,75 @@
-# Headers for Cloudflare
-# هذا الملف يخبر Cloudflare بكيفية تقديم الملفات بشكل صحيح
+# Cloudflare Headers Configuration
+# تكوين headers لـ Cloudflare لضمان MIME types صحيحة
 
-# الملفات الثابتة - لا تطبق SPA fallback
-/assets/*
-  Cache-Control: public, max-age=31536000, immutable
-  X-Content-Type-Options: nosniff
-
-# ملفات JavaScript في assets - MIME type صحيح
+# ===== CRITICAL: JavaScript Files =====
+# جميع ملفات JavaScript يجب أن تُعاد بـ application/javascript
 /assets/*.js
   Content-Type: application/javascript; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
   X-Content-Type-Options: nosniff
+  Access-Control-Allow-Origin: *
 
-# ملفات CSS
+# Root level JS files
+/*.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+
+# ===== CSS Files =====
+/assets/*.css
+  Content-Type: text/css; charset=utf-8
+  Cache-Control: public, max-age=31536000, immutable
+
 /*.css
   Content-Type: text/css; charset=utf-8
   Cache-Control: public, max-age=31536000, immutable
 
-# ملفات JavaScript
-/*.js
-  Content-Type: application/javascript; charset=utf-8
+# ===== Static Assets =====
+/assets/*
   Cache-Control: public, max-age=31536000, immutable
+  X-Content-Type-Options: nosniff
+  Access-Control-Allow-Origin: *
 
-# ملفات الخطوط
+# ===== Fonts =====
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
 
-# ملفات الصور
+# ===== Images =====
 /images/*
   Cache-Control: public, max-age=2592000
+  Access-Control-Allow-Origin: *
 
-# ملفات الأيقونات
+# ===== Icons =====
 /icon-*.png
   Cache-Control: public, max-age=2592000
 /favicon.ico
   Cache-Control: public, max-age=2592000
 
-# ملف manifest
+# ===== Manifests & Config =====
 /manifest.json
   Content-Type: application/manifest+json; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
 
-# ملف robots.txt
 /robots.txt
   Content-Type: text/plain; charset=utf-8
   Cache-Control: public, max-age=86400
 
-# ملف sitemap.xml
 /sitemap.xml
   Content-Type: application/xml; charset=utf-8
   Cache-Control: public, max-age=86400
 
-# الصفحات الأخرى - لا تطبق caching
+# ===== HTML Pages =====
+/index.html
+  Content-Type: text/html; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+# ===== Service Worker =====
+/sw.js
+  Content-Type: application/javascript; charset=utf-8
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# ===== Default =====
 /*
   Cache-Control: public, max-age=0, must-revalidate
   X-Content-Type-Options: nosniff
