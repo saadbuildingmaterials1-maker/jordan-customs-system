@@ -1,18 +1,10 @@
 <!doctype html>
-<html lang="en">
-
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>mp3-app.com - نظام إدارة تكاليف الشحن والجمارك الأردنية</title>    
-    <!-- THIS IS THE START OF A COMMENT BLOCK, BLOCK TO BE DELETED: Google Fonts here, example:
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    THIS IS THE END OF A COMMENT BLOCK, BLOCK TO BE DELETED -->
-  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>نظام إدارة تكاليف الشحن والجمارك الأردنية</title>
+    
     <!-- App Icons -->
     <link rel="icon" type="image/png" href="/icons/icon.png">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
@@ -28,6 +20,32 @@
       gtag('js', new Date());
       gtag('config', 'G-RKRMXR0BFK');
     </script>
+    
+    <style>
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        background-color: #f8f8f7;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      
+      #root:empty::before {
+        content: "جاري تشغيل النظام... يرجى الانتظار";
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        color: #535350;
+        font-size: 1.2rem;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+      }
+      
+      * {
+        box-sizing: border-box;
+      }
+    </style>
   </head>
 
   <body>
@@ -37,6 +55,6 @@
       defer
       src="%VITE_ANALYTICS_ENDPOINT%/umami"
       data-website-id="%VITE_ANALYTICS_WEBSITE_ID%"></script>
+    <!-- تأكد من تشغيل خادم الـ API في الخلفية لضمان عمل الوظائف -->
   </body>
-
 </html>
