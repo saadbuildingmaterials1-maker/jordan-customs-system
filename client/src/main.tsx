@@ -17,7 +17,9 @@ import { initializePerformanceMonitoring } from "@/lib/performance";
 import { initializeAnalytics } from "@/lib/analytics";
 import "./index.css";
 
-console.log("[main.tsx] Starting application...");
+if (import.meta.env.DEV) {
+  console.log("[main.tsx] Starting application...");
+}
 
 // Initialize performance monitoring
 initializePerformanceMonitoring();
@@ -35,7 +37,11 @@ if (typeof window !== 'undefined') {
       tracesSampleRate: 0.1,
       enabled: !!import.meta.env.VITE_SENTRY_DSN,
     },
-  }).catch(err => console.warn('[Analytics] Failed to initialize:', err));
+  }).catch(err => {
+    if (import.meta.env.DEV) {
+      console.warn('[Analytics] Failed to initialize:', err);
+    }
+  });
 }
 
 const queryClient = new QueryClient();
@@ -80,7 +86,9 @@ const trpcClient = trpc.createClient({
   ],
 });
 
-console.log("[main.tsx] Creating React root...");
+if (import.meta.env.DEV) {
+  console.log("[main.tsx] Creating React root...");
+}
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
@@ -94,4 +102,6 @@ root.render(
   </trpc.Provider>
 );
 
-console.log("[main.tsx] Application rendered successfully");
+if (import.meta.env.DEV) {
+  console.log("[main.tsx] Application rendered successfully");
+}

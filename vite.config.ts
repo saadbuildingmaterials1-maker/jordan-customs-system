@@ -172,14 +172,21 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 1000,
     minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
     sourcemap: false,
     target: 'esnext',
+    assetsInlineLimit: 4096,
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
     rollupOptions: {
-      external: ['@sentry/react'],
+      external: ['@sentry/react', 'electron'],
       output: {
         manualChunks: (id) => {
           // Split large utility libraries
