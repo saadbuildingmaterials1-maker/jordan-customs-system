@@ -1,8 +1,20 @@
-# SPA Fallback - جميع الطلبات إلى index.html
-/* /index.html 200
+# SPA Fallback - جميع الطلبات إلى index.html (ما عدا الأصول)
+# هذا يحل مشكلة /dashboard بإعادة توجيهها إلى index.html
 
 # Assets - لا تعيد التوجيه
 /assets/* /assets/:splat 200
 
 # Public - لا تعيد التوجيه
 /public/* /public/:splat 200
+
+# JavaScript Files - لا تعيد التوجيه
+/*.js /:splat 200
+
+# CSS Files - لا تعيد التوجيه
+/*.css /:splat 200
+
+# HTML Files - لا تعيد التوجيه
+/*.html /:splat 200
+
+# SPA Fallback - جميع الطلبات الأخرى إلى index.html
+/* /index.html 200
