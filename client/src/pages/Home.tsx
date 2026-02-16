@@ -90,9 +90,14 @@ export default function Home() {
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-cyan-200 to-blue-200">
               نظام إدارة تكاليف الشحن والجمارك الأردنية
             </h1>
+            {/* SEO Keywords Hidden */}
+            <meta name="keywords" content="إدارة الجمارك، نظام الشحن، الرسوم الجمركية، إدارة التكاليف، التصريحات الجمركية، نظام جمركي أردني" />
             <p className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto leading-relaxed">
               منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية وسهولة استخدام فائقة
             </p>
+            <h2 className="text-2xl md:text-3xl font-semibold text-blue-100 mb-6">
+              حل شامل لإدارة الجمارك والشحن والتكاليف
+            </h2>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -232,9 +237,12 @@ export default function Home() {
       {/* Quick Actions */}
       <section className="relative py-20 px-4 md:px-8 lg:px-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
+          <h2 className="text-4xl font-bold text-center mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
             الإجراءات السريعة
           </h2>
+          <p className="text-center text-blue-100/70 mb-16 max-w-2xl mx-auto">
+            ابدأ بسرعة مع أدواتنا المتقدمة لإدارة البيانات الجمركية والشحنات
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
@@ -289,9 +297,12 @@ export default function Home() {
       {/* Benefits Section */}
       <section className="relative py-20 px-4 md:px-8 lg:px-16">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
+          <h2 className="text-4xl font-bold text-center mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-cyan-200">
             لماذا تختار نظامنا؟
           </h2>
+          <p className="text-center text-blue-100/70 mb-16 max-w-2xl mx-auto">
+            اكتشف مزايا نظامنا المتقدمة لإدارة الجمارك والرسوم الجمركية
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
