@@ -15034,7 +15034,7 @@ var vite_config_default = defineConfig({
   root: path4.resolve(import.meta.dirname, "client"),
   publicDir: path4.resolve(import.meta.dirname, "client", "public"),
   build: {
-    outDir: path4.resolve(import.meta.dirname, "dist/public"),
+    outDir: path4.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
     chunkSizeWarningLimit: 1e3,
     minify: "esbuild",
