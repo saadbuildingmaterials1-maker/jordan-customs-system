@@ -1,0 +1,8 @@
+# SPA Fallback - جميع الطلبات إلى index.html
+/* /index.html 200
+
+# Assets - لا تعيد التوجيه
+/assets/* /assets/:splat 200
+
+# Public - لا تعيد التوجيه
+/public/* /public/:splat 200
