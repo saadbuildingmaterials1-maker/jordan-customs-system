@@ -7,8 +7,8 @@
  */
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import AdvancedShippingCalculator from "@/components/AdvancedShippingCalculator";
-import PriceAlertSystem from "@/components/PriceAlertSystem";
+// import AdvancedShippingCalculator from "@/components/AdvancedShippingCalculator";
+// import PriceAlertSystem from "@/components/PriceAlertSystem";
 import { 
   Plus, FileText, TrendingUp, DollarSign, Download, Smartphone, Monitor,
   ArrowRight, CheckCircle, Zap, BarChart3, Package, Truck, Clock, Shield,
@@ -91,7 +91,6 @@ export default function Home() {
               نظام إدارة تكاليف الشحن والجمارك الأردنية - منصة ذكية للتصريحات الجمركية
             </h1>
             {/* SEO Keywords - Visible in content */}
-            <meta name="keywords" content="إدارة الجمارك، نظام الشحن، الرسوم الجمركية، إدارة التكاليف، التصريحات الجمركية" />
             <p className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto leading-relaxed">
               منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية. نظام متخصص في إدارة الجمارك والتصريحات الجمركية مع حساب الرسوم الجمركية تلقائياً
             </p>
@@ -392,11 +391,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Advanced Shipping and Taxes Calculator */}
-      <AdvancedShippingCalculator />
-
-      {/* Price Alert System */}
-      <PriceAlertSystem />
+       {/* Advanced Shipping and Taxes Calculator - Temporarily disabled */}
+      {/* <AdvancedShippingCalculator /> */}
+      {/* Price Alert System - Temporarily disabled */}
+      {/* <PriceAlertSystem /> */}
 
       {/* Footer */}
       <footer className="relative py-12 px-4 md:px-8 lg:px-16 border-t border-white/10 bg-slate-900/50 backdrop-blur-md">
