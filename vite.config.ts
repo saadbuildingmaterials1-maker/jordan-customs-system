@@ -155,7 +155,45 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+/**
+ * Vite plugin to reorder modulepreload links before module script
+ * Ensures dependencies are preloaded before the entry point loads
+ */
+function vitePluginReorderModulepreload(): Plugin {
+  return {
+    name: "reorder-modulepreload",
+    transformIndexHtml(html) {
+      // Extract modulepreload links
+      const modulepreloadRegex = /<link rel="modulepreload"[^>]*>/g;
+      const modulepreloads = html.match(modulepreloadRegex) || [];
+      
+      // Extract module script
+      const moduleScriptRegex = /<script type="module"[^>]*><\/script>/;
+      const moduleScript = html.match(moduleScriptRegex)?.[0];
+      
+      if (!modulepreloads.length || !moduleScript) {
+        return html;
+      }
+      
+      // Remove all modulepreload links from HTML
+      let result = html;
+      modulepreloads.forEach(link => {
+        result = result.replace(link, "");
+      });
+      
+      // Insert modulepreload links before module script
+      const modulepreloadHtml = modulepreloads.join("\n    ");
+      result = result.replace(
+        moduleScript,
+        `${modulepreloadHtml}\n    ${moduleScript}`
+      );
+      
+      return result;
+    },
+  };
+}
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginReorderModulepreload()];
 
 export default defineConfig({
   plugins,

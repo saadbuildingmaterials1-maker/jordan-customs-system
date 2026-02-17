@@ -22,7 +22,7 @@ export async function setupVite(app: Express, server: Server) {
     ...viteConfig,
     configFile: false,
     server: serverOptions,
-    appType: "mpa",
+    appType: "spa",
   });
   // تقديم الملفات من client/public
   const clientPath = path.resolve(import.meta.dirname, "../..", "client");

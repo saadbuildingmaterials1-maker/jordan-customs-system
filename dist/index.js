@@ -15020,7 +15020,32 @@ function vitePluginManusDebugCollector() {
     }
   };
 }
-var plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+function vitePluginReorderModulepreload() {
+  return {
+    name: "reorder-modulepreload",
+    transformIndexHtml(html) {
+      const modulepreloadRegex = /<link rel="modulepreload"[^>]*>/g;
+      const modulepreloads = html.match(modulepreloadRegex) || [];
+      const moduleScriptRegex = /<script type="module"[^>]*><\/script>/;
+      const moduleScript = html.match(moduleScriptRegex)?.[0];
+      if (!modulepreloads.length || !moduleScript) {
+        return html;
+      }
+      let result = html;
+      modulepreloads.forEach((link) => {
+        result = result.replace(link, "");
+      });
+      const modulepreloadHtml = modulepreloads.join("\n    ");
+      result = result.replace(
+        moduleScript,
+        `${modulepreloadHtml}
+    ${moduleScript}`
+      );
+      return result;
+    }
+  };
+}
+var plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginReorderModulepreload()];
 var vite_config_default = defineConfig({
   plugins,
   resolve: {
@@ -15289,7 +15314,7 @@ async function setupVite(app, server) {
     ...vite_config_default,
     configFile: false,
     server: serverOptions,
-    appType: "mpa"
+    appType: "spa"
   });
   const clientPath = path6.resolve(import.meta.dirname, "../..", "client");
   app.use(vite.middlewares);
@@ -15908,12 +15933,13 @@ var helmetOptions = {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://manus-analytics.com", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://manus-analytics.com", "blob:"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       imgSrc: ["'self'", "data:", "https:"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https:", "wss:", "https://manus-analytics.com", "blob:"],
-      workerSrc: ["'self'", "blob:"]
+      connectSrc: ["'self'", "https:", "wss:", "https://manus-analytics.com", "blob:", "http://localhost:*"],
+      workerSrc: ["'self'", "blob:", "http://localhost:*"],
+      scriptSrcAttr: ["'self'", "'unsafe-inline'"]
     }
   },
   hsts: {

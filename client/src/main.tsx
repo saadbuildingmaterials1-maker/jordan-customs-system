@@ -96,14 +96,28 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 const root = createRoot(rootElement);
-root.render(
-  <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </trpc.Provider>
-);
 
-if (import.meta.env.DEV) {
-  console.log("[main.tsx] Application rendered successfully");
+try {
+  if (import.meta.env.DEV) {
+    console.log("[main.tsx] Attempting to render App...");
+  }
+  
+  root.render(
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    </trpc.Provider>
+  );
+  
+  if (import.meta.env.DEV) {
+    console.log("[main.tsx] App rendered successfully");
+  }
+} catch (error) {
+  console.error("[main.tsx] Fatal error rendering app:", error);
+  const errorDiv = document.createElement('div');
+  errorDiv.style.cssText = 'padding: 20px; color: red; font-family: monospace; white-space: pre-wrap; background: #f0f0f0; margin: 20px;';
+  errorDiv.textContent = `Error: ${error instanceof Error ? error.message : String(error)}\n\nStack:\n${error instanceof Error ? error.stack : ''}`;
+  rootElement.appendChild(errorDiv);
+  throw error;
 }
