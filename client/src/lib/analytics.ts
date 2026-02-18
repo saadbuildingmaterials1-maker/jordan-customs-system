@@ -26,6 +26,12 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
     return;
   }
 
+  // Check if measurement ID is provided
+  if (!config.measurementId) {
+    console.log('[Analytics] Google Analytics measurement ID not provided');
+    return;
+  }
+
   gaConfig = config;
 
   // Load Google Analytics script
@@ -41,13 +47,19 @@ export function initializeGoogleAnalytics(config: GoogleAnalyticsConfig) {
     (window as any).dataLayer.push(arguments);
   }
   
-  gtag('js', new Date());
-  gtag('config', config.measurementId, {
-    'page_path': window.location.pathname,
-    'anonymize_ip': true,
-  });
+  // Wait for script to load before initializing gtag
+  script.onload = () => {
+    gtag('js', new Date());
+    gtag('config', config.measurementId, {
+      'page_path': window.location.pathname,
+      'anonymize_ip': true,
+    });
+    console.log('[Analytics] Google Analytics initialized successfully');
+  };
 
-  console.log('[Analytics] Google Analytics initialized');
+  script.onerror = () => {
+    console.error('[Analytics] Failed to load Google Analytics script');
+  };
 }
 
 /**
