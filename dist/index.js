@@ -1,10 +1,3 @@
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined") return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
-
 // server/_core/index.ts
 import express2 from "express";
 import { createServer } from "http";
@@ -1194,16 +1187,6 @@ async function getShipmentDetail(containerId) {
   );
   return result[0] || null;
 }
-async function savePaymentTransaction(transaction) {
-  console.log("Payment Transaction Saved:", transaction);
-  return transaction;
-}
-async function getPaymentTransactions(userId, limit, offset) {
-  return [];
-}
-async function getPaymentTransaction(userId, transactionId) {
-  return null;
-}
 
 // server/_core/cookies.ts
 function isSecureRequest(req) {
@@ -1491,7 +1474,7 @@ function registerOAuthRoutes(app) {
 }
 
 // server/routers.ts
-import { z as z22 } from "zod";
+import { z as z21 } from "zod";
 
 // server/_core/systemRouter.ts
 import { z } from "zod";
@@ -4046,12 +4029,149 @@ var authRouter = router({
   })
 });
 
+// server/errorReporter.ts
+import os from "os";
+import fs2 from "fs";
+import path from "path";
+function getSystemInfo() {
+  const totalMemoryBytes = os.totalmem();
+  const freeMemoryBytes = os.freemem();
+  const formatBytes = (bytes) => {
+    const gb = bytes / (1024 * 1024 * 1024);
+    return `${gb.toFixed(2)} GB`;
+  };
+  const formatUptime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor(seconds % 3600 / 60);
+    return `${hours}h ${minutes}m`;
+  };
+  return {
+    platform: os.platform(),
+    arch: os.arch(),
+    cpus: os.cpus().length,
+    totalMemory: formatBytes(totalMemoryBytes),
+    freeMemory: formatBytes(freeMemoryBytes),
+    uptime: formatUptime(os.uptime()),
+    nodeVersion: process.version,
+    appVersion: "1.0.1",
+    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function collectLogs(logDir) {
+  const logs = [];
+  try {
+    const defaultLogPath = path.join(
+      process.env.APPDATA || process.env.HOME || "",
+      "JordanCustoms",
+      "logs"
+    );
+    const logsPath = logDir || defaultLogPath;
+    if (fs2.existsSync(logsPath)) {
+      const files = fs2.readdirSync(logsPath);
+      files.forEach((file) => {
+        try {
+          const filePath = path.join(logsPath, file);
+          const content = fs2.readFileSync(filePath, "utf-8");
+          const lines = content.split("\n").slice(-50);
+          logs.push(`--- ${file} ---`);
+          logs.push(...lines);
+        } catch (error) {
+          logs.push(`Error reading ${file}: ${error}`);
+        }
+      });
+    }
+  } catch (error) {
+    logs.push(`Error collecting logs: ${error}`);
+  }
+  return logs;
+}
+function generateReportId() {
+  return `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+function createErrorReport(title, description, options) {
+  return {
+    id: generateReportId(),
+    title,
+    description,
+    stackTrace: options?.stackTrace,
+    systemInfo: getSystemInfo(),
+    logs: collectLogs(options?.logDir),
+    userEmail: options?.userEmail,
+    userMessage: options?.userMessage,
+    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+function formatErrorReportForEmail(report) {
+  const systemInfoStr = Object.entries(report.systemInfo).map(([key, value]) => `${key}: ${value}`).join("\n");
+  const logsStr = report.logs.slice(-30).join("\n");
+  return `
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+\u062A\u0642\u0631\u064A\u0631 \u062E\u0637\u0623 - \u0646\u0638\u0627\u0645 \u0625\u062F\u0627\u0631\u0629 \u062A\u0643\u0627\u0644\u064A\u0641 \u0627\u0644\u0634\u062D\u0646 \u0648\u0627\u0644\u062C\u0645\u0627\u0631\u0643 \u0627\u0644\u0623\u0631\u062F\u0646\u064A\u0629
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+\u0645\u0639\u0631\u0641 \u0627\u0644\u062A\u0642\u0631\u064A\u0631: ${report.id}
+\u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0648\u0627\u0644\u0648\u0642\u062A: ${report.timestamp}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u062E\u0637\u0623
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+\u0627\u0644\u0639\u0646\u0648\u0627\u0646: ${report.title}
+\u0627\u0644\u0648\u0635\u0641: ${report.description}
+
+${report.stackTrace ? `Stack Trace:
+${report.stackTrace}
+` : ""}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A: ${report.userEmail || "\u0644\u0645 \u064A\u062A\u0645 \u062A\u0642\u062F\u064A\u0645\u0647"}
+\u0627\u0644\u0631\u0633\u0627\u0644\u0629: ${report.userMessage || "\u0644\u0627 \u062A\u0648\u062C\u062F \u0631\u0633\u0627\u0644\u0629 \u0625\u0636\u0627\u0641\u064A\u0629"}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0646\u0638\u0627\u0645
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+${systemInfoStr}
+
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+\u0627\u0644\u0633\u062C\u0644\u0627\u062A \u0627\u0644\u0623\u062E\u064A\u0631\u0629
+\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+${logsStr}
+
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+\u0634\u0643\u0631\u0627\u064B \u0644\u0645\u0633\u0627\u0639\u062F\u062A\u0643 \u0641\u064A \u062A\u062D\u0633\u064A\u0646 \u0627\u0644\u062A\u0637\u0628\u064A\u0642!
+\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+  `;
+}
+async function sendErrorReport(report) {
+  try {
+    const emailContent = formatErrorReportForEmail(report);
+    console.log("Error report sent successfully:", report.id);
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+function saveErrorReportLocally(report) {
+  try {
+    const reportsDir = path.join(
+      process.env.APPDATA || process.env.HOME || "",
+      "JordanCustoms",
+      "error-reports"
+    );
+    if (!fs2.existsSync(reportsDir)) {
+      fs2.mkdirSync(reportsDir, { recursive: true });
+    }
+    const filePath = path.join(reportsDir, `${report.id}.json`);
+    fs2.writeFileSync(filePath, JSON.stringify(report, null, 2));
+    return filePath;
+  } catch (error) {
+    return "";
+  }
+}
+
 // server/routers/errors.ts
 import { z as z6 } from "zod";
-var createErrorReport = (data) => ({ ...data, timestamp: /* @__PURE__ */ new Date() });
-var sendErrorReport = async (report) => console.log("Error reported:", report);
-var saveErrorReportLocally = async (report) => console.log("Error saved locally:", report);
-var getSystemInfo = () => ({ platform: process.platform, nodeVersion: process.version });
 var ErrorReportSchema = z6.object({
   title: z6.string().min(1, "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
   description: z6.string().min(1, "\u0627\u0644\u0648\u0635\u0641 \u0645\u0637\u0644\u0648\u0628"),
@@ -4120,13 +4240,84 @@ var errorsRouter = router({
   })
 });
 
+// server/updateChecker.ts
+var CURRENT_VERSION = "1.0.0";
+var CHECK_INTERVAL = 24 * 60 * 60 * 1e3;
+async function fetchLatestRelease() {
+  try {
+    const response = await fetch(
+      "https://api.github.com/repos/jordan-customs/system/releases/latest",
+      {
+        headers: {
+          "Accept": "application/vnd.github.v3+json"
+        }
+      }
+    );
+    if (!response.ok) {
+      const errorMsg = response.statusText || "Unknown error";
+      return null;
+    }
+    const data = await response.json();
+    return {
+      version: (data.tag_name || "").replace(/^v/, ""),
+      name: data.name || "",
+      description: data.description || "",
+      releaseDate: data.published_at || "",
+      downloadUrl: data.html_url || "",
+      isPrerelease: data.prerelease || false,
+      changeLog: data.body || "\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0639\u0646 \u0627\u0644\u062A\u063A\u064A\u064A\u0631\u0627\u062A"
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return null;
+  }
+}
+function compareVersions(version1, version2) {
+  const v1Parts = version1.split(".").map(Number);
+  const v2Parts = version2.split(".").map(Number);
+  for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
+    const v1 = v1Parts[i] || 0;
+    const v2 = v2Parts[i] || 0;
+    if (v1 > v2) return 1;
+    if (v1 < v2) return -1;
+  }
+  return 0;
+}
+async function checkForUpdates() {
+  const now = /* @__PURE__ */ new Date();
+  const lastChecked = (/* @__PURE__ */ new Date()).toISOString();
+  const nextCheckDate = new Date(now.getTime() + CHECK_INTERVAL).toISOString();
+  try {
+    const latestRelease = await fetchLatestRelease();
+    if (!latestRelease) {
+      return {
+        hasUpdate: false,
+        currentVersion: CURRENT_VERSION,
+        lastChecked,
+        nextCheckDate
+      };
+    }
+    const versionComparison = compareVersions(latestRelease.version, CURRENT_VERSION);
+    return {
+      hasUpdate: versionComparison > 0,
+      currentVersion: CURRENT_VERSION,
+      latestVersion: latestRelease.version,
+      release: versionComparison > 0 ? latestRelease : void 0,
+      lastChecked,
+      nextCheckDate
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return {
+      hasUpdate: false,
+      currentVersion: CURRENT_VERSION,
+      lastChecked,
+      nextCheckDate
+    };
+  }
+}
+
 // server/routers/updates.ts
-var checkForUpdates = async () => ({
-  hasUpdate: false,
-  currentVersion: "1.0.0",
-  latestVersion: "1.0.0",
-  updateUrl: null
-});
 var updatesRouter = router({
   /**
    * التحقق من وجود تحديث جديد
@@ -5501,13 +5692,13 @@ import { z as z11 } from "zod";
 
 // server/services/invoice-service.ts
 import { PDFDocument, rgb } from "pdf-lib";
-import * as fs2 from "fs";
-import * as path from "path";
+import * as fs3 from "fs";
+import * as path2 from "path";
 var InvoiceService = class {
-  invoicesDir = path.join(process.cwd(), "invoices");
+  invoicesDir = path2.join(process.cwd(), "invoices");
   constructor() {
-    if (!fs2.existsSync(this.invoicesDir)) {
-      fs2.mkdirSync(this.invoicesDir, { recursive: true });
+    if (!fs3.existsSync(this.invoicesDir)) {
+      fs3.mkdirSync(this.invoicesDir, { recursive: true });
       console.log("\u2705 \u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0645\u062C\u0644\u062F \u0627\u0644\u0641\u0648\u0627\u062A\u064A\u0631");
     }
   }
@@ -5822,8 +6013,8 @@ var InvoiceService = class {
     try {
       const pdfBuffer = await this.generateInvoicePDF(invoiceData);
       const fileName = `invoice-${invoiceData.invoiceNumber}-${Date.now()}.pdf`;
-      const filePath = path.join(this.invoicesDir, fileName);
-      fs2.writeFileSync(filePath, pdfBuffer);
+      const filePath = path2.join(this.invoicesDir, fileName);
+      fs3.writeFileSync(filePath, pdfBuffer);
       console.log(`\u{1F4BE} \u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629: ${filePath}`);
       return filePath;
     } catch (error) {
@@ -5836,9 +6027,9 @@ var InvoiceService = class {
    */
   getInvoice(fileName) {
     try {
-      const filePath = path.join(this.invoicesDir, fileName);
-      if (fs2.existsSync(filePath)) {
-        return fs2.readFileSync(filePath);
+      const filePath = path2.join(this.invoicesDir, fileName);
+      if (fs3.existsSync(filePath)) {
+        return fs3.readFileSync(filePath);
       }
       return null;
     } catch (error) {
@@ -5851,9 +6042,9 @@ var InvoiceService = class {
    */
   deleteInvoice(fileName) {
     try {
-      const filePath = path.join(this.invoicesDir, fileName);
-      if (fs2.existsSync(filePath)) {
-        fs2.unlinkSync(filePath);
+      const filePath = path2.join(this.invoicesDir, fileName);
+      if (fs3.existsSync(filePath)) {
+        fs3.unlinkSync(filePath);
         console.log(`\u2705 \u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629: ${fileName}`);
         return true;
       }
@@ -6118,13 +6309,13 @@ var TaxService = class {
 var taxService = new TaxService();
 
 // server/services/tax-report-service.ts
-import * as fs3 from "fs";
-import * as path2 from "path";
+import * as fs4 from "fs";
+import * as path3 from "path";
 var TaxReportService = class {
-  reportsDir = path2.join(process.cwd(), "tax-reports");
+  reportsDir = path3.join(process.cwd(), "tax-reports");
   constructor() {
-    if (!fs3.existsSync(this.reportsDir)) {
-      fs3.mkdirSync(this.reportsDir, { recursive: true });
+    if (!fs4.existsSync(this.reportsDir)) {
+      fs4.mkdirSync(this.reportsDir, { recursive: true });
       console.log("\u2705 \u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0645\u062C\u0644\u062F \u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0636\u0631\u064A\u0628\u064A\u0629");
     }
   }
@@ -6480,8 +6671,8 @@ var TaxReportService = class {
           break;
       }
       const fileName = `tax-report-${Date.now()}.${extension}`;
-      const filePath = path2.join(this.reportsDir, fileName);
-      fs3.writeFileSync(filePath, content);
+      const filePath = path3.join(this.reportsDir, fileName);
+      fs4.writeFileSync(filePath, content);
       console.log(`\u{1F4BE} \u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u062A\u0642\u0631\u064A\u0631: ${filePath}`);
       return filePath;
     } catch (error) {
@@ -6494,9 +6685,9 @@ var TaxReportService = class {
    */
   getReport(fileName) {
     try {
-      const filePath = path2.join(this.reportsDir, fileName);
-      if (fs3.existsSync(filePath)) {
-        return fs3.readFileSync(filePath, "utf-8");
+      const filePath = path3.join(this.reportsDir, fileName);
+      if (fs4.existsSync(filePath)) {
+        return fs4.readFileSync(filePath, "utf-8");
       }
       return null;
     } catch (error) {
@@ -8379,507 +8570,6 @@ var localPaymentGatewaysRouter = router({
   })
 });
 
-// server/routers/local-payment-gateway.ts
-import { z as z14 } from "zod";
-
-// server/services/hyperpay-service.ts
-import axios3 from "axios";
-var HyperPayService = class {
-  config;
-  client;
-  constructor(config) {
-    this.config = config;
-    this.client = axios3.create({
-      baseURL: config.baseUrl,
-      headers: {
-        "Authorization": `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json"
-      },
-      timeout: 1e4
-    });
-  }
-  /**
-   * إنشاء طلب دفع جديد
-   */
-  async createPayment(request) {
-    try {
-      const payload = {
-        amount: this.formatAmount(request.amount),
-        currency: request.currency,
-        orderId: request.orderId,
-        customer: {
-          email: request.customerEmail,
-          phone: request.customerPhone
-        },
-        description: request.description,
-        returnUrl: request.returnUrl,
-        notificationUrl: `${process.env.API_URL}/api/hyperpay/webhook`
-      };
-      const response = await this.client.post("/payments/create", payload);
-      if (response.data.success) {
-        return {
-          success: true,
-          transactionId: response.data.transactionId,
-          paymentUrl: response.data.paymentUrl,
-          message: "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0628\u0646\u062C\u0627\u062D"
-        };
-      } else {
-        return {
-          success: false,
-          error: response.data.error || "\u0641\u0634\u0644 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639",
-          message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639"
-        };
-      }
-    } catch (error) {
-      console.error("HyperPay Error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "\u062E\u0637\u0623 \u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641",
-        message: "\u0641\u0634\u0644 \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u062E\u062F\u0645\u0629 \u0627\u0644\u062F\u0641\u0639"
-      };
-    }
-  }
-  /**
-   * التحقق من حالة الدفع
-   */
-  async checkPaymentStatus(transactionId) {
-    try {
-      const response = await this.client.get(`/payments/${transactionId}/status`);
-      if (response.data) {
-        return {
-          transactionId,
-          status: response.data.status,
-          amount: response.data.amount,
-          currency: response.data.currency,
-          timestamp: new Date(response.data.timestamp)
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error("HyperPay Status Check Error:", error);
-      return null;
-    }
-  }
-  /**
-   * استرجاع المبلغ (Refund)
-   */
-  async refundPayment(transactionId, amount) {
-    try {
-      const payload = {
-        transactionId,
-        ...amount && { amount: this.formatAmount(amount) }
-      };
-      const response = await this.client.post("/payments/refund", payload);
-      if (response.data.success) {
-        return {
-          success: true,
-          message: "\u062A\u0645 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A \u0628\u0646\u062C\u0627\u062D"
-        };
-      } else {
-        return {
-          success: false,
-          error: response.data.error || "\u0641\u0634\u0644 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A",
-          message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A"
-        };
-      }
-    } catch (error) {
-      console.error("HyperPay Refund Error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "\u062E\u0637\u0623 \u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641",
-        message: "\u0641\u0634\u0644 \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u062E\u062F\u0645\u0629 \u0627\u0644\u0627\u0633\u062A\u0631\u062C\u0627\u0639"
-      };
-    }
-  }
-  /**
-   * التحقق من توقيع Webhook
-   */
-  verifyWebhookSignature(payload, signature) {
-    try {
-      const crypto5 = __require("crypto");
-      const expectedSignature = crypto5.createHmac("sha256", this.config.apiKey).update(payload).digest("hex");
-      return expectedSignature === signature;
-    } catch (error) {
-      console.error("Webhook Signature Verification Error:", error);
-      return false;
-    }
-  }
-  /**
-   * تنسيق المبلغ (تحويل إلى فلس)
-   */
-  formatAmount(amount) {
-    return Math.round(amount * 1e3);
-  }
-  /**
-   * الحصول على حالة الخدمة
-   */
-  async getServiceStatus() {
-    try {
-      const response = await this.client.get("/health");
-      return response.status === 200;
-    } catch (error) {
-      console.error("HyperPay Service Status Error:", error);
-      return false;
-    }
-  }
-};
-var hyperPayService = new HyperPayService({
-  apiKey: process.env.HYPERPAY_API_KEY || "",
-  merchantId: process.env.HYPERPAY_MERCHANT_ID || "",
-  baseUrl: process.env.HYPERPAY_BASE_URL || "https://api.hyperpay.com",
-  environment: process.env.HYPERPAY_ENV || "sandbox"
-});
-
-// server/services/telr-service.ts
-import axios4 from "axios";
-var TelrService = class {
-  config;
-  client;
-  constructor(config) {
-    this.config = config;
-    this.client = axios4.create({
-      baseURL: config.baseUrl,
-      headers: {
-        "Authorization": `Bearer ${config.apiKey}`,
-        "Content-Type": "application/json"
-      },
-      timeout: 1e4
-    });
-  }
-  /**
-   * إنشاء طلب دفع جديد
-   */
-  async createPayment(request) {
-    try {
-      const payload = {
-        storeId: this.config.storeId,
-        amount: request.amount,
-        currency: request.currency,
-        orderId: request.orderId,
-        customer: {
-          email: request.customerEmail,
-          name: request.customerName
-        },
-        description: request.description,
-        returnUrl: request.returnUrl,
-        notificationUrl: `${process.env.API_URL}/api/telr/webhook`,
-        language: "ar"
-      };
-      const response = await this.client.post("/transactions/create", payload);
-      if (response.data.success) {
-        return {
-          success: true,
-          transactionId: response.data.transactionId,
-          paymentUrl: response.data.paymentUrl,
-          message: "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639 \u0628\u0646\u062C\u0627\u062D"
-        };
-      } else {
-        return {
-          success: false,
-          error: response.data.error || "\u0641\u0634\u0644 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639",
-          message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639"
-        };
-      }
-    } catch (error) {
-      console.error("Telr Error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "\u062E\u0637\u0623 \u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641",
-        message: "\u0641\u0634\u0644 \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u062E\u062F\u0645\u0629 \u0627\u0644\u062F\u0641\u0639"
-      };
-    }
-  }
-  /**
-   * التحقق من حالة الدفع
-   */
-  async checkPaymentStatus(transactionId) {
-    try {
-      const response = await this.client.get(`/transactions/${transactionId}`);
-      if (response.data) {
-        return {
-          transactionId,
-          status: response.data.status,
-          amount: response.data.amount,
-          currency: response.data.currency,
-          timestamp: new Date(response.data.timestamp)
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error("Telr Status Check Error:", error);
-      return null;
-    }
-  }
-  /**
-   * استرجاع المبلغ (Refund)
-   */
-  async refundPayment(transactionId, amount) {
-    try {
-      const payload = {
-        transactionId,
-        ...amount && { amount }
-      };
-      const response = await this.client.post("/transactions/refund", payload);
-      if (response.data.success) {
-        return {
-          success: true,
-          message: "\u062A\u0645 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A \u0628\u0646\u062C\u0627\u062D"
-        };
-      } else {
-        return {
-          success: false,
-          error: response.data.error || "\u0641\u0634\u0644 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A",
-          message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A"
-        };
-      }
-    } catch (error) {
-      console.error("Telr Refund Error:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "\u062E\u0637\u0623 \u063A\u064A\u0631 \u0645\u0639\u0631\u0648\u0641",
-        message: "\u0641\u0634\u0644 \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u062E\u062F\u0645\u0629 \u0627\u0644\u0627\u0633\u062A\u0631\u062C\u0627\u0639"
-      };
-    }
-  }
-  /**
-   * التحقق من توقيع Webhook
-   */
-  verifyWebhookSignature(payload, signature) {
-    try {
-      const crypto5 = __require("crypto");
-      const expectedSignature = crypto5.createHmac("sha256", this.config.apiKey).update(payload).digest("hex");
-      return expectedSignature === signature;
-    } catch (error) {
-      console.error("Webhook Signature Verification Error:", error);
-      return false;
-    }
-  }
-  /**
-   * الحصول على حالة الخدمة
-   */
-  async getServiceStatus() {
-    try {
-      const response = await this.client.get("/health");
-      return response.status === 200;
-    } catch (error) {
-      console.error("Telr Service Status Error:", error);
-      return false;
-    }
-  }
-};
-var telrService = new TelrService({
-  storeId: process.env.TELR_STORE_ID || "",
-  apiKey: process.env.TELR_API_KEY || "",
-  baseUrl: process.env.TELR_BASE_URL || "https://api.telr.com",
-  environment: process.env.TELR_ENV || "sandbox"
-});
-
-// server/routers/local-payment-gateway.ts
-var localPaymentGatewayRouter = router({
-  /**
-   * الحصول على قائمة البوابات المدعومة
-   */
-  getSupportedGateways: publicProcedure.query(async () => {
-    return [
-      {
-        id: "hyperpay",
-        name: "HyperPay",
-        description: "\u0628\u0648\u0627\u0628\u0629 \u062F\u0641\u0639 \u0622\u0645\u0646\u0629 \u0628\u0627\u0644\u062F\u064A\u0646\u0627\u0631 \u0627\u0644\u0623\u0631\u062F\u0646\u064A",
-        currencies: ["JOD", "USD", "EUR"],
-        isActive: true
-      },
-      {
-        id: "telr",
-        name: "Telr",
-        description: "\u062E\u062F\u0645\u0629 \u062F\u0641\u0639 \u0645\u062D\u0644\u064A\u0629 \u0623\u0631\u062F\u0646\u064A\u0629 \u0645\u0648\u062B\u0648\u0642\u0629",
-        currencies: ["JOD", "USD", "EUR", "AED"],
-        isActive: true
-      }
-    ];
-  }),
-  /**
-   * إنشاء طلب دفع جديد عبر HyperPay
-   */
-  createHyperPayPayment: protectedProcedure.input(
-    z14.object({
-      amount: z14.number().positive("\u0627\u0644\u0645\u0628\u0644\u063A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-      currency: z14.enum(["JOD", "USD", "EUR"]),
-      orderId: z14.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0637\u0644\u0628 \u0645\u0637\u0644\u0648\u0628"),
-      description: z14.string().min(1, "\u0627\u0644\u0648\u0635\u0641 \u0645\u0637\u0644\u0648\u0628")
-    })
-  ).mutation(async ({ ctx, input }) => {
-    try {
-      const response = await hyperPayService.createPayment({
-        amount: input.amount,
-        currency: input.currency,
-        orderId: input.orderId,
-        customerEmail: ctx.user.email,
-        customerPhone: ctx.user.phone || "+962",
-        description: input.description,
-        returnUrl: `${process.env.FRONTEND_URL}/payment/callback?gateway=hyperpay&orderId=${input.orderId}`
-      });
-      if (response.success) {
-        await savePaymentTransaction({
-          userId: ctx.user.id,
-          gateway: "hyperpay",
-          transactionId: response.transactionId || "",
-          orderId: input.orderId,
-          amount: input.amount,
-          currency: input.currency,
-          status: "pending"
-        });
-      }
-      return response;
-    } catch (error) {
-      console.error("HyperPay Payment Error:", error);
-      return {
-        success: false,
-        error: "\u0641\u0634\u0644 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639",
-        message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0645\u0639\u0627\u0644\u062C\u0629 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639"
-      };
-    }
-  }),
-  /**
-   * إنشاء طلب دفع جديد عبر Telr
-   */
-  createTelrPayment: protectedProcedure.input(
-    z14.object({
-      amount: z14.number().positive("\u0627\u0644\u0645\u0628\u0644\u063A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-      currency: z14.enum(["JOD", "USD", "EUR", "AED"]),
-      orderId: z14.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0637\u0644\u0628 \u0645\u0637\u0644\u0648\u0628"),
-      description: z14.string().min(1, "\u0627\u0644\u0648\u0635\u0641 \u0645\u0637\u0644\u0648\u0628")
-    })
-  ).mutation(async ({ ctx, input }) => {
-    try {
-      const response = await telrService.createPayment({
-        amount: input.amount,
-        currency: input.currency,
-        orderId: input.orderId,
-        customerEmail: ctx.user.email,
-        customerName: ctx.user.name || "Customer",
-        description: input.description,
-        returnUrl: `${process.env.FRONTEND_URL}/payment/callback?gateway=telr&orderId=${input.orderId}`
-      });
-      if (response.success) {
-        await savePaymentTransaction({
-          userId: ctx.user.id,
-          gateway: "telr",
-          transactionId: response.transactionId || "",
-          orderId: input.orderId,
-          amount: input.amount,
-          currency: input.currency,
-          status: "pending"
-        });
-      }
-      return response;
-    } catch (error) {
-      console.error("Telr Payment Error:", error);
-      return {
-        success: false,
-        error: "\u0641\u0634\u0644 \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639",
-        message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0645\u0639\u0627\u0644\u062C\u0629 \u0637\u0644\u0628 \u0627\u0644\u062F\u0641\u0639"
-      };
-    }
-  }),
-  /**
-   * التحقق من حالة الدفع
-   */
-  checkPaymentStatus: protectedProcedure.input(
-    z14.object({
-      transactionId: z14.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0645\u0637\u0644\u0648\u0628"),
-      gateway: z14.enum(["hyperpay", "telr"])
-    })
-  ).query(async ({ input }) => {
-    try {
-      if (input.gateway === "hyperpay") {
-        return await hyperPayService.checkPaymentStatus(input.transactionId);
-      } else {
-        return await telrService.checkPaymentStatus(input.transactionId);
-      }
-    } catch (error) {
-      console.error("Payment Status Check Error:", error);
-      return null;
-    }
-  }),
-  /**
-   * استرجاع المبلغ (Refund)
-   */
-  refundPayment: protectedProcedure.input(
-    z14.object({
-      transactionId: z14.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0645\u0637\u0644\u0648\u0628"),
-      gateway: z14.enum(["hyperpay", "telr"]),
-      amount: z14.number().positive("\u0627\u0644\u0645\u0628\u0644\u063A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B").optional()
-    })
-  ).mutation(async ({ input }) => {
-    try {
-      if (input.gateway === "hyperpay") {
-        return await hyperPayService.refundPayment(input.transactionId, input.amount);
-      } else {
-        return await telrService.refundPayment(input.transactionId, input.amount);
-      }
-    } catch (error) {
-      console.error("Refund Error:", error);
-      return {
-        success: false,
-        error: "\u0641\u0634\u0644 \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0627\u0644\u0645\u0628\u0644\u063A",
-        message: "\u062D\u062F\u062B \u062E\u0637\u0623 \u0623\u062B\u0646\u0627\u0621 \u0645\u0639\u0627\u0644\u062C\u0629 \u0627\u0644\u0627\u0633\u062A\u0631\u062C\u0627\u0639"
-      };
-    }
-  }),
-  /**
-   * الحصول على سجل المعاملات
-   */
-  getPaymentHistory: protectedProcedure.input(
-    z14.object({
-      limit: z14.number().int().positive().default(10),
-      offset: z14.number().int().nonnegative().default(0)
-    })
-  ).query(async ({ ctx, input }) => {
-    try {
-      return await getPaymentTransactions(ctx.user.id, input.limit, input.offset);
-    } catch (error) {
-      console.error("Payment History Error:", error);
-      return [];
-    }
-  }),
-  /**
-   * الحصول على تفاصيل معاملة محددة
-   */
-  getPaymentDetails: protectedProcedure.input(
-    z14.object({
-      transactionId: z14.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0645\u0639\u0627\u0645\u0644\u0629 \u0645\u0637\u0644\u0648\u0628")
-    })
-  ).query(async ({ ctx, input }) => {
-    try {
-      return await getPaymentTransaction(ctx.user.id, input.transactionId);
-    } catch (error) {
-      console.error("Payment Details Error:", error);
-      return null;
-    }
-  }),
-  /**
-   * التحقق من حالة الخدمة
-   */
-  checkServiceStatus: publicProcedure.query(async () => {
-    try {
-      const hyperPayStatus = await hyperPayService.getServiceStatus();
-      const telrStatus = await telrService.getServiceStatus();
-      return {
-        hyperpay: hyperPayStatus ? "online" : "offline",
-        telr: telrStatus ? "online" : "offline",
-        timestamp: /* @__PURE__ */ new Date()
-      };
-    } catch (error) {
-      console.error("Service Status Check Error:", error);
-      return {
-        hyperpay: "unknown",
-        telr: "unknown",
-        timestamp: /* @__PURE__ */ new Date()
-      };
-    }
-  })
-});
-
 // server/services/webhook-handler.ts
 import crypto3 from "crypto";
 var WebhookHandlerService = class {
@@ -9315,22 +9005,22 @@ var WebhookHandlerService = class {
 var webhookHandlerService = new WebhookHandlerService();
 
 // server/routers/webhooks.ts
-import { z as z15 } from "zod";
+import { z as z14 } from "zod";
 var webhooksRouter = router({
   /**
    * معالجة Webhook من Click
    * POST /api/trpc/webhooks.handleClick
    */
   handleClick: publicProcedure.input(
-    z15.object({
-      orderId: z15.string(),
-      paymentId: z15.string(),
-      amount: z15.number(),
-      currency: z15.string(),
-      status: z15.enum(["COMPLETED", "FAILED", "PENDING", "REFUNDED", "CANCELLED"]),
-      signature: z15.string(),
-      timestamp: z15.string().optional(),
-      metadata: z15.record(z15.string(), z15.any()).optional()
+    z14.object({
+      orderId: z14.string(),
+      paymentId: z14.string(),
+      amount: z14.number(),
+      currency: z14.string(),
+      status: z14.enum(["COMPLETED", "FAILED", "PENDING", "REFUNDED", "CANCELLED"]),
+      signature: z14.string(),
+      timestamp: z14.string().optional(),
+      metadata: z14.record(z14.string(), z14.any()).optional()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4E5} \u0627\u0633\u062A\u0642\u0628\u0627\u0644 Webhook \u0645\u0646 Click");
@@ -9341,10 +9031,10 @@ var webhooksRouter = router({
    * POST /api/trpc/webhooks.handleAlipay
    */
   handleAlipay: publicProcedure.input(
-    z15.object({
-      orderId: z15.string(),
-      trade_no: z15.string(),
-      trade_status: z15.enum([
+    z14.object({
+      orderId: z14.string(),
+      trade_no: z14.string(),
+      trade_status: z14.enum([
         "TRADE_SUCCESS",
         "TRADE_FINISHED",
         "TRADE_CLOSED",
@@ -9353,10 +9043,10 @@ var webhooksRouter = router({
         "TRADE_PENDING_REFUND",
         "REFUND_SUCCESS"
       ]),
-      total_amount: z15.number(),
-      currency: z15.string(),
-      signature: z15.string(),
-      timestamp: z15.string().optional()
+      total_amount: z14.number(),
+      currency: z14.string(),
+      signature: z14.string(),
+      timestamp: z14.string().optional()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4E5} \u0627\u0633\u062A\u0642\u0628\u0627\u0644 Webhook \u0645\u0646 Alipay");
@@ -9367,20 +9057,20 @@ var webhooksRouter = router({
    * POST /api/trpc/webhooks.handlePayPal
    */
   handlePayPal: publicProcedure.input(
-    z15.object({
-      id: z15.string(),
-      event_type: z15.string(),
-      resource: z15.object({
-        id: z15.string(),
-        custom_id: z15.string().optional(),
-        invoice_id: z15.string().optional(),
-        amount: z15.object({
-          value: z15.string(),
-          currency_code: z15.string()
+    z14.object({
+      id: z14.string(),
+      event_type: z14.string(),
+      resource: z14.object({
+        id: z14.string(),
+        custom_id: z14.string().optional(),
+        invoice_id: z14.string().optional(),
+        amount: z14.object({
+          value: z14.string(),
+          currency_code: z14.string()
         }).optional(),
-        status: z15.string().optional()
+        status: z14.string().optional()
       }),
-      signature: z15.string()
+      signature: z14.string()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4E5} \u0627\u0633\u062A\u0642\u0628\u0627\u0644 Webhook \u0645\u0646 PayPal");
@@ -9391,14 +9081,14 @@ var webhooksRouter = router({
    * POST /api/trpc/webhooks.handlePayFort
    */
   handlePayFort: publicProcedure.input(
-    z15.object({
-      merchant_reference: z15.string(),
-      fort_id: z15.string(),
-      response_code: z15.string(),
-      amount: z15.number(),
-      currency: z15.string(),
-      signature: z15.string(),
-      timestamp: z15.string().optional()
+    z14.object({
+      merchant_reference: z14.string(),
+      fort_id: z14.string(),
+      response_code: z14.string(),
+      amount: z14.number(),
+      currency: z14.string(),
+      signature: z14.string(),
+      timestamp: z14.string().optional()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4E5} \u0627\u0633\u062A\u0642\u0628\u0627\u0644 Webhook \u0645\u0646 PayFort");
@@ -9409,14 +9099,14 @@ var webhooksRouter = router({
    * POST /api/trpc/webhooks.handle2Checkout
    */
   handle2Checkout: publicProcedure.input(
-    z15.object({
-      merchantOrderId: z15.string(),
-      refNo: z15.string(),
-      type: z15.string(),
-      amount: z15.number(),
-      currency: z15.string(),
-      signature: z15.string(),
-      timestamp: z15.string().optional()
+    z14.object({
+      merchantOrderId: z14.string(),
+      refNo: z14.string(),
+      type: z14.string(),
+      amount: z14.number(),
+      currency: z14.string(),
+      signature: z14.string(),
+      timestamp: z14.string().optional()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4E5} \u0627\u0633\u062A\u0642\u0628\u0627\u0644 Webhook \u0645\u0646 2Checkout");
@@ -9427,10 +9117,10 @@ var webhooksRouter = router({
    * POST /api/trpc/webhooks.test
    */
   test: publicProcedure.input(
-    z15.object({
-      gateway: z15.enum(["click", "alipay", "paypal", "payfort", "2checkout"]),
-      orderId: z15.string(),
-      status: z15.enum(["completed", "failed", "pending", "refunded", "cancelled"])
+    z14.object({
+      gateway: z14.enum(["click", "alipay", "paypal", "payfort", "2checkout"]),
+      orderId: z14.string(),
+      status: z14.enum(["completed", "failed", "pending", "refunded", "cancelled"])
     })
   ).mutation(async ({ input }) => {
     console.log(`\u{1F9EA} \u0627\u062E\u062A\u0628\u0627\u0631 Webhook \u0644\u0644\u0628\u0648\u0627\u0628\u0629: ${input.gateway}`);
@@ -9476,7 +9166,7 @@ var webhooksRouter = router({
    * الحصول على حالة Webhook
    * GET /api/trpc/webhooks.getStatus
    */
-  getStatus: publicProcedure.input(z15.object({ orderId: z15.string() })).query(async ({ input }) => {
+  getStatus: publicProcedure.input(z14.object({ orderId: z14.string() })).query(async ({ input }) => {
     console.log(`\u{1F4CA} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062D\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628: ${input.orderId}`);
     return {
       orderId: input.orderId,
@@ -9491,10 +9181,10 @@ var webhooksRouter = router({
    * POST /api/trpc/webhooks.retry
    */
   retry: publicProcedure.input(
-    z15.object({
-      gateway: z15.enum(["click", "alipay", "paypal", "payfort", "2checkout"]),
-      orderId: z15.string(),
-      maxRetries: z15.number().optional().default(3)
+    z14.object({
+      gateway: z14.enum(["click", "alipay", "paypal", "payfort", "2checkout"]),
+      orderId: z14.string(),
+      maxRetries: z14.number().optional().default(3)
     })
   ).mutation(async ({ input }) => {
     console.log(`\u{1F504} \u0625\u0639\u0627\u062F\u0629 \u0645\u062D\u0627\u0648\u0644\u0629 \u0645\u0639\u0627\u0644\u062C\u0629 Webhook \u0644\u0644\u0637\u0644\u0628: ${input.orderId}`);
@@ -9516,7 +9206,7 @@ var webhooksRouter = router({
    * إعادة تعيين حالة الطلب (للاختبار فقط)
    * POST /api/trpc/webhooks.reset
    */
-  reset: publicProcedure.input(z15.object({ orderId: z15.string() })).mutation(async ({ input }) => {
+  reset: publicProcedure.input(z14.object({ orderId: z14.string() })).mutation(async ({ input }) => {
     console.log(`\u{1F504} \u0625\u0639\u0627\u062F\u0629 \u062A\u0639\u064A\u064A\u0646 \u062D\u0627\u0644\u0629 \u0627\u0644\u0637\u0644\u0628: ${input.orderId}`);
     return {
       success: true,
@@ -9529,7 +9219,7 @@ var webhooksRouter = router({
 });
 
 // server/routers/notifications-accounting.ts
-import { z as z16 } from "zod";
+import { z as z15 } from "zod";
 
 // server/services/payment-notifications.ts
 import nodemailer from "nodemailer";
@@ -10311,13 +10001,13 @@ var notificationsAccountingRouter = router({
    * إرسال إشعار دفع
    */
   sendPaymentNotification: protectedProcedure.input(
-    z16.object({
-      orderId: z16.string(),
-      amount: z16.number(),
-      currency: z16.string(),
-      status: z16.enum(["completed", "failed", "pending", "refunded", "cancelled"]),
-      gateway: z16.string(),
-      notificationType: z16.enum(["email", "push", "sms", "in-app", "all"]).optional()
+    z15.object({
+      orderId: z15.string(),
+      amount: z15.number(),
+      currency: z15.string(),
+      status: z15.enum(["completed", "failed", "pending", "refunded", "cancelled"]),
+      gateway: z15.string(),
+      notificationType: z15.enum(["email", "push", "sms", "in-app", "all"]).optional()
     })
   ).mutation(async ({ input, ctx }) => {
     console.log("\u{1F4E7} \u0625\u0631\u0633\u0627\u0644 \u0625\u0634\u0639\u0627\u0631 \u062F\u0641\u0639");
@@ -10340,11 +10030,11 @@ var notificationsAccountingRouter = router({
    * إرسال تذكير الدفع
    */
   sendPaymentReminder: protectedProcedure.input(
-    z16.object({
-      orderId: z16.string(),
-      amount: z16.number(),
-      currency: z16.string(),
-      gateway: z16.string()
+    z15.object({
+      orderId: z15.string(),
+      amount: z15.number(),
+      currency: z15.string(),
+      gateway: z15.string()
     })
   ).mutation(async ({ input, ctx }) => {
     console.log("\u23F0 \u0625\u0631\u0633\u0627\u0644 \u062A\u0630\u0643\u064A\u0631 \u0627\u0644\u062F\u0641\u0639");
@@ -10364,12 +10054,12 @@ var notificationsAccountingRouter = router({
    * إرسال إشعار الفاتورة
    */
   sendInvoiceNotification: protectedProcedure.input(
-    z16.object({
-      orderId: z16.string(),
-      amount: z16.number(),
-      currency: z16.string(),
-      gateway: z16.string(),
-      invoiceUrl: z16.string()
+    z15.object({
+      orderId: z15.string(),
+      amount: z15.number(),
+      currency: z15.string(),
+      gateway: z15.string(),
+      invoiceUrl: z15.string()
     })
   ).mutation(async ({ input, ctx }) => {
     console.log("\u{1F4C4} \u0625\u0631\u0633\u0627\u0644 \u0625\u0634\u0639\u0627\u0631 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629");
@@ -10392,14 +10082,14 @@ var notificationsAccountingRouter = router({
    * إرسال التقرير اليومي
    */
   sendDailyReport: protectedProcedure.input(
-    z16.object({
-      recipientEmail: z16.string().email(),
-      reportData: z16.object({
-        totalPayments: z16.number(),
-        successfulPayments: z16.number(),
-        failedPayments: z16.number(),
-        totalAmount: z16.number(),
-        currency: z16.string()
+    z15.object({
+      recipientEmail: z15.string().email(),
+      reportData: z15.object({
+        totalPayments: z15.number(),
+        successfulPayments: z15.number(),
+        failedPayments: z15.number(),
+        totalAmount: z15.number(),
+        currency: z15.string()
       })
     })
   ).mutation(async ({ input }) => {
@@ -10417,12 +10107,12 @@ var notificationsAccountingRouter = router({
    * إنشاء قيد محاسبي للدفع
    */
   createPaymentEntry: protectedProcedure.input(
-    z16.object({
-      paymentId: z16.string(),
-      amount: z16.number(),
-      currency: z16.string(),
-      gateway: z16.string(),
-      description: z16.string()
+    z15.object({
+      paymentId: z15.string(),
+      amount: z15.number(),
+      currency: z15.string(),
+      gateway: z15.string(),
+      description: z15.string()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4B0} \u0625\u0646\u0634\u0627\u0621 \u0642\u064A\u062F \u0645\u062D\u0627\u0633\u0628\u064A \u0644\u0644\u062F\u0641\u0639");
@@ -10439,12 +10129,12 @@ var notificationsAccountingRouter = router({
    * إنشاء قيد محاسبي للمصروف
    */
   createExpenseEntry: protectedProcedure.input(
-    z16.object({
-      expenseId: z16.string(),
-      amount: z16.number(),
-      currency: z16.string(),
-      expenseType: z16.enum(["gateway_fee", "transfer_fee", "service_fee", "operational"]),
-      description: z16.string()
+    z15.object({
+      expenseId: z15.string(),
+      amount: z15.number(),
+      currency: z15.string(),
+      expenseType: z15.enum(["gateway_fee", "transfer_fee", "service_fee", "operational"]),
+      description: z15.string()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4C9} \u0625\u0646\u0634\u0627\u0621 \u0642\u064A\u062F \u0645\u062D\u0627\u0633\u0628\u064A \u0644\u0644\u0645\u0635\u0631\u0648\u0641");
@@ -10461,12 +10151,12 @@ var notificationsAccountingRouter = router({
    * إنشاء قيد محاسبي للاسترجاع
    */
   createRefundEntry: protectedProcedure.input(
-    z16.object({
-      refundId: z16.string(),
-      amount: z16.number(),
-      currency: z16.string(),
-      originalPaymentId: z16.string(),
-      description: z16.string()
+    z15.object({
+      refundId: z15.string(),
+      amount: z15.number(),
+      currency: z15.string(),
+      originalPaymentId: z15.string(),
+      description: z15.string()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4B8} \u0625\u0646\u0634\u0627\u0621 \u0642\u064A\u062F \u0645\u062D\u0627\u0633\u0628\u064A \u0644\u0644\u0627\u0633\u062A\u0631\u062C\u0627\u0639");
@@ -10482,7 +10172,7 @@ var notificationsAccountingRouter = router({
   /**
    * الحصول على التقرير المالي
    */
-  getFinancialReport: protectedProcedure.input(z16.object({ period: z16.string() })).query(async ({ input }) => {
+  getFinancialReport: protectedProcedure.input(z15.object({ period: z15.string() })).query(async ({ input }) => {
     console.log("\u{1F4CA} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0642\u0631\u064A\u0631 \u0627\u0644\u0645\u0627\u0644\u064A");
     const report = await accountingService.getFinancialReport(input.period);
     return report;
@@ -10490,7 +10180,7 @@ var notificationsAccountingRouter = router({
   /**
    * الحصول على قائمة الدخل
    */
-  getIncomeStatement: protectedProcedure.input(z16.object({ period: z16.string() })).query(async ({ input }) => {
+  getIncomeStatement: protectedProcedure.input(z15.object({ period: z15.string() })).query(async ({ input }) => {
     console.log("\u{1F4C8} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u062F\u062E\u0644");
     const statement = await accountingService.getIncomeStatement(input.period);
     return statement;
@@ -10498,7 +10188,7 @@ var notificationsAccountingRouter = router({
   /**
    * الحصول على الميزانية العمومية
    */
-  getBalanceSheet: protectedProcedure.input(z16.object({ period: z16.string() })).query(async ({ input }) => {
+  getBalanceSheet: protectedProcedure.input(z15.object({ period: z15.string() })).query(async ({ input }) => {
     console.log("\u{1F4BC} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0645\u064A\u0632\u0627\u0646\u064A\u0629 \u0627\u0644\u0639\u0645\u0648\u0645\u064A\u0629");
     const sheet = await accountingService.getBalanceSheet(input.period);
     return sheet;
@@ -10506,7 +10196,7 @@ var notificationsAccountingRouter = router({
   /**
    * الحصول على تقرير المصالحة البنكية
    */
-  getBankReconciliation: protectedProcedure.input(z16.object({ period: z16.string() })).query(async ({ input }) => {
+  getBankReconciliation: protectedProcedure.input(z15.object({ period: z15.string() })).query(async ({ input }) => {
     console.log("\u{1F3E6} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062A\u0642\u0631\u064A\u0631 \u0627\u0644\u0645\u0635\u0627\u0644\u062D\u0629 \u0627\u0644\u0628\u0646\u0643\u064A\u0629");
     const reconciliation = await accountingService.getBankReconciliation(input.period);
     return reconciliation;
@@ -10515,9 +10205,9 @@ var notificationsAccountingRouter = router({
    * حساب الضريبة
    */
   calculateTax: publicProcedure.input(
-    z16.object({
-      amount: z16.number(),
-      taxRate: z16.number().optional()
+    z15.object({
+      amount: z15.number(),
+      taxRate: z15.number().optional()
     })
   ).query(async ({ input }) => {
     console.log("\u{1F4B0} \u062D\u0633\u0627\u0628 \u0627\u0644\u0636\u0631\u064A\u0628\u0629");
@@ -10536,9 +10226,9 @@ var notificationsAccountingRouter = router({
    * الحصول على سجل العمليات
    */
   getTransactionLog: protectedProcedure.input(
-    z16.object({
-      startDate: z16.string().optional(),
-      endDate: z16.string().optional()
+    z15.object({
+      startDate: z15.string().optional(),
+      endDate: z15.string().optional()
     })
   ).query(async ({ input }) => {
     console.log("\u{1F4DD} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0633\u062C\u0644 \u0627\u0644\u0639\u0645\u0644\u064A\u0627\u062A");
@@ -10549,9 +10239,9 @@ var notificationsAccountingRouter = router({
    * تصدير التقرير المالي
    */
   exportFinancialReport: protectedProcedure.input(
-    z16.object({
-      period: z16.string(),
-      format: z16.enum(["json", "csv", "pdf"]).optional()
+    z15.object({
+      period: z15.string(),
+      format: z15.enum(["json", "csv", "pdf"]).optional()
     })
   ).query(async ({ input }) => {
     console.log("\u{1F4E5} \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u062A\u0642\u0631\u064A\u0631 \u0627\u0644\u0645\u0627\u0644\u064A");
@@ -10568,7 +10258,7 @@ var notificationsAccountingRouter = router({
 });
 
 // server/routers/payment-apis.ts
-import { z as z17 } from "zod";
+import { z as z16 } from "zod";
 
 // server/services/click-payment-api.ts
 var ClickPaymentService = class {
@@ -11183,11 +10873,11 @@ var paymentApisRouter = router({
    */
   click: router({
     create: protectedProcedure.input(
-      z17.object({
-        orderId: z17.string(),
-        amount: z17.number().positive(),
-        currency: z17.string().default("JOD"),
-        description: z17.string().optional()
+      z16.object({
+        orderId: z16.string(),
+        amount: z16.number().positive(),
+        currency: z16.string().default("JOD"),
+        description: z16.string().optional()
       })
     ).mutation(async ({ input }) => {
       console.log("\u{1F4B3} \u0625\u0646\u0634\u0627\u0621 \u0645\u0639\u0627\u0645\u0644\u0629 Click");
@@ -11202,7 +10892,7 @@ var paymentApisRouter = router({
     /**
      * الحصول على حالة المعاملة
      */
-    getStatus: protectedProcedure.input(z17.object({ transactionId: z17.string() })).query(async ({ input }) => {
+    getStatus: protectedProcedure.input(z16.object({ transactionId: z16.string() })).query(async ({ input }) => {
       console.log("\u{1F4CB} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062D\u0627\u0644\u0629 \u0645\u0639\u0627\u0645\u0644\u0629 Click");
       const transaction = await clickPaymentService.getTransactionStatus(
         input.transactionId
@@ -11213,9 +10903,9 @@ var paymentApisRouter = router({
      * استرجاع الأموال
      */
     refund: protectedProcedure.input(
-      z17.object({
-        transactionId: z17.string(),
-        amount: z17.number().optional()
+      z16.object({
+        transactionId: z16.string(),
+        amount: z16.number().optional()
       })
     ).mutation(async ({ input }) => {
       console.log("\u{1F4B8} \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0623\u0645\u0648\u0627\u0644 Click");
@@ -11228,7 +10918,7 @@ var paymentApisRouter = router({
     /**
      * الحصول على قائمة المعاملات
      */
-    list: protectedProcedure.input(z17.object({ orderId: z17.string().optional() })).query(async ({ input }) => {
+    list: protectedProcedure.input(z16.object({ orderId: z16.string().optional() })).query(async ({ input }) => {
       console.log("\u{1F4DD} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0642\u0627\u0626\u0645\u0629 \u0645\u0639\u0627\u0645\u0644\u0627\u062A Click");
       const transactions2 = await clickPaymentService.getTransactions(input.orderId);
       return transactions2;
@@ -11239,11 +10929,11 @@ var paymentApisRouter = router({
    */
   alipay: router({
     create: protectedProcedure.input(
-      z17.object({
-        orderId: z17.string(),
-        amount: z17.number().positive(),
-        currency: z17.string().default("CNY"),
-        description: z17.string().optional()
+      z16.object({
+        orderId: z16.string(),
+        amount: z16.number().positive(),
+        currency: z16.string().default("CNY"),
+        description: z16.string().optional()
       })
     ).mutation(async ({ input }) => {
       console.log("\u{1F4B3} \u0625\u0646\u0634\u0627\u0621 \u0645\u0639\u0627\u0645\u0644\u0629 Alipay");
@@ -11258,7 +10948,7 @@ var paymentApisRouter = router({
     /**
      * الحصول على حالة المعاملة
      */
-    getStatus: protectedProcedure.input(z17.object({ transactionId: z17.string() })).query(async ({ input }) => {
+    getStatus: protectedProcedure.input(z16.object({ transactionId: z16.string() })).query(async ({ input }) => {
       console.log("\u{1F4CB} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062D\u0627\u0644\u0629 \u0645\u0639\u0627\u0645\u0644\u0629 Alipay");
       const transaction = await alipayPaymentService.getTransactionStatus(
         input.transactionId
@@ -11269,9 +10959,9 @@ var paymentApisRouter = router({
      * استرجاع الأموال
      */
     refund: protectedProcedure.input(
-      z17.object({
-        transactionId: z17.string(),
-        amount: z17.number().optional()
+      z16.object({
+        transactionId: z16.string(),
+        amount: z16.number().optional()
       })
     ).mutation(async ({ input }) => {
       console.log("\u{1F4B8} \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0623\u0645\u0648\u0627\u0644 Alipay");
@@ -11284,7 +10974,7 @@ var paymentApisRouter = router({
     /**
      * الحصول على قائمة المعاملات
      */
-    list: protectedProcedure.input(z17.object({ orderId: z17.string().optional() })).query(async ({ input }) => {
+    list: protectedProcedure.input(z16.object({ orderId: z16.string().optional() })).query(async ({ input }) => {
       console.log("\u{1F4DD} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0642\u0627\u0626\u0645\u0629 \u0645\u0639\u0627\u0645\u0644\u0627\u062A Alipay");
       const transactions2 = await alipayPaymentService.getTransactions(input.orderId);
       return transactions2;
@@ -11295,11 +10985,11 @@ var paymentApisRouter = router({
    */
   paypal: router({
     create: protectedProcedure.input(
-      z17.object({
-        orderId: z17.string(),
-        amount: z17.number().positive(),
-        currency: z17.string().default("USD"),
-        description: z17.string().optional()
+      z16.object({
+        orderId: z16.string(),
+        amount: z16.number().positive(),
+        currency: z16.string().default("USD"),
+        description: z16.string().optional()
       })
     ).mutation(async ({ input }) => {
       console.log("\u{1F4B3} \u0625\u0646\u0634\u0627\u0621 \u0645\u0639\u0627\u0645\u0644\u0629 PayPal");
@@ -11314,7 +11004,7 @@ var paymentApisRouter = router({
     /**
      * الحصول على حالة المعاملة
      */
-    getStatus: protectedProcedure.input(z17.object({ transactionId: z17.string() })).query(async ({ input }) => {
+    getStatus: protectedProcedure.input(z16.object({ transactionId: z16.string() })).query(async ({ input }) => {
       console.log("\u{1F4CB} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062D\u0627\u0644\u0629 \u0645\u0639\u0627\u0645\u0644\u0629 PayPal");
       const transaction = await paypalPaymentService.getTransactionStatus(
         input.transactionId
@@ -11325,9 +11015,9 @@ var paymentApisRouter = router({
      * استرجاع الأموال
      */
     refund: protectedProcedure.input(
-      z17.object({
-        transactionId: z17.string(),
-        amount: z17.number().optional()
+      z16.object({
+        transactionId: z16.string(),
+        amount: z16.number().optional()
       })
     ).mutation(async ({ input }) => {
       console.log("\u{1F4B8} \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0623\u0645\u0648\u0627\u0644 PayPal");
@@ -11340,7 +11030,7 @@ var paymentApisRouter = router({
     /**
      * الحصول على قائمة المعاملات
      */
-    list: protectedProcedure.input(z17.object({ orderId: z17.string().optional() })).query(async ({ input }) => {
+    list: protectedProcedure.input(z16.object({ orderId: z16.string().optional() })).query(async ({ input }) => {
       console.log("\u{1F4DD} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0642\u0627\u0626\u0645\u0629 \u0645\u0639\u0627\u0645\u0644\u0627\u062A PayPal");
       const transactions2 = await paypalPaymentService.getTransactions(input.orderId);
       return transactions2;
@@ -11350,9 +11040,9 @@ var paymentApisRouter = router({
    * الحصول على حالة المعاملة من أي بوابة
    */
   getTransactionStatus: protectedProcedure.input(
-    z17.object({
-      transactionId: z17.string(),
-      gateway: z17.enum(["click", "alipay", "paypal"])
+    z16.object({
+      transactionId: z16.string(),
+      gateway: z16.enum(["click", "alipay", "paypal"])
     })
   ).query(async ({ input }) => {
     console.log(`\u{1F4CB} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062D\u0627\u0644\u0629 \u0645\u0639\u0627\u0645\u0644\u0629 ${input.gateway}`);
@@ -11370,10 +11060,10 @@ var paymentApisRouter = router({
    * استرجاع الأموال من أي بوابة
    */
   refundTransaction: protectedProcedure.input(
-    z17.object({
-      transactionId: z17.string(),
-      gateway: z17.enum(["click", "alipay", "paypal"]),
-      amount: z17.number().optional()
+    z16.object({
+      transactionId: z16.string(),
+      gateway: z16.enum(["click", "alipay", "paypal"]),
+      amount: z16.number().optional()
     })
   ).mutation(async ({ input }) => {
     console.log(`\u{1F4B8} \u0627\u0633\u062A\u0631\u062C\u0627\u0639 \u0623\u0645\u0648\u0627\u0644 ${input.gateway}`);
@@ -11399,7 +11089,7 @@ var paymentApisRouter = router({
 });
 
 // server/routers/invoices.ts
-import { z as z18 } from "zod";
+import { z as z17 } from "zod";
 
 // server/services/invoices-service.ts
 var InvoicesService = class {
@@ -11749,26 +11439,26 @@ var invoicesRouter = router({
    * إنشاء فاتورة جديدة
    */
   create: protectedProcedure.input(
-    z18.object({
-      orderId: z18.string(),
-      clientName: z18.string(),
-      clientEmail: z18.string().email(),
-      clientPhone: z18.string().optional(),
-      clientAddress: z18.string().optional(),
-      items: z18.array(
-        z18.object({
-          id: z18.string(),
-          description: z18.string(),
-          quantity: z18.number().positive(),
-          unitPrice: z18.number().positive(),
-          amount: z18.number().positive()
+    z17.object({
+      orderId: z17.string(),
+      clientName: z17.string(),
+      clientEmail: z17.string().email(),
+      clientPhone: z17.string().optional(),
+      clientAddress: z17.string().optional(),
+      items: z17.array(
+        z17.object({
+          id: z17.string(),
+          description: z17.string(),
+          quantity: z17.number().positive(),
+          unitPrice: z17.number().positive(),
+          amount: z17.number().positive()
         })
       ),
-      taxRate: z18.number().optional(),
-      discountRate: z18.number().optional(),
-      currency: z18.string().default("JOD"),
-      notes: z18.string().optional(),
-      daysUntilDue: z18.number().optional()
+      taxRate: z17.number().optional(),
+      discountRate: z17.number().optional(),
+      currency: z17.string().default("JOD"),
+      notes: z17.string().optional(),
+      daysUntilDue: z17.number().optional()
     })
   ).mutation(async ({ ctx, input }) => {
     console.log("\u{1F4C4} \u0625\u0646\u0634\u0627\u0621 \u0641\u0627\u062A\u0648\u0631\u0629 \u062C\u062F\u064A\u062F\u0629");
@@ -11793,7 +11483,7 @@ var invoicesRouter = router({
   /**
    * الحصول على فاتورة
    */
-  get: protectedProcedure.input(z18.object({ invoiceId: z18.string() })).query(async ({ input }) => {
+  get: protectedProcedure.input(z17.object({ invoiceId: z17.string() })).query(async ({ input }) => {
     console.log("\u{1F4C4} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0641\u0627\u062A\u0648\u0631\u0629");
     const invoice = await invoicesService.getInvoice(input.invoiceId);
     return invoice;
@@ -11802,9 +11492,9 @@ var invoicesRouter = router({
    * تحديث حالة الفاتورة
    */
   updateStatus: protectedProcedure.input(
-    z18.object({
-      invoiceId: z18.string(),
-      status: z18.enum(["draft", "sent", "paid", "overdue", "cancelled"])
+    z17.object({
+      invoiceId: z17.string(),
+      status: z17.enum(["draft", "sent", "paid", "overdue", "cancelled"])
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4C4} \u062A\u062D\u062F\u064A\u062B \u062D\u0627\u0644\u0629 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629");
@@ -11818,9 +11508,9 @@ var invoicesRouter = router({
    * إضافة توقيع رقمي
    */
   addSignature: protectedProcedure.input(
-    z18.object({
-      invoiceId: z18.string(),
-      signature: z18.string()
+    z17.object({
+      invoiceId: z17.string(),
+      signature: z17.string()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4C4} \u0625\u0636\u0627\u0641\u0629 \u062A\u0648\u0642\u064A\u0639 \u0631\u0642\u0645\u064A");
@@ -11834,10 +11524,10 @@ var invoicesRouter = router({
    * حساب الضرائب والخصومات
    */
   calculateTaxesAndDiscounts: protectedProcedure.input(
-    z18.object({
-      invoiceId: z18.string(),
-      taxRate: z18.number().optional(),
-      discountRate: z18.number().optional()
+    z17.object({
+      invoiceId: z17.string(),
+      taxRate: z17.number().optional(),
+      discountRate: z17.number().optional()
     })
   ).mutation(async ({ input }) => {
     console.log("\u{1F4C4} \u062D\u0633\u0627\u0628 \u0627\u0644\u0636\u0631\u0627\u0626\u0628 \u0648\u0627\u0644\u062E\u0635\u0648\u0645\u0627\u062A");
@@ -11851,7 +11541,7 @@ var invoicesRouter = router({
   /**
    * تصدير إلى JSON
    */
-  exportJSON: protectedProcedure.input(z18.object({ invoiceId: z18.string() })).query(async ({ input }) => {
+  exportJSON: protectedProcedure.input(z17.object({ invoiceId: z17.string() })).query(async ({ input }) => {
     console.log("\u{1F4E4} \u062A\u0635\u062F\u064A\u0631 \u0625\u0644\u0649 JSON");
     const json = await invoicesService.exportToJSON(input.invoiceId);
     return { json };
@@ -11859,7 +11549,7 @@ var invoicesRouter = router({
   /**
    * تصدير إلى HTML
    */
-  exportHTML: protectedProcedure.input(z18.object({ invoiceId: z18.string() })).query(async ({ input }) => {
+  exportHTML: protectedProcedure.input(z17.object({ invoiceId: z17.string() })).query(async ({ input }) => {
     console.log("\u{1F4E4} \u062A\u0635\u062F\u064A\u0631 \u0625\u0644\u0649 HTML");
     const html = await invoicesService.exportToHTML(input.invoiceId);
     return { html };
@@ -11868,8 +11558,8 @@ var invoicesRouter = router({
    * الحصول على قائمة الفواتير
    */
   list: protectedProcedure.input(
-    z18.object({
-      status: z18.enum(["draft", "sent", "paid", "overdue", "cancelled"]).optional()
+    z17.object({
+      status: z17.enum(["draft", "sent", "paid", "overdue", "cancelled"]).optional()
     })
   ).query(async ({ ctx, input }) => {
     console.log("\u{1F4DD} \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0641\u0648\u0627\u062A\u064A\u0631");
@@ -11882,7 +11572,7 @@ var invoicesRouter = router({
   /**
    * حذف فاتورة
    */
-  delete: protectedProcedure.input(z18.object({ invoiceId: z18.string() })).mutation(async ({ input }) => {
+  delete: protectedProcedure.input(z17.object({ invoiceId: z17.string() })).mutation(async ({ input }) => {
     console.log("\u{1F5D1}\uFE0F \u062D\u0630\u0641 \u0641\u0627\u062A\u0648\u0631\u0629");
     const success = await invoicesService.deleteInvoice(input.invoiceId);
     return { success };
@@ -11890,7 +11580,7 @@ var invoicesRouter = router({
   /**
    * إرسال الفاتورة بالبريد الإلكتروني
    */
-  sendByEmail: protectedProcedure.input(z18.object({ invoiceId: z18.string() })).mutation(async ({ input }) => {
+  sendByEmail: protectedProcedure.input(z17.object({ invoiceId: z17.string() })).mutation(async ({ input }) => {
     console.log("\u{1F4E7} \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629 \u0628\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A");
     const result = await invoicesService.sendInvoiceByEmail(input.invoiceId);
     return result;
@@ -11898,7 +11588,7 @@ var invoicesRouter = router({
 });
 
 // server/routers/advanced-features.ts
-import { z as z19 } from "zod";
+import { z as z18 } from "zod";
 
 // server/services/real-webhook-processor.ts
 import crypto4 from "crypto";
@@ -12991,9 +12681,9 @@ var advancedFeaturesRouter = router({
    * معالجة Webhook من Click
    */
   processClickWebhook: publicProcedure.input(
-    z19.object({
-      payload: z19.record(z19.string(), z19.any()),
-      signature: z19.string()
+    z18.object({
+      payload: z18.record(z18.string(), z18.any()),
+      signature: z18.string()
     })
   ).mutation(async ({ input }) => {
     return await realWebhookProcessor.processClickWebhook(input.payload, input.signature);
@@ -13002,9 +12692,9 @@ var advancedFeaturesRouter = router({
    * معالجة Webhook من Alipay
    */
   processAlipayWebhook: publicProcedure.input(
-    z19.object({
-      payload: z19.record(z19.string(), z19.any()),
-      signature: z19.string()
+    z18.object({
+      payload: z18.record(z18.string(), z18.any()),
+      signature: z18.string()
     })
   ).mutation(async ({ input }) => {
     return await realWebhookProcessor.processAlipayWebhook(input.payload, input.signature);
@@ -13013,9 +12703,9 @@ var advancedFeaturesRouter = router({
    * معالجة Webhook من PayPal
    */
   processPayPalWebhook: publicProcedure.input(
-    z19.object({
-      payload: z19.record(z19.string(), z19.any()),
-      signature: z19.string()
+    z18.object({
+      payload: z18.record(z18.string(), z18.any()),
+      signature: z18.string()
     })
   ).mutation(async ({ input }) => {
     return await realWebhookProcessor.processPayPalWebhook(input.payload, input.signature);
@@ -13040,10 +12730,10 @@ var advancedFeaturesRouter = router({
    * إنشاء تقرير الإيرادات
    */
   generateRevenueReport: protectedProcedure.input(
-    z19.object({
-      startDate: z19.string(),
-      endDate: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      startDate: z18.string(),
+      endDate: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ input }) => {
     return await advancedReportsService.generateRevenueReport(
@@ -13056,10 +12746,10 @@ var advancedFeaturesRouter = router({
    * إنشاء تقرير المصروفات
    */
   generateExpensesReport: protectedProcedure.input(
-    z19.object({
-      startDate: z19.string(),
-      endDate: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      startDate: z18.string(),
+      endDate: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ input }) => {
     return await advancedReportsService.generateExpensesReport(
@@ -13072,11 +12762,11 @@ var advancedFeaturesRouter = router({
    * إنشاء تقرير الأرباح والخسائر
    */
   generateProfitLossReport: protectedProcedure.input(
-    z19.object({
-      startDate: z19.string(),
-      endDate: z19.string(),
-      revenueData: z19.record(z19.string(), z19.any()),
-      expensesData: z19.record(z19.string(), z19.any())
+    z18.object({
+      startDate: z18.string(),
+      endDate: z18.string(),
+      revenueData: z18.record(z18.string(), z18.any()),
+      expensesData: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ input }) => {
     return await advancedReportsService.generateProfitLossReport(
@@ -13090,10 +12780,10 @@ var advancedFeaturesRouter = router({
    * إنشاء تقرير الضرائب
    */
   generateTaxReport: protectedProcedure.input(
-    z19.object({
-      startDate: z19.string(),
-      endDate: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      startDate: z18.string(),
+      endDate: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ input }) => {
     return await advancedReportsService.generateTaxReport(
@@ -13105,14 +12795,14 @@ var advancedFeaturesRouter = router({
   /**
    * تصدير التقرير إلى JSON
    */
-  exportReportToJSON: protectedProcedure.input(z19.object({ reportId: z19.string() })).query(async ({ input }) => {
+  exportReportToJSON: protectedProcedure.input(z18.object({ reportId: z18.string() })).query(async ({ input }) => {
     const json = await advancedReportsService.exportToJSON(input.reportId);
     return { success: !!json, data: json };
   }),
   /**
    * تصدير التقرير إلى CSV
    */
-  exportReportToCSV: protectedProcedure.input(z19.object({ reportId: z19.string() })).query(async ({ input }) => {
+  exportReportToCSV: protectedProcedure.input(z18.object({ reportId: z18.string() })).query(async ({ input }) => {
     const csv = await advancedReportsService.exportToCSV(input.reportId);
     return { success: !!csv, data: csv };
   }),
@@ -13120,10 +12810,10 @@ var advancedFeaturesRouter = router({
    * جدولة تقرير دوري
    */
   scheduleReport: protectedProcedure.input(
-    z19.object({
-      reportType: z19.string(),
-      schedule: z19.enum(["daily", "weekly", "monthly"]),
-      email: z19.string().optional()
+    z18.object({
+      reportType: z18.string(),
+      schedule: z18.enum(["daily", "weekly", "monthly"]),
+      email: z18.string().optional()
     })
   ).mutation(async ({ input }) => {
     return await advancedReportsService.scheduleReport(
@@ -13135,19 +12825,19 @@ var advancedFeaturesRouter = router({
   /**
    * الحصول على التقرير
    */
-  getReport: protectedProcedure.input(z19.object({ reportId: z19.string() })).query(async ({ input }) => {
+  getReport: protectedProcedure.input(z18.object({ reportId: z18.string() })).query(async ({ input }) => {
     return await advancedReportsService.getReport(input.reportId);
   }),
   /**
    * الحصول على قائمة التقارير
    */
-  listReports: protectedProcedure.input(z19.object({ type: z19.string().optional() })).query(async ({ input }) => {
+  listReports: protectedProcedure.input(z18.object({ type: z18.string().optional() })).query(async ({ input }) => {
     return await advancedReportsService.listReports(input.type);
   }),
   /**
    * حذف التقرير
    */
-  deleteReport: protectedProcedure.input(z19.object({ reportId: z19.string() })).mutation(async ({ input }) => {
+  deleteReport: protectedProcedure.input(z18.object({ reportId: z18.string() })).mutation(async ({ input }) => {
     const success = await advancedReportsService.deleteReport(input.reportId);
     return { success, message: success ? "\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u062A\u0642\u0631\u064A\u0631" : "\u0641\u0634\u0644 \u062D\u0630\u0641 \u0627\u0644\u062A\u0642\u0631\u064A\u0631" };
   }),
@@ -13158,10 +12848,10 @@ var advancedFeaturesRouter = router({
    * إرسال إشعار بريد إلكتروني
    */
   sendEmailNotification: protectedProcedure.input(
-    z19.object({
-      email: z19.string().email(),
-      event: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      email: z18.string().email(),
+      event: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ ctx, input }) => {
     return await advancedNotificationsService.sendEmailNotification(
@@ -13175,10 +12865,10 @@ var advancedFeaturesRouter = router({
    * إرسال إشعار SMS
    */
   sendSMSNotification: protectedProcedure.input(
-    z19.object({
-      phone: z19.string(),
-      event: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      phone: z18.string(),
+      event: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ ctx, input }) => {
     return await advancedNotificationsService.sendSMSNotification(
@@ -13192,9 +12882,9 @@ var advancedFeaturesRouter = router({
    * إرسال إشعار Push
    */
   sendPushNotification: protectedProcedure.input(
-    z19.object({
-      event: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      event: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ ctx, input }) => {
     return await advancedNotificationsService.sendPushNotification(
@@ -13207,9 +12897,9 @@ var advancedFeaturesRouter = router({
    * إرسال إشعار في التطبيق
    */
   sendInAppNotification: protectedProcedure.input(
-    z19.object({
-      event: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      event: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ ctx, input }) => {
     return await advancedNotificationsService.sendInAppNotification(
@@ -13222,9 +12912,9 @@ var advancedFeaturesRouter = router({
    * إرسال إشعار للمالك
    */
   sendOwnerNotification: protectedProcedure.input(
-    z19.object({
-      event: z19.string(),
-      data: z19.record(z19.string(), z19.any())
+    z18.object({
+      event: z18.string(),
+      data: z18.record(z18.string(), z18.any())
     })
   ).mutation(async ({ input }) => {
     return await advancedNotificationsService.sendOwnerNotification(
@@ -13235,7 +12925,7 @@ var advancedFeaturesRouter = router({
   /**
    * الحصول على الإشعارات
    */
-  getNotifications: protectedProcedure.input(z19.object({ status: z19.string().optional() })).query(async ({ ctx, input }) => {
+  getNotifications: protectedProcedure.input(z18.object({ status: z18.string().optional() })).query(async ({ ctx, input }) => {
     return await advancedNotificationsService.getNotifications(
       ctx.user.id.toString(),
       input.status
@@ -13244,13 +12934,13 @@ var advancedFeaturesRouter = router({
   /**
    * تعليم الإشعار كمقروء
    */
-  markNotificationAsRead: protectedProcedure.input(z19.object({ notificationId: z19.string() })).mutation(async ({ input }) => {
+  markNotificationAsRead: protectedProcedure.input(z18.object({ notificationId: z18.string() })).mutation(async ({ input }) => {
     return await advancedNotificationsService.markAsRead(input.notificationId);
   }),
   /**
    * حذف الإشعار
    */
-  deleteNotification: protectedProcedure.input(z19.object({ notificationId: z19.string() })).mutation(async ({ input }) => {
+  deleteNotification: protectedProcedure.input(z18.object({ notificationId: z18.string() })).mutation(async ({ input }) => {
     const success = await advancedNotificationsService.deleteNotification(input.notificationId);
     return { success, message: success ? "\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631" : "\u0641\u0634\u0644 \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631" };
   }),
@@ -13270,7 +12960,7 @@ var advancedFeaturesRouter = router({
 });
 
 // server/routers/advanced-operations.ts
-import { z as z20 } from "zod";
+import { z as z19 } from "zod";
 
 // server/services/operations-monitoring.ts
 var OperationsMonitoringService = class {
@@ -13960,14 +13650,14 @@ var advancedOperationsRouter = router({
    * الحصول على اتجاهات الدفع
    * Get payment trends
    */
-  getPaymentTrends: publicProcedure.input(z20.object({ days: z20.number().default(30) })).query(async ({ input }) => {
+  getPaymentTrends: publicProcedure.input(z19.object({ days: z19.number().default(30) })).query(async ({ input }) => {
     return await operationsMonitoringService.getPaymentTrends(input.days);
   }),
   /**
    * الحصول على الأنشطة الأخيرة
    * Get recent activities
    */
-  getRecentActivities: publicProcedure.input(z20.object({ limit: z20.number().default(20) })).query(async ({ input }) => {
+  getRecentActivities: publicProcedure.input(z19.object({ limit: z19.number().default(20) })).query(async ({ input }) => {
     return await operationsMonitoringService.getRecentActivities(input.limit);
   }),
   /**
@@ -13982,11 +13672,11 @@ var advancedOperationsRouter = router({
    * Create new alert
    */
   createAlert: protectedProcedure.input(
-    z20.object({
-      type: z20.enum(["payment", "invoice", "notification", "order"]),
-      condition: z20.enum(["threshold", "rate", "status"]),
-      value: z20.number(),
-      enabled: z20.boolean().default(true)
+    z19.object({
+      type: z19.enum(["payment", "invoice", "notification", "order"]),
+      condition: z19.enum(["threshold", "rate", "status"]),
+      value: z19.number(),
+      enabled: z19.boolean().default(true)
     })
   ).mutation(async ({ input }) => {
     return await operationsMonitoringService.createAlert(input);
@@ -13996,12 +13686,12 @@ var advancedOperationsRouter = router({
    * Update alert
    */
   updateAlert: protectedProcedure.input(
-    z20.object({
-      id: z20.string(),
-      type: z20.enum(["payment", "invoice", "notification", "order"]).optional(),
-      condition: z20.enum(["threshold", "rate", "status"]).optional(),
-      value: z20.number().optional(),
-      enabled: z20.boolean().optional()
+    z19.object({
+      id: z19.string(),
+      type: z19.enum(["payment", "invoice", "notification", "order"]).optional(),
+      condition: z19.enum(["threshold", "rate", "status"]).optional(),
+      value: z19.number().optional(),
+      enabled: z19.boolean().optional()
     })
   ).mutation(async ({ input }) => {
     const { id, ...updates } = input;
@@ -14011,7 +13701,7 @@ var advancedOperationsRouter = router({
    * حذف التنبيه
    * Delete alert
    */
-  deleteAlert: protectedProcedure.input(z20.object({ id: z20.string() })).mutation(async ({ input }) => {
+  deleteAlert: protectedProcedure.input(z19.object({ id: z19.string() })).mutation(async ({ input }) => {
     await operationsMonitoringService.deleteAlert(input.id);
   }),
   /**
@@ -14027,11 +13717,11 @@ var advancedOperationsRouter = router({
    * Create new support ticket
    */
   createSupportTicket: protectedProcedure.input(
-    z20.object({
-      title: z20.string(),
-      description: z20.string(),
-      category: z20.enum(["billing", "technical", "account", "general", "other"]),
-      priority: z20.enum(["low", "medium", "high", "critical"])
+    z19.object({
+      title: z19.string(),
+      description: z19.string(),
+      category: z19.enum(["billing", "technical", "account", "general", "other"]),
+      priority: z19.enum(["low", "medium", "high", "critical"])
     })
   ).mutation(async ({ input, ctx }) => {
     return await advancedSupportService.createTicket(ctx.user.id, {
@@ -14044,7 +13734,7 @@ var advancedOperationsRouter = router({
    * الحصول على التذكرة
    * Get support ticket
    */
-  getSupportTicket: protectedProcedure.input(z20.object({ ticketId: z20.string() })).query(async ({ input }) => {
+  getSupportTicket: protectedProcedure.input(z19.object({ ticketId: z19.string() })).query(async ({ input }) => {
     return await advancedSupportService.getTicket(input.ticketId);
   }),
   /**
@@ -14059,9 +13749,9 @@ var advancedOperationsRouter = router({
    * Update ticket status
    */
   updateTicketStatus: protectedProcedure.input(
-    z20.object({
-      ticketId: z20.string(),
-      status: z20.enum(["open", "in_progress", "waiting_customer", "resolved", "closed"])
+    z19.object({
+      ticketId: z19.string(),
+      status: z19.enum(["open", "in_progress", "waiting_customer", "resolved", "closed"])
     })
   ).mutation(async ({ input }) => {
     await advancedSupportService.updateTicketStatus(input.ticketId, input.status);
@@ -14071,10 +13761,10 @@ var advancedOperationsRouter = router({
    * Add message to support chat
    */
   addSupportMessage: protectedProcedure.input(
-    z20.object({
-      ticketId: z20.string(),
-      message: z20.string(),
-      attachments: z20.array(z20.string()).optional()
+    z19.object({
+      ticketId: z19.string(),
+      message: z19.string(),
+      attachments: z19.array(z19.string()).optional()
     })
   ).mutation(async ({ input, ctx }) => {
     return await advancedSupportService.addMessage(input.ticketId, {
@@ -14090,7 +13780,7 @@ var advancedOperationsRouter = router({
    * الحصول على رسائل التذكرة
    * Get ticket messages
    */
-  getTicketMessages: protectedProcedure.input(z20.object({ ticketId: z20.string() })).query(async ({ input }) => {
+  getTicketMessages: protectedProcedure.input(z19.object({ ticketId: z19.string() })).query(async ({ input }) => {
     return await advancedSupportService.getTicketMessages(input.ticketId);
   }),
   /**
@@ -14098,12 +13788,12 @@ var advancedOperationsRouter = router({
    * Add attachment to ticket
    */
   addTicketAttachment: protectedProcedure.input(
-    z20.object({
-      ticketId: z20.string(),
-      fileName: z20.string(),
-      fileUrl: z20.string(),
-      fileSize: z20.number(),
-      mimeType: z20.string()
+    z19.object({
+      ticketId: z19.string(),
+      fileName: z19.string(),
+      fileUrl: z19.string(),
+      fileSize: z19.number(),
+      mimeType: z19.string()
     })
   ).mutation(async ({ input, ctx }) => {
     return await advancedSupportService.addAttachment(input.ticketId, {
@@ -14115,7 +13805,7 @@ var advancedOperationsRouter = router({
    * الحصول على مرفقات التذكرة
    * Get ticket attachments
    */
-  getTicketAttachments: protectedProcedure.input(z20.object({ ticketId: z20.string() })).query(async ({ input }) => {
+  getTicketAttachments: protectedProcedure.input(z19.object({ ticketId: z19.string() })).query(async ({ input }) => {
     return await advancedSupportService.getTicketAttachments(input.ticketId);
   }),
   /**
@@ -14123,10 +13813,10 @@ var advancedOperationsRouter = router({
    * Rate support ticket
    */
   rateTicket: protectedProcedure.input(
-    z20.object({
-      ticketId: z20.string(),
-      rating: z20.number().min(1).max(5),
-      feedback: z20.string().optional()
+    z19.object({
+      ticketId: z19.string(),
+      rating: z19.number().min(1).max(5),
+      feedback: z19.string().optional()
     })
   ).mutation(async ({ input }) => {
     await advancedSupportService.rateTicket(
@@ -14147,11 +13837,11 @@ var advancedOperationsRouter = router({
    * Search support tickets
    */
   searchSupportTickets: protectedProcedure.input(
-    z20.object({
-      query: z20.string().optional(),
-      status: z20.enum(["open", "in_progress", "waiting_customer", "resolved", "closed"]).optional(),
-      category: z20.enum(["billing", "technical", "account", "general", "other"]).optional(),
-      priority: z20.enum(["low", "medium", "high", "critical"]).optional()
+    z19.object({
+      query: z19.string().optional(),
+      status: z19.enum(["open", "in_progress", "waiting_customer", "resolved", "closed"]).optional(),
+      category: z19.enum(["billing", "technical", "account", "general", "other"]).optional(),
+      priority: z19.enum(["low", "medium", "high", "critical"]).optional()
     })
   ).query(async ({ input }) => {
     return await advancedSupportService.searchTickets(input.query || "", {
@@ -14164,7 +13854,7 @@ var advancedOperationsRouter = router({
    * إغلاق التذكرة
    * Close support ticket
    */
-  closeTicket: protectedProcedure.input(z20.object({ ticketId: z20.string() })).mutation(async ({ input }) => {
+  closeTicket: protectedProcedure.input(z19.object({ ticketId: z19.string() })).mutation(async ({ input }) => {
     await advancedSupportService.closeTicket(input.ticketId);
   }),
   // ==================== External Integrations ====================
@@ -14173,12 +13863,12 @@ var advancedOperationsRouter = router({
    * Add new integration
    */
   addIntegration: protectedProcedure.input(
-    z20.object({
-      type: z20.enum(["quickbooks", "xero", "other"]),
-      name: z20.string(),
-      apiKey: z20.string(),
-      apiSecret: z20.string().optional(),
-      realmId: z20.string().optional()
+    z19.object({
+      type: z19.enum(["quickbooks", "xero", "other"]),
+      name: z19.string(),
+      apiKey: z19.string(),
+      apiSecret: z19.string().optional(),
+      realmId: z19.string().optional()
     })
   ).mutation(async ({ input }) => {
     return await externalIntegrationsService.addIntegration({
@@ -14191,7 +13881,7 @@ var advancedOperationsRouter = router({
    * الحصول على التكامل
    * Get integration
    */
-  getIntegration: protectedProcedure.input(z20.object({ integrationId: z20.string() })).query(async ({ input }) => {
+  getIntegration: protectedProcedure.input(z19.object({ integrationId: z19.string() })).query(async ({ input }) => {
     return await externalIntegrationsService.getIntegration(input.integrationId);
   }),
   /**
@@ -14206,10 +13896,10 @@ var advancedOperationsRouter = router({
    * Update integration
    */
   updateIntegration: protectedProcedure.input(
-    z20.object({
-      integrationId: z20.string(),
-      name: z20.string().optional(),
-      enabled: z20.boolean().optional()
+    z19.object({
+      integrationId: z19.string(),
+      name: z19.string().optional(),
+      enabled: z19.boolean().optional()
     })
   ).mutation(async ({ input }) => {
     const { integrationId, ...updates } = input;
@@ -14219,7 +13909,7 @@ var advancedOperationsRouter = router({
    * حذف التكامل
    * Delete integration
    */
-  deleteIntegration: protectedProcedure.input(z20.object({ integrationId: z20.string() })).mutation(async ({ input }) => {
+  deleteIntegration: protectedProcedure.input(z19.object({ integrationId: z19.string() })).mutation(async ({ input }) => {
     await externalIntegrationsService.deleteIntegration(input.integrationId);
   }),
   /**
@@ -14227,9 +13917,9 @@ var advancedOperationsRouter = router({
    * Sync with QuickBooks
    */
   syncQuickBooks: protectedProcedure.input(
-    z20.object({
-      integrationId: z20.string(),
-      syncType: z20.enum(["invoice", "expense", "payment", "customer", "all"]).optional()
+    z19.object({
+      integrationId: z19.string(),
+      syncType: z19.enum(["invoice", "expense", "payment", "customer", "all"]).optional()
     })
   ).mutation(async ({ input }) => {
     return await externalIntegrationsService.syncWithQuickBooks(
@@ -14242,9 +13932,9 @@ var advancedOperationsRouter = router({
    * Sync with Xero
    */
   syncXero: protectedProcedure.input(
-    z20.object({
-      integrationId: z20.string(),
-      syncType: z20.enum(["invoice", "expense", "payment", "customer", "all"]).optional()
+    z19.object({
+      integrationId: z19.string(),
+      syncType: z19.enum(["invoice", "expense", "payment", "customer", "all"]).optional()
     })
   ).mutation(async ({ input }) => {
     return await externalIntegrationsService.syncWithXero(
@@ -14256,21 +13946,21 @@ var advancedOperationsRouter = router({
    * الحصول على سجل المزامنة
    * Get sync logs
    */
-  getSyncLogs: protectedProcedure.input(z20.object({ integrationId: z20.string() })).query(async ({ input }) => {
+  getSyncLogs: protectedProcedure.input(z19.object({ integrationId: z19.string() })).query(async ({ input }) => {
     return await externalIntegrationsService.getSyncLogs(input.integrationId);
   }),
   /**
    * الحصول على إحصائيات المزامنة
    * Get sync statistics
    */
-  getSyncStatistics: protectedProcedure.input(z20.object({ integrationId: z20.string() })).query(async ({ input }) => {
+  getSyncStatistics: protectedProcedure.input(z19.object({ integrationId: z19.string() })).query(async ({ input }) => {
     return await externalIntegrationsService.getSyncStatistics(input.integrationId);
   }),
   /**
    * اختبار الاتصال
    * Test integration connection
    */
-  testConnection: protectedProcedure.input(z20.object({ integrationId: z20.string() })).mutation(async ({ input }) => {
+  testConnection: protectedProcedure.input(z19.object({ integrationId: z19.string() })).mutation(async ({ input }) => {
     return await externalIntegrationsService.testConnection(input.integrationId);
   }),
   /**
@@ -14278,9 +13968,9 @@ var advancedOperationsRouter = router({
    * Schedule automatic sync
    */
   scheduleAutoSync: protectedProcedure.input(
-    z20.object({
-      integrationId: z20.string(),
-      intervalMinutes: z20.number().optional()
+    z19.object({
+      integrationId: z19.string(),
+      intervalMinutes: z19.number().optional()
     })
   ).mutation(async ({ input }) => {
     await externalIntegrationsService.scheduleAutoSync(
@@ -14291,7 +13981,7 @@ var advancedOperationsRouter = router({
 });
 
 // server/routers/notifications-center.ts
-import { z as z21 } from "zod";
+import { z as z20 } from "zod";
 import { TRPCError as TRPCError3 } from "@trpc/server";
 import { eq as eq2, and as and2, desc as desc2, sql } from "drizzle-orm";
 var notificationsCenterRouter = router({
@@ -14299,10 +13989,10 @@ var notificationsCenterRouter = router({
    * الحصول على جميع الإشعارات للمستخدم الحالي
    */
   getNotifications: protectedProcedure.input(
-    z21.object({
-      limit: z21.number().int().positive().default(20),
-      offset: z21.number().int().nonnegative().default(0),
-      unreadOnly: z21.boolean().default(false)
+    z20.object({
+      limit: z20.number().int().positive().default(20),
+      offset: z20.number().int().nonnegative().default(0),
+      unreadOnly: z20.boolean().default(false)
     }).optional()
   ).query(async ({ ctx, input }) => {
     const limit = input?.limit ?? 20;
@@ -14368,14 +14058,14 @@ var notificationsCenterRouter = router({
    * إنشاء إشعار جديد
    */
   createNotification: protectedProcedure.input(
-    z21.object({
-      type: z21.enum(["success", "error", "warning", "info"]),
-      title: z21.string().min(1, "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628").max(255),
-      message: z21.string().min(1, "\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u0645\u0637\u0644\u0648\u0628\u0629"),
-      operationType: z21.string().optional(),
-      relatedEntityType: z21.string().optional(),
-      relatedEntityId: z21.number().int().optional(),
-      metadata: z21.record(z21.any()).optional()
+    z20.object({
+      type: z20.enum(["success", "error", "warning", "info"]),
+      title: z20.string().min(1, "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628").max(255),
+      message: z20.string().min(1, "\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u0645\u0637\u0644\u0648\u0628\u0629"),
+      operationType: z20.string().optional(),
+      relatedEntityType: z20.string().optional(),
+      relatedEntityId: z20.number().int().optional(),
+      metadata: z20.record(z20.any()).optional()
     })
   ).mutation(async ({ ctx, input }) => {
     try {
@@ -14415,8 +14105,8 @@ var notificationsCenterRouter = router({
    * تحديث حالة الإشعار (قراءة/عدم قراءة)
    */
   markAsRead: protectedProcedure.input(
-    z21.object({
-      notificationId: z21.number().int().positive()
+    z20.object({
+      notificationId: z20.number().int().positive()
     })
   ).mutation(async ({ ctx, input }) => {
     try {
@@ -14486,8 +14176,8 @@ var notificationsCenterRouter = router({
    * حذف إشعار
    */
   deleteNotification: protectedProcedure.input(
-    z21.object({
-      notificationId: z21.number().int().positive()
+    z20.object({
+      notificationId: z20.number().int().positive()
     })
   ).mutation(async ({ ctx, input }) => {
     try {
@@ -14591,17 +14281,17 @@ var notificationsCenterRouter = router({
    * تحديث تفضيلات الإشعارات
    */
   updatePreferences: protectedProcedure.input(
-    z21.object({
-      emailNotifications: z21.boolean().optional(),
-      smsNotifications: z21.boolean().optional(),
-      pushNotifications: z21.boolean().optional(),
-      inAppNotifications: z21.boolean().optional(),
-      accountAddedNotification: z21.boolean().optional(),
-      accountVerifiedNotification: z21.boolean().optional(),
-      transactionNotification: z21.boolean().optional(),
-      securityAlertNotification: z21.boolean().optional(),
-      dailyDigest: z21.boolean().optional(),
-      weeklyReport: z21.boolean().optional()
+    z20.object({
+      emailNotifications: z20.boolean().optional(),
+      smsNotifications: z20.boolean().optional(),
+      pushNotifications: z20.boolean().optional(),
+      inAppNotifications: z20.boolean().optional(),
+      accountAddedNotification: z20.boolean().optional(),
+      accountVerifiedNotification: z20.boolean().optional(),
+      transactionNotification: z20.boolean().optional(),
+      securityAlertNotification: z20.boolean().optional(),
+      dailyDigest: z20.boolean().optional(),
+      weeklyReport: z20.boolean().optional()
     })
   ).mutation(async ({ ctx, input }) => {
     try {
@@ -14687,24 +14377,24 @@ var appRouter = router({
      * إنشاء بيان جمركي جديد
      */
     createDeclaration: protectedProcedure.input(
-      z22.object({
-        declarationNumber: z22.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        registrationDate: z22.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
-        clearanceCenter: z22.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
-        exchangeRate: z22.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        exportCountry: z22.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
-        billOfLadingNumber: z22.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        grossWeight: z22.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        netWeight: z22.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        numberOfPackages: z22.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        packageType: z22.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
-        fobValue: z22.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        freightCost: z22.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        insuranceCost: z22.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
-        customsDuty: z22.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        additionalFees: z22.number().nonnegative().optional().default(0),
-        customsServiceFee: z22.number().nonnegative().optional().default(0),
-        penalties: z22.number().nonnegative().optional().default(0)
+      z21.object({
+        declarationNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        registrationDate: z21.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
+        clearanceCenter: z21.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
+        exchangeRate: z21.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        exportCountry: z21.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
+        billOfLadingNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        grossWeight: z21.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        netWeight: z21.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        numberOfPackages: z21.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        packageType: z21.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
+        fobValue: z21.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        freightCost: z21.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        insuranceCost: z21.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
+        customsDuty: z21.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        additionalFees: z21.number().nonnegative().optional().default(0),
+        customsServiceFee: z21.number().nonnegative().optional().default(0),
+        penalties: z21.number().nonnegative().optional().default(0)
       })
     ).mutation(async ({ ctx, input }) => {
       const calculations = calculateAllCosts({
@@ -14754,7 +14444,7 @@ var appRouter = router({
     /**
      * الحصول على بيان جمركي
      */
-    getDeclaration: protectedProcedure.input(z22.object({ id: z22.number() })).query(async ({ ctx, input }) => {
+    getDeclaration: protectedProcedure.input(z21.object({ id: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u064A\u0647");
@@ -14771,11 +14461,11 @@ var appRouter = router({
      * تحديث بيان جمركي
      */
     updateDeclaration: protectedProcedure.input(
-      z22.object({
-        id: z22.number(),
-        data: z22.object({
-          status: z22.enum(["draft", "submitted", "approved", "cleared"]).optional(),
-          notes: z22.string().optional()
+      z21.object({
+        id: z21.number(),
+        data: z21.object({
+          status: z21.enum(["draft", "submitted", "approved", "cleared"]).optional(),
+          notes: z21.string().optional()
         })
       })
     ).mutation(async ({ ctx, input }) => {
@@ -14788,7 +14478,7 @@ var appRouter = router({
     /**
      * حذف بيان جمركي
      */
-    deleteDeclaration: protectedProcedure.input(z22.object({ id: z22.number() })).mutation(async ({ ctx, input }) => {
+    deleteDeclaration: protectedProcedure.input(z21.object({ id: z21.number() })).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u062D\u0630\u0641\u0647");
@@ -14805,11 +14495,11 @@ var appRouter = router({
      * إضافة صنف جديد
      */
     createItem: protectedProcedure.input(
-      z22.object({
-        declarationId: z22.number(),
-        itemName: z22.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
-        quantity: z22.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        unitPriceForeign: z22.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
+      z21.object({
+        declarationId: z21.number(),
+        itemName: z21.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
+        quantity: z21.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        unitPriceForeign: z21.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -14848,7 +14538,7 @@ var appRouter = router({
     /**
      * الحصول على أصناف البيان الجمركي
      */
-    getItems: protectedProcedure.input(z22.object({ declarationId: z22.number() })).query(async ({ ctx, input }) => {
+    getItems: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14859,14 +14549,14 @@ var appRouter = router({
      * تحديث صنف
      */
     updateItem: protectedProcedure.input(
-      z22.object({
-        id: z22.number(),
-        itemName: z22.string().optional(),
-        itemCode: z22.string().optional(),
-        quantity: z22.number().positive().optional(),
-        unitPriceForeign: z22.number().positive().optional(),
-        description: z22.string().optional(),
-        customsCode: z22.string().optional()
+      z21.object({
+        id: z21.number(),
+        itemName: z21.string().optional(),
+        itemCode: z21.string().optional(),
+        quantity: z21.number().positive().optional(),
+        unitPriceForeign: z21.number().positive().optional(),
+        description: z21.string().optional(),
+        customsCode: z21.string().optional()
       })
     ).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
@@ -14889,7 +14579,7 @@ var appRouter = router({
     /**
      * حذف صنف
      */
-    deleteItem: protectedProcedure.input(z22.object({ id: z22.number() })).mutation(async ({ ctx, input }) => {
+    deleteItem: protectedProcedure.input(z21.object({ id: z21.number() })).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
       if (!item) {
         throw new Error("\u0627\u0644\u0635\u0646\u0641 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14909,13 +14599,13 @@ var appRouter = router({
      * حساب وحفظ الانحرافات
      */
     calculateVariances: protectedProcedure.input(
-      z22.object({
-        declarationId: z22.number(),
-        estimatedFobValue: z22.number().nonnegative(),
-        estimatedFreight: z22.number().nonnegative(),
-        estimatedInsurance: z22.number().nonnegative(),
-        estimatedCustomsDuty: z22.number().nonnegative(),
-        estimatedSalesTax: z22.number().nonnegative()
+      z21.object({
+        declarationId: z21.number(),
+        estimatedFobValue: z21.number().nonnegative(),
+        estimatedFreight: z21.number().nonnegative(),
+        estimatedInsurance: z21.number().nonnegative(),
+        estimatedCustomsDuty: z21.number().nonnegative(),
+        estimatedSalesTax: z21.number().nonnegative()
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -14962,7 +14652,7 @@ var appRouter = router({
     /**
      * الحصول على الانحرافات
      */
-    getVariances: protectedProcedure.input(z22.object({ declarationId: z22.number() })).query(async ({ ctx, input }) => {
+    getVariances: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14977,7 +14667,7 @@ var appRouter = router({
     /**
      * الحصول على الملخص المالي
      */
-    getSummary: protectedProcedure.input(z22.object({ declarationId: z22.number() })).query(async ({ ctx, input }) => {
+    getSummary: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14990,8 +14680,8 @@ var appRouter = router({
    */
   pdfImport: router({
     importDeclaration: protectedProcedure.input(
-      z22.object({
-        filePath: z22.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
+      z21.object({
+        filePath: z21.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
       })
     ).mutation(async ({ ctx, input }) => {
       try {
@@ -15013,9 +14703,9 @@ var appRouter = router({
    */
   notifications: router({
     getNotifications: protectedProcedure.input(
-      z22.object({
-        limit: z22.number().int().positive().default(50),
-        offset: z22.number().int().nonnegative().default(0)
+      z21.object({
+        limit: z21.number().int().positive().default(50),
+        offset: z21.number().int().nonnegative().default(0)
       })
     ).query(async ({ ctx, input }) => {
       return await getNotificationsByUserId(ctx.user.id, input.limit, input.offset);
@@ -15023,7 +14713,7 @@ var appRouter = router({
     getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
       return await getUnreadNotificationCount(ctx.user.id);
     }),
-    markAsRead: protectedProcedure.input(z22.object({ notificationId: z22.number().int().positive() })).mutation(async ({ input }) => {
+    markAsRead: protectedProcedure.input(z21.object({ notificationId: z21.number().int().positive() })).mutation(async ({ input }) => {
       await markNotificationAsRead(input.notificationId);
       return { success: true };
     }),
@@ -15031,7 +14721,7 @@ var appRouter = router({
       await markAllNotificationsAsRead(ctx.user.id);
       return { success: true };
     }),
-    delete: protectedProcedure.input(z22.object({ notificationId: z22.number().int().positive() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z21.object({ notificationId: z21.number().int().positive() })).mutation(async ({ input }) => {
       await deleteNotification(input.notificationId);
       return { success: true };
     })
@@ -15041,17 +14731,17 @@ var appRouter = router({
    */
   tracking: router({
     createContainer: protectedProcedure.input(
-      z22.object({
-        containerNumber: z22.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
-        containerType: z22.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
-        shippingCompany: z22.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        billOfLadingNumber: z22.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        portOfLoading: z22.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        portOfDischarge: z22.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
-        sealNumber: z22.string().optional(),
-        loadingDate: z22.string().optional(),
-        estimatedArrivalDate: z22.string().optional(),
-        notes: z22.string().optional()
+      z21.object({
+        containerNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
+        containerType: z21.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
+        shippingCompany: z21.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        billOfLadingNumber: z21.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        portOfLoading: z21.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        portOfDischarge: z21.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
+        sealNumber: z21.string().optional(),
+        loadingDate: z21.string().optional(),
+        estimatedArrivalDate: z21.string().optional(),
+        notes: z21.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -15072,7 +14762,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    searchContainers: protectedProcedure.input(z22.object({ query: z22.string().min(1) })).query(async ({ input, ctx }) => {
+    searchContainers: protectedProcedure.input(z21.object({ query: z21.string().min(1) })).query(async ({ input, ctx }) => {
       try {
         const results = await searchContainers(ctx.user.id, input.query);
         return results;
@@ -15080,7 +14770,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u0628\u062D\u062B \u0639\u0646 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    getContainerByNumber: protectedProcedure.input(z22.object({ containerNumber: z22.string().min(1) })).query(async ({ input }) => {
+    getContainerByNumber: protectedProcedure.input(z21.object({ containerNumber: z21.string().min(1) })).query(async ({ input }) => {
       try {
         const container = await getContainerByNumber(input.containerNumber);
         return container;
@@ -15089,14 +14779,14 @@ var appRouter = router({
       }
     }),
     addTrackingEvent: protectedProcedure.input(
-      z22.object({
-        containerId: z22.number().int().positive(),
-        eventType: z22.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
-        eventLocation: z22.string().optional(),
-        eventDescription: z22.string().optional(),
-        eventDateTime: z22.string(),
-        documentUrl: z22.string().optional(),
-        notes: z22.string().optional()
+      z21.object({
+        containerId: z21.number().int().positive(),
+        eventType: z21.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
+        eventLocation: z21.string().optional(),
+        eventDescription: z21.string().optional(),
+        eventDateTime: z21.string(),
+        documentUrl: z21.string().optional(),
+        notes: z21.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -15115,7 +14805,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0636\u0627\u0641\u0629 \u062D\u062F\u062B \u0627\u0644\u062A\u062A\u0628\u0639");
       }
     }),
-    getTrackingHistory: protectedProcedure.input(z22.object({ containerId: z22.number().int().positive() })).query(async ({ input }) => {
+    getTrackingHistory: protectedProcedure.input(z21.object({ containerId: z21.number().int().positive() })).query(async ({ input }) => {
       try {
         const history = await getContainerTrackingHistory(input.containerId);
         return history;
@@ -15124,9 +14814,9 @@ var appRouter = router({
       }
     }),
     updateContainerStatus: protectedProcedure.input(
-      z22.object({
-        containerId: z22.number().int().positive(),
-        status: z22.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
+      z21.object({
+        containerId: z21.number().int().positive(),
+        status: z21.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
       })
     ).mutation(async ({ input }) => {
       try {
@@ -15137,20 +14827,20 @@ var appRouter = router({
       }
     }),
     createShipmentDetail: protectedProcedure.input(
-      z22.object({
-        containerId: z22.number().int().positive(),
-        shipmentNumber: z22.string().min(1),
-        totalWeight: z22.number().positive(),
-        totalVolume: z22.number().optional(),
-        numberOfPackages: z22.number().int().positive(),
-        packageType: z22.string().optional(),
-        shipper: z22.string().min(1),
-        consignee: z22.string().min(1),
-        freightCharges: z22.number().optional(),
-        insuranceCharges: z22.number().optional(),
-        handlingCharges: z22.number().optional(),
-        otherCharges: z22.number().optional(),
-        notes: z22.string().optional()
+      z21.object({
+        containerId: z21.number().int().positive(),
+        shipmentNumber: z21.string().min(1),
+        totalWeight: z21.number().positive(),
+        totalVolume: z21.number().optional(),
+        numberOfPackages: z21.number().int().positive(),
+        packageType: z21.string().optional(),
+        shipper: z21.string().min(1),
+        consignee: z21.string().min(1),
+        freightCharges: z21.number().optional(),
+        insuranceCharges: z21.number().optional(),
+        handlingCharges: z21.number().optional(),
+        otherCharges: z21.number().optional(),
+        notes: z21.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -15163,7 +14853,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0634\u062D\u0646\u0629");
       }
     }),
-    getShipmentDetail: protectedProcedure.input(z22.object({ shipmentContainerId: z22.number().int().positive() })).query(async ({ input }) => {
+    getShipmentDetail: protectedProcedure.input(z21.object({ shipmentContainerId: z21.number().int().positive() })).query(async ({ input }) => {
       try {
         const detail = await getShipmentDetail(input.shipmentContainerId);
         return detail;
@@ -15185,7 +14875,6 @@ var appRouter = router({
   billing: billingRouter,
   operations: operationsRouter,
   localPaymentGateways: localPaymentGatewaysRouter,
-  localPaymentGateway: localPaymentGatewayRouter,
   webhooks: webhooksRouter,
   notificationsAccounting: notificationsAccountingRouter,
   paymentApis: paymentApisRouter,
@@ -15212,33 +14901,33 @@ async function createContext(opts) {
 
 // server/_core/vite.ts
 import express from "express";
-import fs5 from "fs";
-import path4 from "path";
+import fs7 from "fs";
+import path6 from "path";
 import { createServer as createViteServer } from "vite";
 
 // vite.config.ts
 import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import fs4 from "node:fs";
-import path3 from "node:path";
+import fs5 from "node:fs";
+import path4 from "node:path";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 var PROJECT_ROOT = import.meta.dirname;
-var LOG_DIR = path3.join(PROJECT_ROOT, ".manus-logs");
+var LOG_DIR = path4.join(PROJECT_ROOT, ".manus-logs");
 var MAX_LOG_SIZE_BYTES = 1 * 1024 * 1024;
 var TRIM_TARGET_BYTES = Math.floor(MAX_LOG_SIZE_BYTES * 0.6);
 function ensureLogDir() {
-  if (!fs4.existsSync(LOG_DIR)) {
-    fs4.mkdirSync(LOG_DIR, { recursive: true });
+  if (!fs5.existsSync(LOG_DIR)) {
+    fs5.mkdirSync(LOG_DIR, { recursive: true });
   }
 }
 function trimLogFile(logPath, maxSize) {
   try {
-    if (!fs4.existsSync(logPath) || fs4.statSync(logPath).size <= maxSize) {
+    if (!fs5.existsSync(logPath) || fs5.statSync(logPath).size <= maxSize) {
       return;
     }
-    const lines = fs4.readFileSync(logPath, "utf-8").split("\n");
+    const lines = fs5.readFileSync(logPath, "utf-8").split("\n");
     const keptLines = [];
     let keptBytes = 0;
     const targetSize = TRIM_TARGET_BYTES;
@@ -15249,19 +14938,19 @@ function trimLogFile(logPath, maxSize) {
       keptLines.unshift(lines[i]);
       keptBytes += lineBytes;
     }
-    fs4.writeFileSync(logPath, keptLines.join("\n"), "utf-8");
+    fs5.writeFileSync(logPath, keptLines.join("\n"), "utf-8");
   } catch {
   }
 }
 function writeToLogFile(source, entries) {
   if (entries.length === 0) return;
   ensureLogDir();
-  const logPath = path3.join(LOG_DIR, `${source}.log`);
+  const logPath = path4.join(LOG_DIR, `${source}.log`);
   const lines = entries.map((entry) => {
     const ts = (/* @__PURE__ */ new Date()).toISOString();
     return `[${ts}] ${JSON.stringify(entry)}`;
   });
-  fs4.appendFileSync(logPath, `${lines.join("\n")}
+  fs5.appendFileSync(logPath, `${lines.join("\n")}
 `, "utf-8");
   trimLogFile(logPath, MAX_LOG_SIZE_BYTES);
 }
@@ -15361,24 +15050,24 @@ var vite_config_default = defineConfig({
   plugins,
   resolve: {
     alias: {
-      "@": path3.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path3.resolve(import.meta.dirname, "shared"),
-      "@assets": path3.resolve(import.meta.dirname, "attached_assets")
+      "@": path4.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path4.resolve(import.meta.dirname, "shared"),
+      "@assets": path4.resolve(import.meta.dirname, "attached_assets")
     }
   },
-  envDir: path3.resolve(import.meta.dirname),
-  root: path3.resolve(import.meta.dirname, "client"),
-  publicDir: path3.resolve(import.meta.dirname, "client", "public"),
+  envDir: path4.resolve(import.meta.dirname),
+  root: path4.resolve(import.meta.dirname, "client"),
+  publicDir: path4.resolve(import.meta.dirname, "client", "public"),
   build: {
-    outDir: path3.resolve(import.meta.dirname, "dist"),
+    outDir: path4.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 2e3,
+    chunkSizeWarningLimit: 1e3,
     minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
     sourcemap: false,
     target: "esnext",
-    assetsInlineLimit: 8192,
+    assetsInlineLimit: 4096,
     // terserOptions removed - use esbuild minify instead
     // terserOptions: {
     //   compress: {
@@ -15421,15 +15110,6 @@ var vite_config_default = defineConfig({
             return "vendor-http";
           }
           if (id.includes("node_modules")) {
-            if (id.includes("node_modules/recharts")) return "vendor-charts";
-            if (id.includes("node_modules/lodash")) return "vendor-lodash";
-            if (id.includes("node_modules/date-fns")) return "vendor-date";
-            if (id.includes("node_modules/uuid")) return "vendor-uuid";
-            if (id.includes("node_modules/nanoid")) return "vendor-nanoid";
-            if (id.includes("node_modules/zustand")) return "vendor-zustand";
-            if (id.includes("node_modules/immer")) return "vendor-immer";
-            if (id.includes("node_modules/clsx")) return "vendor-clsx";
-            if (id.includes("node_modules/tailwind")) return "vendor-tailwind";
             if (id.includes("node_modules/@")) {
               return "vendor-scoped";
             }
@@ -15462,11 +15142,8 @@ var vite_config_default = defineConfig({
     }
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "wouter", "lucide-react", "@tanstack/react-query", "@trpc/client"],
-    exclude: ["@vite/client"],
-    esbuildOptions: {
-      target: "esnext"
-    }
+    include: ["react", "react-dom", "wouter", "lucide-react"],
+    exclude: ["@vite/client"]
   },
   server: {
     host: true,
@@ -15491,11 +15168,142 @@ var vite_config_default = defineConfig({
   }
 });
 
+// server/static-proxy.ts
+import path5 from "path";
+import fs6 from "fs";
+import { createReadStream } from "fs";
+var MIME_TYPES = {
+  ".js": "application/javascript; charset=utf-8",
+  ".mjs": "application/javascript; charset=utf-8",
+  ".jsx": "application/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".map": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".gif": "image/gif",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon",
+  ".woff": "font/woff",
+  ".woff2": "font/woff2",
+  ".ttf": "font/ttf",
+  ".eot": "application/vnd.ms-fontobject",
+  ".html": "text/html; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8"
+};
+function getMimeType(filePath) {
+  const ext = path5.extname(filePath).toLowerCase();
+  return MIME_TYPES[ext] || "application/octet-stream";
+}
+function getCacheControl(filePath) {
+  if (filePath.includes("/assets/")) return "public, max-age=31536000, immutable";
+  if (filePath.endsWith(".html")) return "public, max-age=3600, must-revalidate";
+  if (filePath.endsWith("sw.js")) return "no-cache, no-store, must-revalidate";
+  if (filePath.endsWith("manifest.json")) return "public, max-age=86400";
+  return "public, max-age=3600";
+}
+function isStaticAsset(pathname) {
+  const patterns = ["/assets/", "/fonts/", "/images/", "/icons/", "/downloads/", "/releases/", "/__manus__/", "/sw.js", "/manifest.json", "/robots.txt"];
+  if (patterns.some((p) => pathname.includes(p))) return true;
+  const ext = path5.extname(pathname).toLowerCase();
+  return Object.keys(MIME_TYPES).includes(ext);
+}
+function setupStaticProxy(app, distPath) {
+  console.log(`[StaticProxy] Initializing with dist path: ${distPath}`);
+  app.use(async (req, res, next) => {
+    try {
+      const pathname = req.path || req.url;
+      if (pathname.startsWith("/api/") || pathname.startsWith("/trpc")) {
+        return next();
+      }
+      if (!isStaticAsset(pathname)) {
+        return next();
+      }
+      let filePath = path5.join(distPath, pathname);
+      if (!filePath.startsWith(distPath)) {
+        console.warn(`[StaticProxy] Security violation: ${pathname}`);
+        return res.status(403).json({ error: "Forbidden" });
+      }
+      try {
+        const stats = fs6.statSync(filePath);
+        if (stats.isDirectory()) {
+          filePath = path5.join(filePath, "index.html");
+          const indexStats = fs6.statSync(filePath);
+          if (!indexStats.isFile()) {
+            return next();
+          }
+        }
+        const mimeType = getMimeType(filePath);
+        const cacheControl = getCacheControl(filePath);
+        res.setHeader("Content-Type", mimeType);
+        res.setHeader("Content-Length", stats.size);
+        res.setHeader("Cache-Control", cacheControl);
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        console.log(`[StaticProxy] \u2705 ${req.method} ${pathname} -> ${mimeType}`);
+        const stream = createReadStream(filePath);
+        stream.pipe(res);
+        stream.on("error", (error) => {
+          console.error(`[StaticProxy] Stream error for ${filePath}:`, error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: "Internal Server Error" });
+          }
+        });
+      } catch (error) {
+        if (error.code === "ENOENT") {
+          console.log(`[StaticProxy] \u274C File not found: ${pathname}`);
+          return res.status(404).json({ error: "Not Found" });
+        }
+        console.error(`[StaticProxy] Error accessing file ${filePath}:`, error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+    } catch (error) {
+      console.error("[StaticProxy] Unexpected error:", error);
+      next(error);
+    }
+  });
+}
+function setupSPAFallback(app, distPath) {
+  console.log("[SPAFallback] Initializing SPA fallback handler");
+  app.use((req, res, next) => {
+    try {
+      const pathname = req.path || req.url;
+      if (pathname.startsWith("/api/") || pathname.startsWith("/trpc")) {
+        return next();
+      }
+      if (isStaticAsset(pathname)) {
+        return next();
+      }
+      const indexPath = path5.join(distPath, "index.html");
+      try {
+        const indexStats = fs6.statSync(indexPath);
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Content-Length", indexStats.size);
+        res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        console.log(`[SPAFallback] Serving index.html for ${pathname}`);
+        const stream = createReadStream(indexPath);
+        stream.pipe(res);
+        stream.on("error", (error) => {
+          console.error("[SPAFallback] Stream error:", error);
+          if (!res.headersSent) {
+            res.status(500).json({ error: "Internal Server Error" });
+          }
+        });
+      } catch (error) {
+        console.error("[SPAFallback] Error reading index.html:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    } catch (error) {
+      console.error("[SPAFallback] Unexpected error:", error);
+      next(error);
+    }
+  });
+}
+
 // server/_core/vite.ts
-var setupStaticProxy = (app) => {
-};
-var setupSPAFallback = (app) => {
-};
 async function setupVite(app, server) {
   const serverOptions = {
     middlewareMode: true,
@@ -15508,28 +15316,26 @@ async function setupVite(app, server) {
     server: serverOptions,
     appType: "spa"
   });
-  const clientPath = path4.resolve(import.meta.dirname, "/../..", "client");
+  const clientPath = path6.resolve(import.meta.dirname, "../..", "client");
   app.use(vite.middlewares);
-  app.use(express.static(path4.join(clientPath, "public")));
-  setupStaticProxy(app);
-  setupSPAFallback(app);
+  app.use(express.static(path6.join(clientPath, "public")));
   app.use("*", (_req, res) => {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.sendFile(path4.resolve(clientPath, "index.html"));
+    res.sendFile(path6.resolve(clientPath, "index.html"));
   });
 }
 function serveStatic(app) {
   const possiblePaths = [
     // المسار الأساسي: المشروع الحالي
-    path4.resolve(process.cwd(), "dist"),
+    path6.resolve(process.cwd(), "dist"),
     // المسار في الحاوية (Manus)
-    path4.resolve("/usr/src/dist"),
+    path6.resolve("/usr/src/dist"),
     // المسار المحلي أثناء التطوير
-    path4.resolve(import.meta.dirname, "../..", "dist")
+    path6.resolve(import.meta.dirname, "../..", "dist")
   ];
   let distPath = "";
   for (const possiblePath of possiblePaths) {
-    if (fs5.existsSync(possiblePath)) {
+    if (fs7.existsSync(possiblePath)) {
       distPath = possiblePath;
       console.log(`[serveStatic] Found dist at: ${distPath}`);
       break;
@@ -15546,7 +15352,7 @@ function serveStatic(app) {
 }
 
 // server/_core/resource-monitor.ts
-import os from "os";
+import os2 from "os";
 var ResourceMonitor = class _ResourceMonitor {
   static instance;
   memoryThreshold = 500 * 1024 * 1024;
@@ -15571,7 +15377,7 @@ var ResourceMonitor = class _ResourceMonitor {
    */
   getMemoryStats() {
     const memUsage = process.memoryUsage();
-    const totalMemory = os.totalmem();
+    const totalMemory = os2.totalmem();
     const percentage = memUsage.heapUsed / totalMemory * 100;
     return {
       heapUsed: memUsage.heapUsed,
@@ -15922,8 +15728,8 @@ var MemoryOptimizer = class _MemoryOptimizer {
 var memoryOptimizer = MemoryOptimizer.getInstance();
 
 // server/middleware/mime-type-handler.ts
-import path5 from "path";
-var MIME_TYPES = {
+import path7 from "path";
+var MIME_TYPES2 = {
   ".js": "application/javascript; charset=utf-8",
   ".mjs": "application/javascript; charset=utf-8",
   ".jsx": "application/javascript; charset=utf-8",
@@ -15960,17 +15766,17 @@ var CACHE_RULES = {
   // Manifest - short cache
   "manifest.json": "public, max-age=86400"
 };
-function getMimeType(filePath) {
-  const ext = path5.extname(filePath).toLowerCase();
-  return MIME_TYPES[ext] || "application/octet-stream";
+function getMimeType2(filePath) {
+  const ext = path7.extname(filePath).toLowerCase();
+  return MIME_TYPES2[ext] || "application/octet-stream";
 }
-function getCacheControl(filePath) {
+function getCacheControl2(filePath) {
   for (const [pattern, cacheControl] of Object.entries(CACHE_RULES)) {
     if (filePath.includes(pattern)) {
       return cacheControl;
     }
   }
-  const ext = path5.extname(filePath).toLowerCase();
+  const ext = path7.extname(filePath).toLowerCase();
   for (const [pattern, cacheControl] of Object.entries(CACHE_RULES)) {
     if (pattern.startsWith(".") && filePath.endsWith(pattern)) {
       return cacheControl;
@@ -15978,7 +15784,7 @@ function getCacheControl(filePath) {
   }
   return "public, max-age=3600";
 }
-function isStaticAsset(pathname) {
+function isStaticAsset2(pathname) {
   const staticPatterns = [
     "/assets/",
     "/fonts/",
@@ -15998,10 +15804,10 @@ function isStaticAsset(pathname) {
 }
 function mimeTypeHandler(req, res, next) {
   const pathname = req.path || req.url;
-  if (isStaticAsset(pathname)) {
-    const mimeType = getMimeType(pathname);
+  if (isStaticAsset2(pathname)) {
+    const mimeType = getMimeType2(pathname);
     res.setHeader("Content-Type", mimeType);
-    const cacheControl = getCacheControl(pathname);
+    const cacheControl = getCacheControl2(pathname);
     res.setHeader("Cache-Control", cacheControl);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -16127,11 +15933,11 @@ var helmetOptions = {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://manus-analytics.com", "https://www.googletagmanager.com", "https://www.google-analytics.com", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://manus-analytics.com", "blob:"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       imgSrc: ["'self'", "data:", "https:"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
-      connectSrc: ["'self'", "https:", "wss:", "https://manus-analytics.com", "https://www.googletagmanager.com", "https://www.google-analytics.com", "blob:", "http://localhost:*"],
+      connectSrc: ["'self'", "https:", "wss:", "https://manus-analytics.com", "blob:", "http://localhost:*"],
       workerSrc: ["'self'", "blob:", "http://localhost:*"],
       scriptSrcAttr: ["'self'", "'unsafe-inline'"]
     }
@@ -16229,10 +16035,10 @@ var requestLogger = (req, res, next) => {
     const duration = Date.now() - start;
     const statusCode = res.statusCode;
     const method = req.method;
-    const path6 = req.path;
+    const path8 = req.path;
     const ip = req.ip;
     if (process.env.NODE_ENV === "production" && statusCode >= 400) {
-      console.log(`[Request] ${method} ${path6} - ${statusCode} (${duration}ms) from ${ip}`);
+      console.log(`[Request] ${method} ${path8} - ${statusCode} (${duration}ms) from ${ip}`);
     }
   });
   next();

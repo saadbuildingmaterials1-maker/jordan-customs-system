@@ -210,13 +210,13 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 2000,
+    chunkSizeWarningLimit: 1000,
     minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
     sourcemap: false,
     target: 'esnext',
-    assetsInlineLimit: 8192,
+    assetsInlineLimit: 4096,
     // terserOptions removed - use esbuild minify instead
     // terserOptions: {
     //   compress: {
@@ -280,16 +280,6 @@ export default defineConfig({
 
           // Vendor chunks - Other utilities (split into smaller chunks)
           if (id.includes("node_modules")) {
-            // Split large utility libraries
-            if (id.includes("node_modules/recharts")) return "vendor-charts";
-            if (id.includes("node_modules/lodash")) return "vendor-lodash";
-            if (id.includes("node_modules/date-fns")) return "vendor-date";
-            if (id.includes("node_modules/uuid")) return "vendor-uuid";
-            if (id.includes("node_modules/nanoid")) return "vendor-nanoid";
-            if (id.includes("node_modules/zustand")) return "vendor-zustand";
-            if (id.includes("node_modules/immer")) return "vendor-immer";
-            if (id.includes("node_modules/clsx")) return "vendor-clsx";
-            if (id.includes("node_modules/tailwind")) return "vendor-tailwind";
             if (id.includes("node_modules/@")) {
               return "vendor-scoped";
             }
@@ -332,11 +322,8 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'wouter', 'lucide-react', '@tanstack/react-query', '@trpc/client'],
+    include: ['react', 'react-dom', 'wouter', 'lucide-react'],
     exclude: ['@vite/client'],
-    esbuildOptions: {
-      target: 'esnext',
-    },
   },
   server: {
     host: true,

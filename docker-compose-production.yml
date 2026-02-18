@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Production Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customs-system-production
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: mysql://prod_user:${PRODUCTION_DB_PASSWORD}@db:3306/customs_prod
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${PRODUCTION_JWT_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY}
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - customs-production
+    volumes:
+      - ./logs/production:/var/log/customs-system
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Production Database
+  db:
+    image: mysql:8.0-alpine
+    container_name: customs-db-production
+    environment:
+      MYSQL_ROOT_PASSWORD: ${PRODUCTION_DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: customs_prod
+      MYSQL_USER: prod_user
+      MYSQL_PASSWORD: ${PRODUCTION_DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - customs-production
+    volumes:
+      - production-db-data:/var/lib/mysql
+      - ./scripts/backup:/backup
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+  # Production Redis
+  redis:
+    image: redis:7-alpine
+    container_name: customs-redis-production
+    ports:
+      - "6379:6379"
+    networks:
+      - customs-production
+    volumes:
+      - production-redis-data:/data
+    restart: always
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # Production Nginx
+  nginx:
+    image: nginx:alpine
+    container_name: customs-nginx-production
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx-production.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    networks:
+      - customs-production
+    depends_on:
+      - app
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  customs-production:
+    driver: bridge
+
+volumes:
+  production-db-data:
+  production-redis-data:

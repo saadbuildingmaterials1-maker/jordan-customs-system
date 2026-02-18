@@ -99,11 +99,11 @@ export const helmetOptions: any = {
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://manus-analytics.com', 'https://www.googletagmanager.com', 'https://www.google-analytics.com', 'blob:'],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'https://manus-analytics.com', 'blob:'],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       imgSrc: ["'self'", 'data:', 'https:'],
       fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
-      connectSrc: ["'self'", 'https:', 'wss:', 'https://manus-analytics.com', 'https://www.googletagmanager.com', 'https://www.google-analytics.com', 'blob:', 'http://localhost:*'],
+      connectSrc: ["'self'", 'https:', 'wss:', 'https://manus-analytics.com', 'blob:', 'http://localhost:*'],
       workerSrc: ["'self'", 'blob:', 'http://localhost:*'],
       scriptSrcAttr: ["'self'", "'unsafe-inline'"],
     },

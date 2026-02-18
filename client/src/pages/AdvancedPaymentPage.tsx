@@ -15,26 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { AdvancedPaymentGateway } from '@/components/AdvancedPaymentGateway';
-import { CheckCircle2, AlertCircle, Clock, ArrowLeft, CreditCard, Banknote } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Clock, ArrowLeft } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
-
-// HyperPay و Telr - بوابات دفع محلية أردنية
-const LOCAL_PAYMENT_GATEWAYS = [
-  {
-    id: 'hyperpay',
-    name: 'HyperPay',
-    icon: CreditCard,
-    description: 'بوابة دفع آمنة بالدينار الأردني',
-    color: 'from-blue-600 to-blue-700',
-  },
-  {
-    id: 'telr',
-    name: 'Telr',
-    icon: Banknote,
-    description: 'خدمة دفع محلية أردنية موثوقة',
-    color: 'from-green-600 to-green-700',
-  },
-];
 
 interface PaymentPageProps {
   orderId?: string;
@@ -66,18 +48,11 @@ export const AdvancedPaymentPage: React.FC<any> = (props) => {
     setPaymentStatus('processing');
     setPaymentMessage(`جاري معالجة الدفع عبر ${method}...`);
 
-    // معالجة الدفع عبر HyperPay أو Telr
+    // Simulate payment processing
     setTimeout(() => {
       setPaymentStatus('success');
       setPaymentMessage(`تم إنشاء طلب الدفع بنجاح! رقم الطلب: ${orderId || 'N/A'}`);
     }, 2000);
-  };
-
-  const handleLocalPaymentGateway = (gatewayId: string) => {
-    const gateway = LOCAL_PAYMENT_GATEWAYS.find(g => g.id === gatewayId);
-    if (gateway) {
-      handlePaymentSelect(gatewayId, gateway.name);
-    }
   };
 
   const handleRetry = () => {
@@ -152,34 +127,6 @@ export const AdvancedPaymentPage: React.FC<any> = (props) => {
               </>
             )}
           </Alert>
-        )}
-
-        {/* Local Payment Gateways */}
-        {paymentStatus === 'idle' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {LOCAL_PAYMENT_GATEWAYS.map((gateway) => {
-              const Icon = gateway.icon;
-              return (
-                <Card
-                  key={gateway.id}
-                  className="cursor-pointer hover:shadow-lg transition-all border-2 hover:border-blue-500"
-                  onClick={() => handleLocalPaymentGateway(gateway.id)}
-                >
-                  <CardHeader className={`bg-gradient-to-r ${gateway.color} text-white`}>
-                    <div className="flex items-center gap-3">
-                      <Icon className="w-6 h-6" />
-                      <div>
-                        <CardTitle className="text-lg">{gateway.name}</CardTitle>
-                        <CardDescription className="text-blue-100">
-                          {gateway.description}
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                </Card>
-              );
-            })}
-          </div>
         )}
 
         {/* Main Content */}
