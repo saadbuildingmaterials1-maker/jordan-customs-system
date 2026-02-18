@@ -95,6 +95,9 @@ const InventoryManagement = lazy(() => import('@/pages/InventoryManagement'));
 const AIPredictions = lazy(() => import('@/pages/AIPredictions'));
 const AdvancedInvoicing = lazy(() => import('@/pages/AdvancedInvoicing'));
 const CustomerRelationship = lazy(() => import('@/pages/CustomerRelationship'));
+const AdvancedNotifications = lazy(() => import('@/pages/AdvancedNotifications'));
+const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
+const AdvancedReporting = lazy(() => import('@/pages/AdvancedReporting'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -191,6 +194,9 @@ function Router() {
         <Route path="/ai-predictions" component={AIPredictions} />
         <Route path="/advanced-invoicing" component={AdvancedInvoicing} />
         <Route path="/customer-relationship" component={CustomerRelationship} />
+        <Route path="/advanced-notifications" component={AdvancedNotifications} />
+        <Route path="/advanced-analytics" component={AdvancedAnalyticsPage} />
+        <Route path="/advanced-reporting" component={AdvancedReporting} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
