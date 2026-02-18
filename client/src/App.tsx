@@ -74,6 +74,9 @@ const AdvancedPaymentPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
+const Comments = lazy(() => import('@/pages/Comments'));
+const Alerts = lazy(() => import('@/pages/Alerts'));
+const SmartNotifications = lazy(() => import('@/pages/SmartNotifications'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -170,6 +173,9 @@ function Router() {
         {/* المساعدة والمعلومات */}
         <Route path="/login" component={Login} />
         <Route path="/help" component={Help} />
+        <Route path="/comments" component={Comments} />
+        <Route path="/alerts" component={Alerts} />
+        <Route path="/smart-notifications" component={SmartNotifications} />
         <Route path="/help-center" component={HelpCenter} />
         <Route path="/tutorials" component={VideoTutorials} />
         <Route path="/about" component={About} />
