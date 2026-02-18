@@ -73,6 +73,12 @@ const ConfirmPlan = lazy(() => import('@/pages/ConfirmPlan'));
 const AdvancedPaymentPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
 const LocalPaymentPage = lazy(() => import('@/pages/LocalPaymentPage'));
 const AdvancedPaymentDashboard = lazy(() => import('@/pages/AdvancedPaymentDashboard'));
+const InvoicesAndReceipts = lazy(() => import('@/pages/InvoicesAndReceipts'));
+const ExportAndReports = lazy(() => import('@/pages/ExportAndReports'));
+const NotificationsAndAlerts = lazy(() => import('@/pages/NotificationsAndAlerts'));
+const SecurityAndPerformance = lazy(() => import('@/pages/SecurityAndPerformance'));
+const TeamAndRoles = lazy(() => import('@/pages/TeamAndRoles'));
+const AdvancedSettings = lazy(() => import('@/pages/AdvancedSettings'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -147,6 +153,12 @@ function Router() {
         <Route path="/advanced-payment" component={AdvancedPaymentPage} />
         <Route path="/local-payment" component={LocalPaymentPage} />
         <Route path="/payment-dashboard" component={AdvancedPaymentDashboard} />
+        <Route path="/invoices-receipts" component={InvoicesAndReceipts} />
+        <Route path="/export-reports" component={ExportAndReports} />
+        <Route path="/notifications-alerts" component={NotificationsAndAlerts} />
+        <Route path="/security-performance" component={SecurityAndPerformance} />
+        <Route path="/team-roles" component={TeamAndRoles} />
+        <Route path="/advanced-settings" component={AdvancedSettings} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
