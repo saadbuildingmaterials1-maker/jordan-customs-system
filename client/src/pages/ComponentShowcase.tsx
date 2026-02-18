@@ -1,10 +1,3 @@
-/**
- * ComponentShowcase Page
- * 
- * صفحة
- * 
- * @module ./client/src/pages/ComponentShowcase
- */
 import {
   Accordion,
   AccordionContent,

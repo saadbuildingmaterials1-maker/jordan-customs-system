@@ -1,10 +1,3 @@
-/**
- * calendar Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/calendar
- */
 import * as React from "react";
 import {
   ChevronDownIcon,

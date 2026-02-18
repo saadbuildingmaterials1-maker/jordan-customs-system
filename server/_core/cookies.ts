@@ -1,8 +1,3 @@
-/**
- * cookies
- * 
- * @module ./server/_core/cookies
- */
 import type { CookieOptions, Request } from "express";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
@@ -44,13 +39,10 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
-  // تفعيل Secure + SameSite=None لجميع البيئات
-  const isSecure = isSecureRequest(req);
-  
   return {
     httpOnly: true,
     path: "/",
     sameSite: "none",
-    secure: isSecure || process.env.NODE_ENV === "production", // فرض Secure في الإنتاج
+    secure: isSecureRequest(req),
   };
 }

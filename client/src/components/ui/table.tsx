@@ -1,10 +1,3 @@
-/**
- * table Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/table
- */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";

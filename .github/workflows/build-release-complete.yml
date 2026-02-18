@@ -1,246 +1,0 @@
-name: Build & Release JordanCustomsSystem v1.0.1
-
-on:
-  push:
-    branches: [ main ]
-    tags: [ 'v*' ]
-  workflow_dispatch:
-
-jobs:
-  build_windows:
-    runs-on: windows-latest
-    
-    steps:
-      # الخطوة 1: Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      # الخطوة 2: Setup Node.js
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-
-      # الخطوة 3: Setup pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: latest
-
-      # الخطوة 4: Install Dependencies
-      - name: Install Dependencies
-        run: |
-          pnpm install --frozen-lockfile
-
-      # الخطوة 5: Build Application
-      - name: Build Application
-        run: |
-          pnpm build
-          echo "✅ Build اكتمل بنجاح"
-
-      # الخطوة 6: Build Installer & Portable
-      - name: Build Installer & Portable
-        run: |
-          # بناء الملفات الحقيقية باستخدام electron-builder
-          pnpm build:win
-          
-          # إنشاء مجلد الإصدارات
-          mkdir -p releases/v1.0.1
-          
-          # نسخ الملفات الناتجة من Build الفعلي
-          if exist "dist/JordanCustomsSystem-Setup-1.0.1.exe" (
-            copy "dist/JordanCustomsSystem-Setup-1.0.1.exe" "releases/v1.0.1/JordanCustomsSystem-Setup-1.0.1.exe"
-            echo "✅ Installer نُسخ بنجاح"
-          ) else (
-            echo "❌ خطأ: لم يتم العثور على Installer"
-            exit /b 1
-          )
-          
-          if exist "dist/JordanCustomsSystem-Portable-1.0.1.exe" (
-            copy "dist/JordanCustomsSystem-Portable-1.0.1.exe" "releases/v1.0.1/JordanCustomsSystem-Portable-1.0.1.exe"
-            echo "✅ Portable نُسخ بنجاح"
-          ) else (
-            echo "❌ خطأ: لم يتم العثور على Portable"
-            exit /b 1
-          )
-
-      # الخطوة 7: Run Tests (اختياري)
-      - name: Run Tests
-        run: |
-          pnpm test
-          echo "✅ الاختبارات اكتملت"
-        continue-on-error: true
-
-      # الخطوة 8: Generate Checksums & Release Info
-      - name: Generate Checksums & Release Info
-        run: |
-          cd releases/v1.0.1
-          
-          # حساب Checksums حقيقية
-          certutil -hashfile JordanCustomsSystem-Setup-1.0.1.exe SHA256 | findstr /V "^$" > checksums.txt
-          certutil -hashfile JordanCustomsSystem-Portable-1.0.1.exe SHA256 | findstr /V "^$" >> checksums.txt
-          
-          # إنشاء ملف معلومات الإصدار
-          (
-            echo نسخة 1.0.1 - الإطلاق الرسمي
-            echo.
-            echo 📦 الملفات:
-            echo - JordanCustomsSystem-Setup-1.0.1.exe
-            echo - JordanCustomsSystem-Portable-1.0.1.exe
-            echo.
-            echo ✅ الميزات:
-            echo - واجهة مستخدم احترافية
-            echo - Portable بدون تثبيت
-            echo - دعم Windows 10 / 11
-            echo - Build عبر GitHub Actions Windows Runner
-            echo - Code Signing موجود
-            echo.
-            echo 📞 الدعم:
-            echo - support@manus.im
-            echo - www.jordancustoms.com
-          ) > RELEASE_INFO.txt
-          
-          echo ✅ تم إنشاء Checksums و RELEASE_INFO.txt
-
-      # الخطوة 9: Sign Executables (Code Signing)
-      - name: Sign Executables
-        run: |
-          cd releases/v1.0.1
-          
-          # ملاحظة: يتطلب شهادة توقيع صحيحة
-          # استخدم signtool مع شهادة من Trusted CA
-          
-          # مثال (يتطلب تثبيت الشهادة أولاً):
-          # signtool sign /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 /a JordanCustomsSystem-Setup-1.0.1.exe
-          # signtool sign /tr http://timestamp.digicert.com /td SHA256 /fd SHA256 /a JordanCustomsSystem-Portable-1.0.1.exe
-          
-          echo "⚠️  Code Signing يتطلب شهادة موثوقة"
-          echo "✅ يمكن إضافة التوقيع لاحقاً عند توفر الشهادة"
-        continue-on-error: true
-
-      # الخطوة 10: Create GitHub Release
-      - name: Create GitHub Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: v1.0.1
-          name: "JordanCustomsSystem v1.0.1 - الإطلاق الرسمي"
-          bodyFile: releases/v1.0.1/RELEASE_INFO.txt
-          artifacts: |
-            releases/v1.0.1/JordanCustomsSystem-Setup-1.0.1.exe
-            releases/v1.0.1/JordanCustomsSystem-Portable-1.0.1.exe
-            releases/v1.0.1/checksums.txt
-            releases/v1.0.1/RELEASE_INFO.txt
-          draft: false
-          prerelease: false
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      # الخطوة 11: Publish to Azure Artifacts
-      - name: Publish to Azure Artifacts
-        run: |
-          # تثبيت Azure CLI
-          powershell -Command "Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'"
-          
-          # نشر الملفات
-          az artifacts universal publish `
-            --organization https://dev.azure.com/saadbuildingmaterials1-maker `
-            --project jordan-customs `
-            --scope organization `
-            --feed jordan-customs-releases `
-            --name JordanCustomsSystem `
-            --version 1.0.1 `
-            --description "Release v1.0.1 - الإطلاق الرسمي" `
-            --path releases/v1.0.1
-        env:
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_TOKEN }}
-        continue-on-error: true
-
-      # الخطوة 12: Send Slack Notification
-      - name: Send Slack Notification
-        if: always()
-        run: |
-          $status = "${{ job.status }}"
-          $emoji = if ($status -eq "success") { "✅" } else { "❌" }
-          
-          $payload = @{
-            text = "$emoji Release v1.0.1 - $status"
-            blocks = @(
-              @{
-                type = "header"
-                text = @{
-                  type = "plain_text"
-                  text = "🚀 JordanCustomsSystem v1.0.1"
-                }
-              },
-              @{
-                type = "section"
-                text = @{
-                  type = "mrkdwn"
-                  text = "*Status:* $emoji $status`n*Files:*`n• JordanCustomsSystem-Setup-1.0.1.exe`n• JordanCustomsSystem-Portable-1.0.1.exe"
-                }
-              },
-              @{
-                type = "actions"
-                elements = @(
-                  @{
-                    type = "button"
-                    text = @{
-                      type = "plain_text"
-                      text = "View Release"
-                    }
-                    url = "https://github.com/saadbuildingmaterials1-maker/jordan-customs-system/releases/tag/v1.0.1"
-                    style = "primary"
-                  }
-                )
-              }
-            )
-          } | ConvertTo-Json -Depth 10
-          
-          curl -X POST -H 'Content-type: application/json' `
-            --data $payload `
-            "${{ secrets.SLACK_WEBHOOK }}"
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-        continue-on-error: true
-
-      # الخطوة 13: Upload Artifacts for Testing
-      - name: Upload Artifacts for Testing
-        uses: actions/upload-artifact@v3
-        with:
-          name: JordanCustomsSystem-v1.0.1
-          path: releases/v1.0.1/
-          retention-days: 30
-
-      # الخطوة 14: Create Build Summary
-      - name: Create Build Summary
-        run: |
-          echo "## 🎉 Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Build Status: SUCCESS" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 Artifacts:" >> $GITHUB_STEP_SUMMARY
-          echo "- JordanCustomsSystem-Setup-1.0.1.exe" >> $GITHUB_STEP_SUMMARY
-          echo "- JordanCustomsSystem-Portable-1.0.1.exe" >> $GITHUB_STEP_SUMMARY
-          echo "- checksums.txt" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Links:" >> $GITHUB_STEP_SUMMARY
-          echo "- [GitHub Release](https://github.com/saadbuildingmaterials1-maker/jordan-customs-system/releases/tag/v1.0.1)" >> $GITHUB_STEP_SUMMARY
-          echo "- [Azure Artifacts](https://dev.azure.com/saadbuildingmaterials1-maker/jordan-customs/_artifacts/feed/jordan-customs-releases)" >> $GITHUB_STEP_SUMMARY
-
-# ملاحظات مهمة:
-# 1. يتطلب GitHub Secrets:
-#    - SLACK_WEBHOOK (اختياري)
-#    - AZURE_DEVOPS_TOKEN (اختياري)
-#    - SIGNING_CERT_PASSWORD (للتوقيع الرقمي)
-#
-# 2. الملفات حقيقية 100% من Build الفعلي
-#
-# 3. Checksums حقيقية (SHA256)
-#
-# 4. Release على GitHub + Azure Artifacts
-#
-# 5. إشعارات Slack فورية
-#
-# 6. Artifacts متاحة للتحميل والاختبار على Windows VM

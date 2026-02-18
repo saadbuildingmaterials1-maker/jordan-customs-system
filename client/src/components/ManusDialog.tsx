@@ -1,10 +1,3 @@
-/**
- * ManusDialog Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ManusDialog
- */
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";

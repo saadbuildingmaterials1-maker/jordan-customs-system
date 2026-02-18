@@ -3,8 +3,7 @@
 .pnpm-store/
 
 # Build outputs
-# dist/ - Temporarily commented to allow publishing
-# dist_electron/
+dist/
 build/
 *.dist
 

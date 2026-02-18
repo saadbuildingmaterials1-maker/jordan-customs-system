@@ -1,10 +1,3 @@
-/**
- * form Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/form
- */
 "use client";
 
 import * as React from "react";

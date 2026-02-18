@@ -1,10 +1,3 @@
-/**
- * pagination Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/pagination
- */
 import * as React from "react";
 import {
   ChevronLeftIcon,

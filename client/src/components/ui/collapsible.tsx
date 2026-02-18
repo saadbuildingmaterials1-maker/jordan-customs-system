@@ -1,10 +1,3 @@
-/**
- * collapsible Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/collapsible
- */
 import * as CollapsiblePrimitive from "@radix-ui/react-collapsible";
 
 function Collapsible({

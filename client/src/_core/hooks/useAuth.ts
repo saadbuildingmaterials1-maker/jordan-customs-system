@@ -1,10 +1,3 @@
-/**
- * useAuth Hook
- * 
- * React Hook مخصص
- * 
- * @module ./client/src/_core/hooks/useAuth
- */
 import { getLoginUrl } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
@@ -21,7 +14,7 @@ export function useAuth(options?: UseAuthOptions) {
   const utils = trpc.useUtils();
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
-    retry: 1,
+    retry: false,
     refetchOnWindowFocus: false,
   });
 
@@ -55,7 +48,7 @@ export function useAuth(options?: UseAuthOptions) {
     );
     return {
       user: meQuery.data ?? null,
-      loading: meQuery.isLoading && !meQuery.isError || logoutMutation.isPending,
+      loading: meQuery.isLoading || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated: Boolean(meQuery.data),
     };

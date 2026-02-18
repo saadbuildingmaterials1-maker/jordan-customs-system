@@ -1,10 +1,3 @@
-/**
- * Environment Configuration
- * 
- * متغيرات البيئة والإعدادات
- * 
- * @module server/_core/env
- */
 export const ENV = {
   appId: process.env.VITE_APP_ID ?? "",
   cookieSecret: process.env.JWT_SECRET ?? "",

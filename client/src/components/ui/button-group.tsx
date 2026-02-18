@@ -1,10 +1,3 @@
-/**
- * button-group Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/button-group
- */
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 

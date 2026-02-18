@@ -1,10 +1,3 @@
-/**
- * aspect-ratio Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/aspect-ratio
- */
 import * as AspectRatioPrimitive from "@radix-ui/react-aspect-ratio";
 
 function AspectRatio({

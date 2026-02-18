@@ -1,10 +1,3 @@
-/**
- * scroll-area Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/scroll-area
- */
 import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 

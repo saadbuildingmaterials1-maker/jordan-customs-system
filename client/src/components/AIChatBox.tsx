@@ -1,10 +1,3 @@
-/**
- * AIChatBox Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/AIChatBox
- */
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -92,6 +85,7 @@ export type AIChatBoxProps = {
  *       }]);
  *     },
  *     onError: (error) => {
+ *       console.error("Chat error:", error);
  *       // Optionally show error message to user
  *     }
  *   });

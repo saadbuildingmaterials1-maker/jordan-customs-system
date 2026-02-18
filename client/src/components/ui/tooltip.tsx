@@ -1,10 +1,3 @@
-/**
- * tooltip Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/tooltip
- */
 import * as React from "react";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 

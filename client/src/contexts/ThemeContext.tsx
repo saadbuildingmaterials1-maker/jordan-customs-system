@@ -1,17 +1,10 @@
-/**
- * ThemeContext
- * 
- * @module ./client/src/contexts/ThemeContext
- */
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "light" | "dark" | "system";
+type Theme = "light" | "dark";
 
 interface ThemeContextType {
   theme: Theme;
-  isDark: boolean;
-  toggleTheme: () => void;
-  setTheme: (theme: Theme) => void;
+  toggleTheme?: () => void;
   switchable: boolean;
 }
 
@@ -25,71 +18,38 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
-  switchable = true,
+  defaultTheme = "light",
+  switchable = false,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (switchable) {
       const stored = localStorage.getItem("theme");
       return (stored as Theme) || defaultTheme;
     }
     return defaultTheme;
   });
 
-  const [isDark, setIsDark] = useState(false);
-
   useEffect(() => {
-    const updateTheme = () => {
-      let shouldBeDark = false;
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
 
-      if (theme === "dark") {
-        shouldBeDark = true;
-      } else if (theme === "light") {
-        shouldBeDark = false;
-      } else {
-        // system mode
-        shouldBeDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      }
-
-      setIsDark(shouldBeDark);
-
-      const root = document.documentElement;
-      if (shouldBeDark) {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
-
-      if (switchable) {
-        localStorage.setItem("theme", theme);
-      }
-    };
-
-    updateTheme();
-
-    // الاستماع لتغييرات نظام التشغيل
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      const handleChange = () => updateTheme();
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
+    if (switchable) {
+      localStorage.setItem("theme", theme);
     }
   }, [theme, switchable]);
 
-  const toggleTheme = () => {
-    setThemeState((prev) => {
-      if (prev === "light") return "dark";
-      if (prev === "dark") return "system";
-      return "light";
-    });
-  };
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-  };
+  const toggleTheme = switchable
+    ? () => {
+        setTheme(prev => (prev === "light" ? "dark" : "light"));
+      }
+    : undefined;
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, setTheme, switchable }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, switchable }}>
       {children}
     </ThemeContext.Provider>
   );

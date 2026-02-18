@@ -1,8 +1,3 @@
-/**
- * usePersistFn Hook
- * React Hook مخصص
- * @module ./client/src/hooks/usePersistFn
- */
 import { useRef } from "react";
 
 type noop = (...args: any[]) => any;

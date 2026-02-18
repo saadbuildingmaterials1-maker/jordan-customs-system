@@ -1,10 +1,3 @@
-/**
- * slider Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/slider
- */
 import * as React from "react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 

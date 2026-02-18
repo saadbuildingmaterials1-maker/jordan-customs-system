@@ -1,10 +1,3 @@
-/**
- * dialog Component
- * 
- * مكون React
- * 
- * @module ./client/src/components/ui/dialog
- */
 import { cn } from "@/lib/utils";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";

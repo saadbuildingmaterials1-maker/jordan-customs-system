@@ -1,8 +1,3 @@
-/**
- * vite.config
- * 
- * @module ./vite.config
- */
 import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -155,45 +150,7 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-/**
- * Vite plugin to reorder modulepreload links before module script
- * Ensures dependencies are preloaded before the entry point loads
- */
-function vitePluginReorderModulepreload(): Plugin {
-  return {
-    name: "reorder-modulepreload",
-    transformIndexHtml(html) {
-      // Extract modulepreload links
-      const modulepreloadRegex = /<link rel="modulepreload"[^>]*>/g;
-      const modulepreloads = html.match(modulepreloadRegex) || [];
-      
-      // Extract module script
-      const moduleScriptRegex = /<script type="module"[^>]*><\/script>/;
-      const moduleScript = html.match(moduleScriptRegex)?.[0];
-      
-      if (!modulepreloads.length || !moduleScript) {
-        return html;
-      }
-      
-      // Remove all modulepreload links from HTML
-      let result = html;
-      modulepreloads.forEach(link => {
-        result = result.replace(link, "");
-      });
-      
-      // Insert modulepreload links before module script
-      const modulepreloadHtml = modulepreloads.join("\n    ");
-      result = result.replace(
-        moduleScript,
-        `${modulepreloadHtml}\n    ${moduleScript}`
-      );
-      
-      return result;
-    },
-  };
-}
-
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginReorderModulepreload()];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
 export default defineConfig({
   plugins,
@@ -208,128 +165,11 @@ export default defineConfig({
   root: path.resolve(import.meta.dirname, "client"),
   publicDir: path.resolve(import.meta.dirname, "client", "public"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist"),
+    outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000,
-    minify: "esbuild",
-    cssCodeSplit: true,
-    reportCompressedSize: false,
-    sourcemap: false,
-    target: 'esnext',
-    assetsInlineLimit: 4096,
-    // terserOptions removed - use esbuild minify instead
-    // terserOptions: {
-    //   compress: {
-    //     drop_console: true,
-    //     drop_debugger: true,
-    //   },
-    // },
-    rollupOptions: {
-      external: ['@sentry/react', 'electron'],
-      output: {
-        manualChunks: (id) => {
-          // IMPORTANT: React must be loaded first!
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
-            return "vendor-react";
-          }
-          
-          // Split large utility libraries
-          if (id.includes("node_modules/lodash")) return "vendor-lodash";
-          if (id.includes("node_modules/moment")) return "vendor-moment";
-          if (id.includes("node_modules/echarts")) return "vendor-echarts";
-          
-          // Vendor chunks - React
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
-            return "vendor-react";
-          }
-
-          // Vendor chunks - UI Library
-          if (id.includes("node_modules/@radix-ui")) {
-            return "vendor-ui";
-          }
-
-          // Vendor chunks - Stripe
-          if (id.includes("node_modules/stripe")) {
-            return "vendor-stripe";
-          }
-
-          // Vendor chunks - Charts
-          if (id.includes("node_modules/recharts")) {
-            return "vendor-charts";
-          }
-
-          // Vendor chunks - PDF
-          if (id.includes("node_modules/pdfjs") || id.includes("node_modules/pdf")) {
-            return "vendor-pdf";
-          }
-
-          // Vendor chunks - Date/Time
-          if (id.includes("node_modules/date-fns") || id.includes("node_modules/dayjs")) {
-            return "vendor-date";
-          }
-
-          // Vendor chunks - Form
-          if (id.includes("node_modules/react-hook-form") || id.includes("node_modules/zod")) {
-            return "vendor-form";
-          }
-
-          // Vendor chunks - HTTP
-          if (id.includes("node_modules/axios") || id.includes("node_modules/fetch")) {
-            return "vendor-http";
-          }
-
-          // Vendor chunks - Other utilities (split into smaller chunks)
-          if (id.includes("node_modules")) {
-            if (id.includes("node_modules/@")) {
-              return "vendor-scoped";
-            }
-            return "vendor-utils";
-          }
-
-          // Page chunks
-          if (id.includes("client/src/pages/")) {
-            const match = id.match(/pages\/([^/]+)/);
-            if (match) {
-              return `page-${match[1].replace(".tsx", "")}`;
-            }
-          }
-
-          // Component chunks
-          if (id.includes("client/src/components/")) {
-            return "components";
-          }
-
-          // Hook chunks
-          if (id.includes("client/src/hooks/")) {
-            return "hooks";
-          }
-
-          // Context chunks
-          if (id.includes("client/src/contexts/")) {
-            return "contexts";
-          }
-
-          // Lib chunks
-          if (id.includes("client/src/lib/")) {
-            return "lib";
-          }
-        },
-        entryFileNames: "assets/[name]-[hash].js",
-        chunkFileNames: "assets/[name]-[hash].js",
-        assetFileNames: "assets/[name]-[hash][extname]",
-        compact: true,
-      },
-    },
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'wouter', 'lucide-react'],
-    exclude: ['@vite/client'],
   },
   server: {
     host: true,
-    warmup: {
-      clientFiles: ['./src/App.tsx', './src/pages/Home.tsx', './src/pages/DeclarationsList.tsx'],
-    },
     allowedHosts: [
       ".manuspre.computer",
       ".manus.computer",
@@ -338,8 +178,6 @@ export default defineConfig({
       ".manusvm.computer",
       "localhost",
       "127.0.0.1",
-      "mp3-app.com",
-      "www.mp3-app.com",
     ],
     fs: {
       strict: true,

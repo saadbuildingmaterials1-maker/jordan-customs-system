@@ -1,10 +1,3 @@
-/**
- * TRPC Context
- * 
- * تعريف السياق للعمليات المحمية
- * 
- * @module server/_core/context
- */
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
 import { sdk } from "./sdk";
