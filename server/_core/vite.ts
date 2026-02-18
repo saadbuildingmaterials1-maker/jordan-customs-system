@@ -1,7 +1,6 @@
 import express, { type Express } from "express";
 import fs from "fs";
 import { type Server } from "http";
-import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
@@ -20,9 +19,17 @@ export async function setupVite(app: Express, server: Server) {
     appType: "custom",
   });
 
+  // Vite middleware MUST come first to handle source file transformations
   app.use(vite.middlewares);
+  
+  // Fallback to index.html for client-side routing (but NOT for source files)
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
+
+    // Skip if this is an API route or source file request
+    if (url.startsWith("/api/") || url.startsWith("/@") || url.includes(".")) {
+      return next();
+    }
 
     try {
       const clientTemplate = path.resolve(
@@ -32,13 +39,12 @@ export async function setupVite(app: Express, server: Server) {
         "index.html"
       );
 
-      // always reload the index.html file from disk incase it changes
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
-      );
+      // Read index.html and let Vite transform it
+      const template = await fs.promises.readFile(clientTemplate, "utf-8");
+      
+      // Vite will automatically handle module transformation in development mode
       const page = await vite.transformIndexHtml(url, template);
+      
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
       vite.ssrFixStacktrace(e as Error);
