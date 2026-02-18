@@ -92,11 +92,14 @@ export default function Home() {
             </h1>
             {/* SEO Keywords - Visible in content */}
             <p className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto leading-relaxed">
-              منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية. نظام متخصص في إدارة الجمارك والتصريحات الجمركية مع حساب الرسوم الجمركية تلقائياً
+              منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية. نظام متخصص في إدارة الجمارك والتصريحات الجمركية مع حساب الرسوم الجمركية تلقائياً. حل شامل لإدارة الشحن الدولي وتتبع الحاويات والتكاليف اللوجستية
             </p>
             <h2 className="text-2xl md:text-3xl font-semibold text-blue-100 mb-6">
               حل شامل لإدارة الجمارك والشحن والتكاليف والتصريحات الجمركية
             </h2>
+            <p className="text-lg text-blue-100/70 mb-8 max-w-3xl mx-auto">
+              احسب الرسوم الجمركية والضرائب تلقائياً، أدر البيانات الجمركية بسهولة، وتتبع الشحنات الدولية في الوقت الفعلي
+            </p>
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
