@@ -100,6 +100,9 @@ const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage')
 const AdvancedReporting = lazy(() => import('@/pages/AdvancedReporting'));
 const PaymentGatewayIntegration = lazy(() => import('@/pages/PaymentGatewayIntegration'));
 const InstantMessaging = lazy(() => import('@/pages/InstantMessaging'));
+const VoiceVideoAlerts = lazy(() => import('@/pages/VoiceVideoAlerts'));
+const SalesDashboard = lazy(() => import('@/pages/SalesDashboard'));
+const SurveysAndRatings = lazy(() => import('@/pages/SurveysAndRatings'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -201,6 +204,9 @@ function Router() {
         <Route path="/advanced-reporting" component={AdvancedReporting} />
         <Route path="/payment-gateway-integration" component={PaymentGatewayIntegration} />
         <Route path="/instant-messaging" component={InstantMessaging} />
+        <Route path="/voice-video-alerts" component={VoiceVideoAlerts} />
+        <Route path="/sales-dashboard" component={SalesDashboard} />
+        <Route path="/surveys-ratings" component={SurveysAndRatings} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
