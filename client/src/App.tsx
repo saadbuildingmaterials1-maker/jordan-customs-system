@@ -136,6 +136,9 @@ const Help = lazy(() => import('@/pages/Help'));
 const AdvancedLogin = lazy(() => import('@/pages/AdvancedLogin'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const InstantNotificationSystem = lazy(() => import('@/pages/InstantNotificationSystem'));
+const AdvancedPaymentSystem = lazy(() => import('@/pages/AdvancedPaymentSystem'));
+const PerformanceAndSEO = lazy(() => import('@/pages/PerformanceAndSEO'));
+const LiveTechnicalSupport = lazy(() => import('@/pages/LiveTechnicalSupport'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -297,6 +300,9 @@ function Router() {
         <Route path="/advanced-login" component={AdvancedLogin} />
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/instant-notifications" component={InstantNotificationSystem} />
+        <Route path="/advanced-payment-system" component={AdvancedPaymentSystem} />
+        <Route path="/performance-seo" component={PerformanceAndSEO} />
+        <Route path="/live-support" component={LiveTechnicalSupport} />
         <Route path="/help" component={Help} />
         <Route path="/help-center" component={HelpCenter} />
         <Route path="/tutorials" component={VideoTutorials} />
