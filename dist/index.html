@@ -71,14 +71,7 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="https://jordan-customs-system.manus.space/">
     
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RKRMXR0BFK"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-RKRMXR0BFK');
-    </script>
+    <!-- Google Analytics - Removed due to CSP restrictions -->
     
     <style>
       body {
@@ -89,16 +82,8 @@
         -moz-osx-font-smoothing: grayscale;
       }
       
-      #root:empty::before {
-        content: "جاري تشغيل النظام... يرجى الانتظار";
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        color: #535350;
-        font-size: 1.2rem;
-        font-weight: 500;
-        letter-spacing: 0.5px;
+      #root {
+        min-height: 100vh;
       }
       
       * {
