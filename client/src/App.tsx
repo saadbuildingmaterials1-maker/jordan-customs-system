@@ -127,6 +127,9 @@ const JordanCustomsIntegration = lazy(() => import('@/pages/JordanCustomsIntegra
 const InternationalShippingIntegration = lazy(() => import('@/pages/InternationalShippingIntegration'));
 const MobileAppDevelopmentAdvanced = lazy(() => import('@/pages/MobileAppDevelopmentAdvanced'));
 const SmartAnalyticsAdvanced = lazy(() => import('@/pages/SmartAnalyticsAdvanced'));
+const BankIntegration = lazy(() => import('@/pages/BankIntegration'));
+const PWADevelopment = lazy(() => import('@/pages/PWADevelopment'));
+const SMSWhatsAppNotifications = lazy(() => import('@/pages/SMSWhatsAppNotifications'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -255,6 +258,9 @@ function Router() {
         <Route path="/international-shipping-integration" component={InternationalShippingIntegration} />
         <Route path="/mobile-app-development-advanced" component={MobileAppDevelopmentAdvanced} />
         <Route path="/smart-analytics-advanced" component={SmartAnalyticsAdvanced} />
+        <Route path="/bank-integration" component={BankIntegration} />
+        <Route path="/pwa-development" component={PWADevelopment} />
+        <Route path="/sms-whatsapp-notifications" component={SMSWhatsAppNotifications} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
