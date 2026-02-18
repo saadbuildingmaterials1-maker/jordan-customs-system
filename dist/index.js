@@ -15466,8 +15466,8 @@ var supportAgentRouter = router({
    */
   getPendingConversations: protectedProcedure.input(
     z22.object({
-      limit: z22.number().default(20),
-      offset: z22.number().default(0),
+      limit: z22.number().int().min(1).max(100).default(20),
+      offset: z22.number().int().min(0).default(0),
       status: z22.enum(["open", "in_progress", "waiting_customer"]).optional()
     })
   ).query(async ({ ctx, input }) => {
@@ -15798,7 +15798,7 @@ var supportAgentRouter = router({
   addConversationNote: protectedProcedure.input(
     z22.object({
       conversationId: z22.string().uuid(),
-      note: z22.string().min(1).max(1e3)
+      note: z22.string().min(1).max(1e3).trim()
     })
   ).mutation(async ({ ctx, input }) => {
     return {

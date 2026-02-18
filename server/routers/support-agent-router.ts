@@ -23,8 +23,8 @@ export const supportAgentRouter = router({
   getPendingConversations: protectedProcedure
     .input(
       z.object({
-        limit: z.number().default(20),
-        offset: z.number().default(0),
+        limit: z.number().int().min(1).max(100).default(20),
+        offset: z.number().int().min(0).default(0),
         status: z.enum(["open", "in_progress", "waiting_customer"]).optional(),
       })
     )
@@ -499,7 +499,7 @@ export const supportAgentRouter = router({
     .input(
       z.object({
         conversationId: z.string().uuid(),
-        note: z.string().min(1).max(1000),
+        note: z.string().min(1).max(1000).trim(),
       })
     )
     .mutation(async ({ ctx, input }) => {
