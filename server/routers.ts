@@ -58,6 +58,7 @@ import { advancedFeaturesRouter } from "./routers/advanced-features";
 import { advancedOperationsRouter } from "./routers/advanced-operations";
 import { notificationsCenterRouter } from "./routers/notifications-center";
 import { liveChatRouter, notificationRouter } from "./routers/live-chat-router";
+import { supportAgentRouter } from "./routers/support-agent-router";
 
 /**
  * Main Application Router
@@ -677,6 +678,7 @@ export const appRouter = router({
   notificationsCenter: notificationsCenterRouter,
   liveChat: liveChatRouter,
   notifications: notificationRouter,
+  supportAgent: supportAgentRouter,
 });
 
 export type AppRouter = typeof appRouter;
