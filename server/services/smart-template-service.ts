@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { getDb } from '../db'; const db = await getDb();
 import { TRPCError } from '@trpc/server';
 
 /**

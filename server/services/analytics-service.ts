@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { getDb } from '../db'; const db = await getDb();
 import { invoices, shipments, customsDeclarations } from '../../drizzle/schema';
 import { paymentTransactions } from '../../drizzle/payment-schema';
 import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';

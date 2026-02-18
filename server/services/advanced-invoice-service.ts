@@ -1,4 +1,4 @@
-import { db } from '../db';
+import { getDb } from '../db'; const db = await getDb();
 import { invoices, invoiceItems, invoiceSettings, digitalSignatures, invoiceAuditLog } from '../../drizzle/invoice-schema';
 import { eq, and } from 'drizzle-orm';
 import crypto from 'crypto';
