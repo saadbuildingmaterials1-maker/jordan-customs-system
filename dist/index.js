@@ -1474,7 +1474,7 @@ function registerOAuthRoutes(app) {
 }
 
 // server/routers.ts
-import { z as z21 } from "zod";
+import { z as z22 } from "zod";
 
 // server/_core/systemRouter.ts
 import { z } from "zod";
@@ -2150,7 +2150,7 @@ ${itemsList}
 }
 
 // server/ai-data-extraction.ts
-async function extractDataFromText(text3) {
+async function extractDataFromText(text4) {
   try {
     const response = await invokeLLM({
       messages: [
@@ -2185,7 +2185,7 @@ async function extractDataFromText(text3) {
           role: "user",
           content: `\u0627\u0633\u062A\u062E\u0631\u062C \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0645\u0646 \u0627\u0644\u0646\u0635 \u0627\u0644\u062A\u0627\u0644\u064A:
 
-${text3}`
+${text4}`
         }
       ],
       response_format: {
@@ -6068,9 +6068,9 @@ var InvoiceService = class {
    * إنشاء رقم فاتورة فريد
    */
   generateInvoiceNumber() {
-    const timestamp3 = Date.now();
+    const timestamp4 = Date.now();
     const random = Math.floor(Math.random() * 1e4);
-    return `INV-${timestamp3}-${random}`;
+    return `INV-${timestamp4}-${random}`;
   }
 };
 var invoiceService = new InvoiceService();
@@ -7496,8 +7496,8 @@ var ShippingIntegrationService = class {
       UPS: "1Z"
     }[carrier] || "1Z";
     const random = Math.random().toString(36).substring(2, 15).toUpperCase();
-    const timestamp3 = Date.now().toString().slice(-8);
-    return `${prefix}${timestamp3}${random}`;
+    const timestamp4 = Date.now().toString().slice(-8);
+    return `${prefix}${timestamp4}${random}`;
   }
   /**
    * الحصول على حالة الشحنة
@@ -14365,6 +14365,1097 @@ var notificationsCenterRouter = router({
   })
 });
 
+// server/routers/live-chat-router.ts
+import { z as z21 } from "zod";
+
+// drizzle/live-chat-schema.ts
+import {
+  int as int3,
+  mysqlEnum as mysqlEnum3,
+  mysqlTable as mysqlTable3,
+  text as text3,
+  timestamp as timestamp3,
+  varchar as varchar3,
+  boolean as boolean3
+} from "drizzle-orm/mysql-core";
+var liveChatConversations = mysqlTable3("live_chat_conversations", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  userId: int3("user_id").notNull().references(() => users.id),
+  supportAgentId: int3("support_agent_id").references(() => users.id),
+  // معلومات المحادثة
+  subject: varchar3("subject", { length: 255 }).notNull(),
+  status: mysqlEnum3("status", [
+    "open",
+    "in_progress",
+    "waiting_customer",
+    "waiting_agent",
+    "closed",
+    "resolved"
+  ]).default("open").notNull(),
+  // الأولوية
+  priority: mysqlEnum3("priority", ["low", "medium", "high", "urgent"]).default("medium").notNull(),
+  // الفئة
+  category: varchar3("category", { length: 100 }).notNull(),
+  // 'billing', 'technical', 'general', 'complaint'
+  // الإحصائيات
+  messageCount: int3("message_count").default(0),
+  firstResponseTime: timestamp3("first_response_time"),
+  resolvedTime: timestamp3("resolved_time"),
+  averageResponseTime: int3("average_response_time"),
+  // بالثواني
+  // البيانات الإضافية
+  tags: text3("tags"),
+  // JSON array
+  metadata: text3("metadata"),
+  // JSON object
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow(),
+  closedAt: timestamp3("closed_at")
+});
+var liveChatMessages = mysqlTable3("live_chat_messages", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  conversationId: varchar3("conversation_id", { length: 36 }).notNull().references(() => liveChatConversations.id),
+  senderId: int3("sender_id").notNull().references(() => users.id),
+  senderType: mysqlEnum3("sender_type", ["customer", "agent"]).notNull(),
+  // محتوى الرسالة
+  message: text3("message").notNull(),
+  messageType: mysqlEnum3("message_type", ["text", "image", "file", "system"]).default("text").notNull(),
+  // الملفات المرفقة
+  attachmentUrl: text3("attachment_url"),
+  attachmentName: varchar3("attachment_name", { length: 255 }),
+  attachmentSize: int3("attachment_size"),
+  // بالبايتات
+  // الحالة
+  isRead: boolean3("is_read").default(false),
+  readAt: timestamp3("read_at"),
+  // التقييم
+  rating: int3("rating"),
+  // 1-5 stars
+  feedback: text3("feedback"),
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow()
+});
+var customNotifications = mysqlTable3("custom_notifications", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  userId: int3("user_id").notNull().references(() => users.id),
+  // معلومات الإشعار
+  title: varchar3("title", { length: 255 }).notNull(),
+  description: text3("description"),
+  notificationType: mysqlEnum3("notification_type", [
+    "order_status",
+    "shipment_update",
+    "payment_reminder",
+    "customs_alert",
+    "price_change",
+    "system_update",
+    "custom"
+  ]).notNull(),
+  // القنوات
+  channels: text3("channels").notNull(),
+  // JSON array: ['email', 'sms', 'push', 'in_app']
+  // التكرار
+  frequency: mysqlEnum3("frequency", [
+    "immediately",
+    "daily",
+    "weekly",
+    "monthly",
+    "never"
+  ]).default("immediately").notNull(),
+  // الشروط
+  conditions: text3("conditions"),
+  // JSON object for filtering conditions
+  // الحالة
+  isActive: boolean3("is_active").default(true),
+  isEnabled: boolean3("is_enabled").default(true),
+  // الإحصائيات
+  sentCount: int3("sent_count").default(0),
+  openedCount: int3("opened_count").default(0),
+  clickedCount: int3("clicked_count").default(0),
+  // الجدولة
+  scheduledTime: timestamp3("scheduled_time"),
+  lastSentAt: timestamp3("last_sent_at"),
+  nextSendAt: timestamp3("next_send_at"),
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow()
+});
+var notificationChannels = mysqlTable3("notification_channels", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  userId: int3("user_id").notNull().references(() => users.id),
+  // نوع القناة
+  channelType: mysqlEnum3("channel_type", ["email", "sms", "push", "in_app"]).notNull(),
+  // معلومات القناة
+  channelAddress: varchar3("channel_address", { length: 255 }).notNull(),
+  // email, phone, device token
+  channelName: varchar3("channel_name", { length: 100 }),
+  // الحالة
+  isVerified: boolean3("is_verified").default(false),
+  verificationToken: varchar3("verification_token", { length: 255 }),
+  verificationSentAt: timestamp3("verification_sent_at"),
+  // الإعدادات
+  isActive: boolean3("is_active").default(true),
+  isPrimary: boolean3("is_primary").default(false),
+  // الإحصائيات
+  successCount: int3("success_count").default(0),
+  failureCount: int3("failure_count").default(0),
+  lastUsedAt: timestamp3("last_used_at"),
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow()
+});
+var notificationHistory = mysqlTable3("notification_history", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  userId: int3("user_id").notNull().references(() => users.id),
+  notificationId: varchar3("notification_id", { length: 36 }).references(
+    () => customNotifications.id
+  ),
+  channelId: varchar3("channel_id", { length: 36 }).references(
+    () => notificationChannels.id
+  ),
+  // معلومات الإشعار
+  title: varchar3("title", { length: 255 }).notNull(),
+  message: text3("message").notNull(),
+  notificationType: varchar3("notification_type", { length: 50 }).notNull(),
+  // القناة المستخدمة
+  sentVia: mysqlEnum3("sent_via", ["email", "sms", "push", "in_app"]).notNull(),
+  // الحالة
+  status: mysqlEnum3("status", [
+    "pending",
+    "sent",
+    "delivered",
+    "failed",
+    "opened",
+    "clicked"
+  ]).default("pending").notNull(),
+  // البيانات
+  recipientAddress: varchar3("recipient_address", { length: 255 }),
+  errorMessage: text3("error_message"),
+  // التتبع
+  sentAt: timestamp3("sent_at"),
+  deliveredAt: timestamp3("delivered_at"),
+  openedAt: timestamp3("opened_at"),
+  clickedAt: timestamp3("clicked_at"),
+  // البيانات الإضافية
+  metadata: text3("metadata"),
+  // JSON object
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow()
+});
+var notificationTemplates = mysqlTable3("notification_templates", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  userId: int3("user_id").notNull().references(() => users.id),
+  // معلومات القالب
+  templateName: varchar3("template_name", { length: 255 }).notNull(),
+  templateType: mysqlEnum3("template_type", [
+    "email",
+    "sms",
+    "push",
+    "in_app"
+  ]).notNull(),
+  // محتوى القالب
+  subject: varchar3("subject", { length: 255 }),
+  body: text3("body").notNull(),
+  footer: text3("footer"),
+  // المتغيرات
+  variables: text3("variables"),
+  // JSON array of variable names
+  // الحالة
+  isActive: boolean3("is_active").default(true),
+  isDefault: boolean3("is_default").default(false),
+  // الإحصائيات
+  usageCount: int3("usage_count").default(0),
+  lastUsedAt: timestamp3("last_used_at"),
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow()
+});
+var notificationPreferences2 = mysqlTable3("notification_preferences", {
+  id: varchar3("id", { length: 36 }).primaryKey(),
+  userId: int3("user_id").notNull().unique().references(() => users.id),
+  // الإشعارات العامة
+  enableAllNotifications: boolean3("enable_all_notifications").default(true),
+  enableEmailNotifications: boolean3("enable_email_notifications").default(true),
+  enableSmsNotifications: boolean3("enable_sms_notifications").default(true),
+  enablePushNotifications: boolean3("enable_push_notifications").default(true),
+  enableInAppNotifications: boolean3("enable_in_app_notifications").default(
+    true
+  ),
+  // أنواع الإشعارات
+  enableOrderStatusNotifications: boolean3(
+    "enable_order_status_notifications"
+  ).default(true),
+  enableShipmentNotifications: boolean3("enable_shipment_notifications").default(
+    true
+  ),
+  enablePaymentNotifications: boolean3("enable_payment_notifications").default(
+    true
+  ),
+  enableCustomsNotifications: boolean3("enable_customs_notifications").default(
+    true
+  ),
+  enablePriceAlertNotifications: boolean3(
+    "enable_price_alert_notifications"
+  ).default(true),
+  enableSystemNotifications: boolean3("enable_system_notifications").default(
+    true
+  ),
+  // أوقات الإشعارات
+  quietHoursStart: varchar3("quiet_hours_start", { length: 5 }),
+  // HH:MM
+  quietHoursEnd: varchar3("quiet_hours_end", { length: 5 }),
+  // HH:MM
+  quietHoursEnabled: boolean3("quiet_hours_enabled").default(false),
+  // التكرار
+  maxNotificationsPerDay: int3("max_notifications_per_day").default(50),
+  batchNotifications: boolean3("batch_notifications").default(false),
+  batchInterval: mysqlEnum3("batch_interval", ["hourly", "daily", "weekly"]).default("daily"),
+  // الإعدادات المتقدمة
+  unsubscribeAll: boolean3("unsubscribe_all").default(false),
+  customPreferences: text3("custom_preferences"),
+  // JSON object
+  createdAt: timestamp3("created_at").notNull().defaultNow(),
+  updatedAt: timestamp3("updated_at").notNull().defaultNow().onUpdateNow()
+});
+
+// server/services/live-chat-service.ts
+import { eq as eq3, and as and3, desc as desc3, gte, lte } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
+async function createLiveChatConversation(userId, subject, category, priority = "medium") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const conversationId = uuidv4();
+  await db.insert(liveChatConversations).values({
+    id: conversationId,
+    userId,
+    subject,
+    category,
+    priority,
+    status: "open",
+    messageCount: 0
+  });
+  return conversationId;
+}
+async function sendLiveChatMessage(conversationId, senderId, message, senderType = "customer", attachmentUrl, attachmentName, attachmentSize) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const messageId = uuidv4();
+  await db.insert(liveChatMessages).values({
+    id: messageId,
+    conversationId,
+    senderId,
+    senderType,
+    message,
+    messageType: attachmentUrl ? "file" : "text",
+    attachmentUrl,
+    attachmentName,
+    attachmentSize,
+    isRead: false
+  });
+  const conversation = await db.select().from(liveChatConversations).where(eq3(liveChatConversations.id, conversationId)).limit(1);
+  if (conversation.length > 0) {
+    await db.update(liveChatConversations).set({
+      messageCount: (conversation[0].messageCount || 0) + 1,
+      updatedAt: /* @__PURE__ */ new Date()
+    }).where(eq3(liveChatConversations.id, conversationId));
+  }
+  return messageId;
+}
+async function getUserConversations(userId, limit = 20) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const conversations = await db.select().from(liveChatConversations).where(eq3(liveChatConversations.userId, userId)).orderBy(desc3(liveChatConversations.updatedAt)).limit(limit);
+  return conversations;
+}
+async function getConversationMessages(conversationId, limit = 50) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const messages = await db.select().from(liveChatMessages).where(eq3(liveChatMessages.conversationId, conversationId)).orderBy(desc3(liveChatMessages.createdAt)).limit(limit);
+  return messages.reverse();
+}
+async function updateConversationStatus(conversationId, status) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const closedAt = status === "closed" || status === "resolved" ? /* @__PURE__ */ new Date() : null;
+  await db.update(liveChatConversations).set({
+    status,
+    closedAt,
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq3(liveChatConversations.id, conversationId));
+}
+async function rateConversation(conversationId, messageId, rating, feedback) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  if (rating < 1 || rating > 5) {
+    throw new Error("Rating must be between 1 and 5");
+  }
+  await db.update(liveChatMessages).set({
+    rating,
+    feedback,
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq3(liveChatMessages.id, messageId));
+}
+async function getLiveChatStatistics(userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  let query = db.select().from(liveChatConversations);
+  if (userId) {
+    query = query.where(eq3(liveChatConversations.userId, userId));
+  }
+  const conversations = await query;
+  const stats = {
+    totalConversations: conversations.length,
+    openConversations: conversations.filter((c) => c.status === "open").length,
+    inProgressConversations: conversations.filter(
+      (c) => c.status === "in_progress"
+    ).length,
+    closedConversations: conversations.filter((c) => c.status === "closed").length,
+    resolvedConversations: conversations.filter((c) => c.status === "resolved").length,
+    averageResponseTime: calculateAverageResponseTime(conversations),
+    averageResolutionTime: calculateAverageResolutionTime(conversations)
+  };
+  return stats;
+}
+function calculateAverageResponseTime(conversations) {
+  const validTimes = conversations.filter((c) => c.firstResponseTime && c.createdAt).map((c) => {
+    const responseTime = (c.firstResponseTime.getTime() - c.createdAt.getTime()) / 1e3;
+    return responseTime;
+  });
+  if (validTimes.length === 0) return 0;
+  const average = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+  return Math.round(average);
+}
+function calculateAverageResolutionTime(conversations) {
+  const validTimes = conversations.filter((c) => c.resolvedTime && c.createdAt).map((c) => {
+    const resolutionTime = (c.resolvedTime.getTime() - c.createdAt.getTime()) / 1e3 / 60;
+    return resolutionTime;
+  });
+  if (validTimes.length === 0) return 0;
+  const average = validTimes.reduce((a, b) => a + b, 0) / validTimes.length;
+  return Math.round(average);
+}
+async function searchConversations(userId, searchQuery, filters) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  let query = db.select().from(liveChatConversations).where(eq3(liveChatConversations.userId, userId));
+  if (filters?.status) {
+    query = query.where(eq3(liveChatConversations.status, filters.status));
+  }
+  if (filters?.priority) {
+    query = query.where(
+      eq3(liveChatConversations.priority, filters.priority)
+    );
+  }
+  if (filters?.category) {
+    query = query.where(eq3(liveChatConversations.category, filters.category));
+  }
+  if (filters?.startDate && filters?.endDate) {
+    query = query.where(
+      and3(
+        gte(liveChatConversations.createdAt, filters.startDate),
+        lte(liveChatConversations.createdAt, filters.endDate)
+      )
+    );
+  }
+  const conversations = await query;
+  return conversations.filter(
+    (c) => c.subject.toLowerCase().includes(searchQuery.toLowerCase()) || c.id.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+}
+async function deleteConversation(conversationId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(liveChatMessages).where(eq3(liveChatMessages.conversationId, conversationId));
+  await db.delete(liveChatConversations).where(eq3(liveChatConversations.id, conversationId));
+}
+async function markMessageAsRead(messageId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(liveChatMessages).set({
+    isRead: true,
+    readAt: /* @__PURE__ */ new Date(),
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq3(liveChatMessages.id, messageId));
+}
+async function getUnreadMessages(userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const unreadMessages = await db.select().from(liveChatMessages).where(
+    and3(
+      eq3(liveChatMessages.senderId, userId),
+      eq3(liveChatMessages.isRead, false)
+    )
+  );
+  return unreadMessages;
+}
+async function getNotificationHistory(userId, limit = 50, offset = 0) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const history = await db.select().from(notificationHistory).where(eq3(notificationHistory.userId, userId)).orderBy(desc3(notificationHistory.createdAt)).limit(limit).offset(offset);
+  return history;
+}
+
+// server/services/notification-preferences-service.ts
+import { eq as eq4 } from "drizzle-orm";
+import { v4 as uuidv42 } from "uuid";
+async function getNotificationPreferences(userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  let preferences = await db.select().from(notificationPreferences2).where(eq4(notificationPreferences2.userId, userId)).limit(1);
+  if (preferences.length === 0) {
+    await createDefaultNotificationPreferences(userId);
+    preferences = await db.select().from(notificationPreferences2).where(eq4(notificationPreferences2.userId, userId)).limit(1);
+  }
+  return preferences[0];
+}
+async function createDefaultNotificationPreferences(userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const preferencesId = uuidv42();
+  await db.insert(notificationPreferences2).values({
+    id: preferencesId,
+    userId,
+    enableAllNotifications: true,
+    enableEmailNotifications: true,
+    enableSmsNotifications: false,
+    enablePushNotifications: true,
+    enableInAppNotifications: true,
+    enableOrderStatusNotifications: true,
+    enableShipmentNotifications: true,
+    enablePaymentNotifications: true,
+    enableCustomsNotifications: true,
+    enablePriceAlertNotifications: true,
+    enableSystemNotifications: true,
+    quietHoursEnabled: false,
+    batchNotifications: false,
+    batchInterval: "daily",
+    maxNotificationsPerDay: 50,
+    unsubscribeAll: false
+  });
+  return preferencesId;
+}
+async function updateNotificationPreferences(userId, updates) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await db.select().from(notificationPreferences2).where(eq4(notificationPreferences2.userId, userId)).limit(1);
+  if (existing.length === 0) {
+    await createDefaultNotificationPreferences(userId);
+  }
+  await db.update(notificationPreferences2).set({
+    ...updates,
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq4(notificationPreferences2.userId, userId));
+}
+async function toggleAllNotifications(userId, enabled) {
+  await updateNotificationPreferences(userId, {
+    enableAllNotifications: enabled
+  });
+}
+async function toggleNotificationChannel(userId, channel, enabled) {
+  const channelMap = {
+    email: "enableEmailNotifications",
+    sms: "enableSmsNotifications",
+    push: "enablePushNotifications",
+    in_app: "enableInAppNotifications"
+  };
+  const updates = {};
+  updates[channelMap[channel]] = enabled;
+  await updateNotificationPreferences(userId, updates);
+}
+async function setQuietHours(userId, startTime, endTime, enabled = true) {
+  const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+  if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+    throw new Error("Invalid time format. Use HH:MM");
+  }
+  await updateNotificationPreferences(userId, {
+    quietHoursStart: startTime,
+    quietHoursEnd: endTime,
+    quietHoursEnabled: enabled
+  });
+}
+async function unsubscribeFromAllNotifications(userId) {
+  await updateNotificationPreferences(userId, {
+    unsubscribeAll: true,
+    enableAllNotifications: false
+  });
+}
+async function resubscribeToNotifications(userId) {
+  await updateNotificationPreferences(userId, {
+    unsubscribeAll: false,
+    enableAllNotifications: true
+  });
+}
+async function addNotificationChannel(userId, channelType, channelAddress, channelName, isPrimary = false) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const channelId = uuidv42();
+  if (channelType === "email") {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(channelAddress)) {
+      throw new Error("Invalid email address");
+    }
+  } else if (channelType === "sms") {
+    const phoneRegex = /^\+?[0-9]{10,}$/;
+    if (!phoneRegex.test(channelAddress)) {
+      throw new Error("Invalid phone number");
+    }
+  }
+  if (isPrimary) {
+    await db.update(notificationChannels).set({ isPrimary: false }).where(
+      eq4(notificationChannels.userId, userId) && eq4(notificationChannels.channelType, channelType)
+    );
+  }
+  await db.insert(notificationChannels).values({
+    id: channelId,
+    userId,
+    channelType,
+    channelAddress,
+    channelName: channelName || `${channelType} - ${channelAddress}`,
+    isActive: true,
+    isPrimary,
+    isVerified: false
+  });
+  return channelId;
+}
+async function getUserNotificationChannels(userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const channels = await db.select().from(notificationChannels).where(eq4(notificationChannels.userId, userId));
+  return channels;
+}
+async function deleteNotificationChannel(channelId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(notificationChannels).where(eq4(notificationChannels.id, channelId));
+}
+async function getUserCustomNotifications(userId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const notifications2 = await db.select().from(customNotifications).where(eq4(customNotifications.userId, userId));
+  return notifications2;
+}
+async function createCustomNotification(userId, title, description, notificationType, channels, frequency = "immediately", conditions) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const notificationId = uuidv42();
+  await db.insert(customNotifications).values({
+    id: notificationId,
+    userId,
+    title,
+    description,
+    notificationType,
+    channels: JSON.stringify(channels),
+    frequency,
+    conditions: conditions ? JSON.stringify(conditions) : null,
+    isActive: true,
+    isEnabled: true,
+    sentCount: 0
+  });
+  return notificationId;
+}
+async function deleteCustomNotification(notificationId) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(customNotifications).where(eq4(customNotifications.id, notificationId));
+}
+async function getNotificationStatistics(userId) {
+  const preferences = await getNotificationPreferences(userId);
+  const channels = await getUserNotificationChannels(userId);
+  const customNotifs = await getUserCustomNotifications(userId);
+  return {
+    preferences,
+    channels,
+    customNotifications: customNotifs,
+    totalChannels: channels.length,
+    verifiedChannels: channels.filter((c) => c.isVerified).length,
+    activeChannels: channels.filter((c) => c.isActive).length,
+    customNotificationCount: customNotifs.length,
+    enabledCustomNotifications: customNotifs.filter((n) => n.isEnabled).length
+  };
+}
+
+// server/routers/live-chat-router.ts
+var liveChatRouter = router({
+  /**
+   * إنشاء محادثة دعم جديدة
+   */
+  createConversation: protectedProcedure.input(
+    z21.object({
+      subject: z21.string().min(5).max(255),
+      category: z21.enum([
+        "billing",
+        "technical",
+        "general",
+        "complaint"
+      ]),
+      priority: z21.enum(["low", "medium", "high", "urgent"]).default("medium")
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const conversationId = await createLiveChatConversation(
+      ctx.user.id,
+      input.subject,
+      input.category,
+      input.priority
+    );
+    return {
+      success: true,
+      conversationId,
+      message: "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * إرسال رسالة في المحادثة
+   */
+  sendMessage: protectedProcedure.input(
+    z21.object({
+      conversationId: z21.string().uuid(),
+      message: z21.string().min(1).max(5e3),
+      attachmentUrl: z21.string().url().optional(),
+      attachmentName: z21.string().optional(),
+      attachmentSize: z21.number().optional()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const messageId = await sendLiveChatMessage(
+      input.conversationId,
+      ctx.user.id,
+      input.message,
+      "customer",
+      input.attachmentUrl,
+      input.attachmentName,
+      input.attachmentSize
+    );
+    return {
+      success: true,
+      messageId,
+      message: "\u062A\u0645 \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * الحصول على المحادثات
+   */
+  getConversations: protectedProcedure.input(
+    z21.object({
+      limit: z21.number().default(20).max(100)
+    })
+  ).query(async ({ input, ctx }) => {
+    const conversations = await getUserConversations(
+      ctx.user.id,
+      input.limit
+    );
+    return {
+      success: true,
+      conversations,
+      count: conversations.length
+    };
+  }),
+  /**
+   * الحصول على رسائل المحادثة
+   */
+  getMessages: protectedProcedure.input(
+    z21.object({
+      conversationId: z21.string().uuid(),
+      limit: z21.number().default(50).max(200)
+    })
+  ).query(async ({ input, ctx }) => {
+    const messages = await getConversationMessages(
+      input.conversationId,
+      input.limit
+    );
+    return {
+      success: true,
+      messages,
+      count: messages.length
+    };
+  }),
+  /**
+   * تحديث حالة المحادثة
+   */
+  updateStatus: protectedProcedure.input(
+    z21.object({
+      conversationId: z21.string().uuid(),
+      status: z21.enum([
+        "open",
+        "in_progress",
+        "waiting_customer",
+        "waiting_agent",
+        "closed",
+        "resolved"
+      ])
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await updateConversationStatus(
+      input.conversationId,
+      input.status
+    );
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u062D\u0627\u0644\u0629 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * تقييم المحادثة
+   */
+  rateConversation: protectedProcedure.input(
+    z21.object({
+      conversationId: z21.string().uuid(),
+      messageId: z21.string().uuid(),
+      rating: z21.number().min(1).max(5),
+      feedback: z21.string().optional()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await rateConversation(
+      input.conversationId,
+      input.messageId,
+      input.rating,
+      input.feedback
+    );
+    return {
+      success: true,
+      message: "\u0634\u0643\u0631\u0627\u064B \u0644\u062A\u0642\u064A\u064A\u0645\u0643"
+    };
+  }),
+  /**
+   * الحصول على الإحصائيات
+   */
+  getStatistics: protectedProcedure.query(async ({ ctx }) => {
+    const stats = await getLiveChatStatistics(ctx.user.id);
+    return {
+      success: true,
+      statistics: stats
+    };
+  }),
+  /**
+   * البحث عن المحادثات
+   */
+  searchConversations: protectedProcedure.input(
+    z21.object({
+      query: z21.string().min(1),
+      status: z21.string().optional(),
+      priority: z21.string().optional(),
+      category: z21.string().optional(),
+      startDate: z21.date().optional(),
+      endDate: z21.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    const results = await searchConversations(
+      ctx.user.id,
+      input.query,
+      {
+        status: input.status,
+        priority: input.priority,
+        category: input.category,
+        startDate: input.startDate,
+        endDate: input.endDate
+      }
+    );
+    return {
+      success: true,
+      results,
+      count: results.length
+    };
+  }),
+  /**
+   * حذف المحادثة
+   */
+  deleteConversation: protectedProcedure.input(
+    z21.object({
+      conversationId: z21.string().uuid()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await deleteConversation(input.conversationId);
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * تحديث الرسالة كمقروءة
+   */
+  markMessageAsRead: protectedProcedure.input(
+    z21.object({
+      messageId: z21.string().uuid()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await markMessageAsRead(input.messageId);
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0631\u0633\u0627\u0644\u0629"
+    };
+  }),
+  /**
+   * الحصول على الرسائل غير المقروءة
+   */
+  getUnreadMessages: protectedProcedure.query(async ({ ctx }) => {
+    const messages = await getUnreadMessages(ctx.user.id);
+    return {
+      success: true,
+      messages,
+      count: messages.length
+    };
+  }),
+  /**
+   * الحصول على تاريخ الإشعارات
+   */
+  getNotificationHistory: protectedProcedure.input(
+    z21.object({
+      limit: z21.number().default(50).max(200),
+      offset: z21.number().default(0)
+    })
+  ).query(async ({ input, ctx }) => {
+    const history = await getNotificationHistory(
+      ctx.user.id,
+      input.limit,
+      input.offset
+    );
+    return {
+      success: true,
+      history,
+      count: history.length
+    };
+  })
+});
+var notificationRouter = router({
+  /**
+   * الحصول على تفضيلات الإشعارات
+   */
+  getPreferences: protectedProcedure.query(async ({ ctx }) => {
+    const preferences = await getNotificationPreferences(
+      ctx.user.id
+    );
+    return {
+      success: true,
+      preferences
+    };
+  }),
+  /**
+   * تحديث تفضيلات الإشعارات
+   */
+  updatePreferences: protectedProcedure.input(
+    z21.object({
+      enableAllNotifications: z21.boolean().optional(),
+      enableEmailNotifications: z21.boolean().optional(),
+      enableSmsNotifications: z21.boolean().optional(),
+      enablePushNotifications: z21.boolean().optional(),
+      enableInAppNotifications: z21.boolean().optional(),
+      enableOrderStatusNotifications: z21.boolean().optional(),
+      enableShipmentNotifications: z21.boolean().optional(),
+      enablePaymentNotifications: z21.boolean().optional(),
+      enableCustomsNotifications: z21.boolean().optional(),
+      enablePriceAlertNotifications: z21.boolean().optional(),
+      enableSystemNotifications: z21.boolean().optional(),
+      maxNotificationsPerDay: z21.number().optional(),
+      batchNotifications: z21.boolean().optional(),
+      batchInterval: z21.enum(["hourly", "daily", "weekly"]).optional()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await updateNotificationPreferences(
+      ctx.user.id,
+      input
+    );
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u062A\u0641\u0636\u064A\u0644\u0627\u062A \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * تفعيل/تعطيل جميع الإشعارات
+   */
+  toggleAllNotifications: protectedProcedure.input(
+    z21.object({
+      enabled: z21.boolean()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await toggleAllNotifications(
+      ctx.user.id,
+      input.enabled
+    );
+    return {
+      success: true,
+      message: input.enabled ? "\u062A\u0645 \u062A\u0641\u0639\u064A\u0644 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A" : "\u062A\u0645 \u062A\u0639\u0637\u064A\u0644 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+    };
+  }),
+  /**
+   * تفعيل/تعطيل قناة معينة
+   */
+  toggleChannel: protectedProcedure.input(
+    z21.object({
+      channel: z21.enum(["email", "sms", "push", "in_app"]),
+      enabled: z21.boolean()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await toggleNotificationChannel(
+      ctx.user.id,
+      input.channel,
+      input.enabled
+    );
+    return {
+      success: true,
+      message: `\u062A\u0645 ${input.enabled ? "\u062A\u0641\u0639\u064A\u0644" : "\u062A\u0639\u0637\u064A\u0644"} \u0642\u0646\u0627\u0629 ${input.channel}`
+    };
+  }),
+  /**
+   * تعيين ساعات الهدوء
+   */
+  setQuietHours: protectedProcedure.input(
+    z21.object({
+      startTime: z21.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+      endTime: z21.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+      enabled: z21.boolean().default(true)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await setQuietHours(
+      ctx.user.id,
+      input.startTime,
+      input.endTime,
+      input.enabled
+    );
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062A\u0639\u064A\u064A\u0646 \u0633\u0627\u0639\u0627\u062A \u0627\u0644\u0647\u062F\u0648\u0621 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * إضافة قناة إشعار جديدة
+   */
+  addChannel: protectedProcedure.input(
+    z21.object({
+      channelType: z21.enum(["email", "sms", "push", "in_app"]),
+      channelAddress: z21.string(),
+      channelName: z21.string().optional(),
+      isPrimary: z21.boolean().default(false)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const channelId = await addNotificationChannel(
+      ctx.user.id,
+      input.channelType,
+      input.channelAddress,
+      input.channelName,
+      input.isPrimary
+    );
+    return {
+      success: true,
+      channelId,
+      message: "\u062A\u0645 \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u0642\u0646\u0627\u0629 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * الحصول على قنوات الإشعار
+   */
+  getChannels: protectedProcedure.query(async ({ ctx }) => {
+    const channels = await getUserNotificationChannels(
+      ctx.user.id
+    );
+    return {
+      success: true,
+      channels,
+      count: channels.length
+    };
+  }),
+  /**
+   * حذف قناة إشعار
+   */
+  deleteChannel: protectedProcedure.input(
+    z21.object({
+      channelId: z21.string().uuid()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await deleteNotificationChannel(input.channelId);
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0642\u0646\u0627\u0629 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * إنشاء إشعار مخصص
+   */
+  createCustomNotification: protectedProcedure.input(
+    z21.object({
+      title: z21.string().min(1).max(255),
+      description: z21.string().optional(),
+      notificationType: z21.string(),
+      channels: z21.array(z21.enum(["email", "sms", "push", "in_app"])),
+      frequency: z21.enum([
+        "immediately",
+        "daily",
+        "weekly",
+        "monthly",
+        "never"
+      ]).default("immediately"),
+      conditions: z21.record(z21.any()).optional()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    const notificationId = await createCustomNotification(
+      ctx.user.id,
+      input.title,
+      input.description,
+      input.notificationType,
+      input.channels,
+      input.frequency,
+      input.conditions
+    );
+    return {
+      success: true,
+      notificationId,
+      message: "\u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0627\u0644\u0645\u062E\u0635\u0635 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * الحصول على الإشعارات المخصصة
+   */
+  getCustomNotifications: protectedProcedure.query(async ({ ctx }) => {
+    const notifications2 = await getUserCustomNotifications(ctx.user.id);
+    return {
+      success: true,
+      notifications: notifications2,
+      count: notifications2.length
+    };
+  }),
+  /**
+   * حذف إشعار مخصص
+   */
+  deleteCustomNotification: protectedProcedure.input(
+    z21.object({
+      notificationId: z21.string().uuid()
+    })
+  ).mutation(async ({ input, ctx }) => {
+    await deleteCustomNotification(
+      input.notificationId
+    );
+    return {
+      success: true,
+      message: "\u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0627\u0644\u0645\u062E\u0635\u0635 \u0628\u0646\u062C\u0627\u062D"
+    };
+  }),
+  /**
+   * الحصول على إحصائيات الإشعارات
+   */
+  getStatistics: protectedProcedure.query(async ({ ctx }) => {
+    const statistics = await getNotificationStatistics(
+      ctx.user.id
+    );
+    return {
+      success: true,
+      statistics
+    };
+  }),
+  /**
+   * إلغاء الاشتراك من جميع الإشعارات
+   */
+  unsubscribeAll: protectedProcedure.mutation(async ({ ctx }) => {
+    await unsubscribeFromAllNotifications(ctx.user.id);
+    return {
+      success: true,
+      message: "\u062A\u0645 \u0625\u0644\u063A\u0627\u0621 \u0627\u0644\u0627\u0634\u062A\u0631\u0627\u0643 \u0645\u0646 \u062C\u0645\u064A\u0639 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+    };
+  }),
+  /**
+   * إعادة الاشتراك في الإشعارات
+   */
+  resubscribe: protectedProcedure.mutation(async ({ ctx }) => {
+    await resubscribeToNotifications(ctx.user.id);
+    return {
+      success: true,
+      message: "\u062A\u0645 \u0625\u0639\u0627\u062F\u0629 \u0627\u0644\u0627\u0634\u062A\u0631\u0627\u0643 \u0641\u064A \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+    };
+  })
+});
+
 // server/routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -14377,24 +15468,24 @@ var appRouter = router({
      * إنشاء بيان جمركي جديد
      */
     createDeclaration: protectedProcedure.input(
-      z21.object({
-        declarationNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        registrationDate: z21.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
-        clearanceCenter: z21.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
-        exchangeRate: z21.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        exportCountry: z21.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
-        billOfLadingNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        grossWeight: z21.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        netWeight: z21.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        numberOfPackages: z21.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        packageType: z21.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
-        fobValue: z21.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        freightCost: z21.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        insuranceCost: z21.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
-        customsDuty: z21.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        additionalFees: z21.number().nonnegative().optional().default(0),
-        customsServiceFee: z21.number().nonnegative().optional().default(0),
-        penalties: z21.number().nonnegative().optional().default(0)
+      z22.object({
+        declarationNumber: z22.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        registrationDate: z22.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
+        clearanceCenter: z22.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
+        exchangeRate: z22.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        exportCountry: z22.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
+        billOfLadingNumber: z22.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        grossWeight: z22.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        netWeight: z22.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        numberOfPackages: z22.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        packageType: z22.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
+        fobValue: z22.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        freightCost: z22.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        insuranceCost: z22.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
+        customsDuty: z22.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        additionalFees: z22.number().nonnegative().optional().default(0),
+        customsServiceFee: z22.number().nonnegative().optional().default(0),
+        penalties: z22.number().nonnegative().optional().default(0)
       })
     ).mutation(async ({ ctx, input }) => {
       const calculations = calculateAllCosts({
@@ -14444,7 +15535,7 @@ var appRouter = router({
     /**
      * الحصول على بيان جمركي
      */
-    getDeclaration: protectedProcedure.input(z21.object({ id: z21.number() })).query(async ({ ctx, input }) => {
+    getDeclaration: protectedProcedure.input(z22.object({ id: z22.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u064A\u0647");
@@ -14461,11 +15552,11 @@ var appRouter = router({
      * تحديث بيان جمركي
      */
     updateDeclaration: protectedProcedure.input(
-      z21.object({
-        id: z21.number(),
-        data: z21.object({
-          status: z21.enum(["draft", "submitted", "approved", "cleared"]).optional(),
-          notes: z21.string().optional()
+      z22.object({
+        id: z22.number(),
+        data: z22.object({
+          status: z22.enum(["draft", "submitted", "approved", "cleared"]).optional(),
+          notes: z22.string().optional()
         })
       })
     ).mutation(async ({ ctx, input }) => {
@@ -14478,7 +15569,7 @@ var appRouter = router({
     /**
      * حذف بيان جمركي
      */
-    deleteDeclaration: protectedProcedure.input(z21.object({ id: z21.number() })).mutation(async ({ ctx, input }) => {
+    deleteDeclaration: protectedProcedure.input(z22.object({ id: z22.number() })).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u062D\u0630\u0641\u0647");
@@ -14495,11 +15586,11 @@ var appRouter = router({
      * إضافة صنف جديد
      */
     createItem: protectedProcedure.input(
-      z21.object({
-        declarationId: z21.number(),
-        itemName: z21.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
-        quantity: z21.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        unitPriceForeign: z21.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
+      z22.object({
+        declarationId: z22.number(),
+        itemName: z22.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
+        quantity: z22.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        unitPriceForeign: z22.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -14538,7 +15629,7 @@ var appRouter = router({
     /**
      * الحصول على أصناف البيان الجمركي
      */
-    getItems: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
+    getItems: protectedProcedure.input(z22.object({ declarationId: z22.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14549,14 +15640,14 @@ var appRouter = router({
      * تحديث صنف
      */
     updateItem: protectedProcedure.input(
-      z21.object({
-        id: z21.number(),
-        itemName: z21.string().optional(),
-        itemCode: z21.string().optional(),
-        quantity: z21.number().positive().optional(),
-        unitPriceForeign: z21.number().positive().optional(),
-        description: z21.string().optional(),
-        customsCode: z21.string().optional()
+      z22.object({
+        id: z22.number(),
+        itemName: z22.string().optional(),
+        itemCode: z22.string().optional(),
+        quantity: z22.number().positive().optional(),
+        unitPriceForeign: z22.number().positive().optional(),
+        description: z22.string().optional(),
+        customsCode: z22.string().optional()
       })
     ).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
@@ -14579,7 +15670,7 @@ var appRouter = router({
     /**
      * حذف صنف
      */
-    deleteItem: protectedProcedure.input(z21.object({ id: z21.number() })).mutation(async ({ ctx, input }) => {
+    deleteItem: protectedProcedure.input(z22.object({ id: z22.number() })).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
       if (!item) {
         throw new Error("\u0627\u0644\u0635\u0646\u0641 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14599,13 +15690,13 @@ var appRouter = router({
      * حساب وحفظ الانحرافات
      */
     calculateVariances: protectedProcedure.input(
-      z21.object({
-        declarationId: z21.number(),
-        estimatedFobValue: z21.number().nonnegative(),
-        estimatedFreight: z21.number().nonnegative(),
-        estimatedInsurance: z21.number().nonnegative(),
-        estimatedCustomsDuty: z21.number().nonnegative(),
-        estimatedSalesTax: z21.number().nonnegative()
+      z22.object({
+        declarationId: z22.number(),
+        estimatedFobValue: z22.number().nonnegative(),
+        estimatedFreight: z22.number().nonnegative(),
+        estimatedInsurance: z22.number().nonnegative(),
+        estimatedCustomsDuty: z22.number().nonnegative(),
+        estimatedSalesTax: z22.number().nonnegative()
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -14652,7 +15743,7 @@ var appRouter = router({
     /**
      * الحصول على الانحرافات
      */
-    getVariances: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
+    getVariances: protectedProcedure.input(z22.object({ declarationId: z22.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14667,7 +15758,7 @@ var appRouter = router({
     /**
      * الحصول على الملخص المالي
      */
-    getSummary: protectedProcedure.input(z21.object({ declarationId: z21.number() })).query(async ({ ctx, input }) => {
+    getSummary: protectedProcedure.input(z22.object({ declarationId: z22.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -14680,8 +15771,8 @@ var appRouter = router({
    */
   pdfImport: router({
     importDeclaration: protectedProcedure.input(
-      z21.object({
-        filePath: z21.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
+      z22.object({
+        filePath: z22.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
       })
     ).mutation(async ({ ctx, input }) => {
       try {
@@ -14703,9 +15794,9 @@ var appRouter = router({
    */
   notifications: router({
     getNotifications: protectedProcedure.input(
-      z21.object({
-        limit: z21.number().int().positive().default(50),
-        offset: z21.number().int().nonnegative().default(0)
+      z22.object({
+        limit: z22.number().int().positive().default(50),
+        offset: z22.number().int().nonnegative().default(0)
       })
     ).query(async ({ ctx, input }) => {
       return await getNotificationsByUserId(ctx.user.id, input.limit, input.offset);
@@ -14713,7 +15804,7 @@ var appRouter = router({
     getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
       return await getUnreadNotificationCount(ctx.user.id);
     }),
-    markAsRead: protectedProcedure.input(z21.object({ notificationId: z21.number().int().positive() })).mutation(async ({ input }) => {
+    markAsRead: protectedProcedure.input(z22.object({ notificationId: z22.number().int().positive() })).mutation(async ({ input }) => {
       await markNotificationAsRead(input.notificationId);
       return { success: true };
     }),
@@ -14721,7 +15812,7 @@ var appRouter = router({
       await markAllNotificationsAsRead(ctx.user.id);
       return { success: true };
     }),
-    delete: protectedProcedure.input(z21.object({ notificationId: z21.number().int().positive() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z22.object({ notificationId: z22.number().int().positive() })).mutation(async ({ input }) => {
       await deleteNotification(input.notificationId);
       return { success: true };
     })
@@ -14731,17 +15822,17 @@ var appRouter = router({
    */
   tracking: router({
     createContainer: protectedProcedure.input(
-      z21.object({
-        containerNumber: z21.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
-        containerType: z21.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
-        shippingCompany: z21.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        billOfLadingNumber: z21.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        portOfLoading: z21.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        portOfDischarge: z21.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
-        sealNumber: z21.string().optional(),
-        loadingDate: z21.string().optional(),
-        estimatedArrivalDate: z21.string().optional(),
-        notes: z21.string().optional()
+      z22.object({
+        containerNumber: z22.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
+        containerType: z22.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
+        shippingCompany: z22.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        billOfLadingNumber: z22.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        portOfLoading: z22.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        portOfDischarge: z22.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
+        sealNumber: z22.string().optional(),
+        loadingDate: z22.string().optional(),
+        estimatedArrivalDate: z22.string().optional(),
+        notes: z22.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -14762,7 +15853,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    searchContainers: protectedProcedure.input(z21.object({ query: z21.string().min(1) })).query(async ({ input, ctx }) => {
+    searchContainers: protectedProcedure.input(z22.object({ query: z22.string().min(1) })).query(async ({ input, ctx }) => {
       try {
         const results = await searchContainers(ctx.user.id, input.query);
         return results;
@@ -14770,7 +15861,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u0628\u062D\u062B \u0639\u0646 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    getContainerByNumber: protectedProcedure.input(z21.object({ containerNumber: z21.string().min(1) })).query(async ({ input }) => {
+    getContainerByNumber: protectedProcedure.input(z22.object({ containerNumber: z22.string().min(1) })).query(async ({ input }) => {
       try {
         const container = await getContainerByNumber(input.containerNumber);
         return container;
@@ -14779,14 +15870,14 @@ var appRouter = router({
       }
     }),
     addTrackingEvent: protectedProcedure.input(
-      z21.object({
-        containerId: z21.number().int().positive(),
-        eventType: z21.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
-        eventLocation: z21.string().optional(),
-        eventDescription: z21.string().optional(),
-        eventDateTime: z21.string(),
-        documentUrl: z21.string().optional(),
-        notes: z21.string().optional()
+      z22.object({
+        containerId: z22.number().int().positive(),
+        eventType: z22.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
+        eventLocation: z22.string().optional(),
+        eventDescription: z22.string().optional(),
+        eventDateTime: z22.string(),
+        documentUrl: z22.string().optional(),
+        notes: z22.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -14805,7 +15896,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0636\u0627\u0641\u0629 \u062D\u062F\u062B \u0627\u0644\u062A\u062A\u0628\u0639");
       }
     }),
-    getTrackingHistory: protectedProcedure.input(z21.object({ containerId: z21.number().int().positive() })).query(async ({ input }) => {
+    getTrackingHistory: protectedProcedure.input(z22.object({ containerId: z22.number().int().positive() })).query(async ({ input }) => {
       try {
         const history = await getContainerTrackingHistory(input.containerId);
         return history;
@@ -14814,9 +15905,9 @@ var appRouter = router({
       }
     }),
     updateContainerStatus: protectedProcedure.input(
-      z21.object({
-        containerId: z21.number().int().positive(),
-        status: z21.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
+      z22.object({
+        containerId: z22.number().int().positive(),
+        status: z22.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
       })
     ).mutation(async ({ input }) => {
       try {
@@ -14827,20 +15918,20 @@ var appRouter = router({
       }
     }),
     createShipmentDetail: protectedProcedure.input(
-      z21.object({
-        containerId: z21.number().int().positive(),
-        shipmentNumber: z21.string().min(1),
-        totalWeight: z21.number().positive(),
-        totalVolume: z21.number().optional(),
-        numberOfPackages: z21.number().int().positive(),
-        packageType: z21.string().optional(),
-        shipper: z21.string().min(1),
-        consignee: z21.string().min(1),
-        freightCharges: z21.number().optional(),
-        insuranceCharges: z21.number().optional(),
-        handlingCharges: z21.number().optional(),
-        otherCharges: z21.number().optional(),
-        notes: z21.string().optional()
+      z22.object({
+        containerId: z22.number().int().positive(),
+        shipmentNumber: z22.string().min(1),
+        totalWeight: z22.number().positive(),
+        totalVolume: z22.number().optional(),
+        numberOfPackages: z22.number().int().positive(),
+        packageType: z22.string().optional(),
+        shipper: z22.string().min(1),
+        consignee: z22.string().min(1),
+        freightCharges: z22.number().optional(),
+        insuranceCharges: z22.number().optional(),
+        handlingCharges: z22.number().optional(),
+        otherCharges: z22.number().optional(),
+        notes: z22.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -14853,7 +15944,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0634\u062D\u0646\u0629");
       }
     }),
-    getShipmentDetail: protectedProcedure.input(z21.object({ shipmentContainerId: z21.number().int().positive() })).query(async ({ input }) => {
+    getShipmentDetail: protectedProcedure.input(z22.object({ shipmentContainerId: z22.number().int().positive() })).query(async ({ input }) => {
       try {
         const detail = await getShipmentDetail(input.shipmentContainerId);
         return detail;
@@ -14881,7 +15972,9 @@ var appRouter = router({
   invoices: invoicesRouter,
   advancedFeatures: advancedFeaturesRouter,
   advancedOperations: advancedOperationsRouter,
-  notificationsCenter: notificationsCenterRouter
+  notificationsCenter: notificationsCenterRouter,
+  liveChat: liveChatRouter,
+  notifications: notificationRouter
 });
 
 // server/_core/context.ts

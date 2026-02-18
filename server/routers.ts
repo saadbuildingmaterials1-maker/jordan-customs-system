@@ -57,6 +57,7 @@ import { invoicesRouter } from "./routers/invoices";
 import { advancedFeaturesRouter } from "./routers/advanced-features";
 import { advancedOperationsRouter } from "./routers/advanced-operations";
 import { notificationsCenterRouter } from "./routers/notifications-center";
+import { liveChatRouter, notificationRouter } from "./routers/live-chat-router";
 
 /**
  * Main Application Router
@@ -674,6 +675,8 @@ export const appRouter = router({
   advancedFeatures: advancedFeaturesRouter,
   advancedOperations: advancedOperationsRouter,
   notificationsCenter: notificationsCenterRouter,
+  liveChat: liveChatRouter,
+  notifications: notificationRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -1,0 +1,29 @@
+{
+  "domain": "customs-jordan.manus.space",
+  "project": "jordan-customs-system",
+  "status": "active",
+  "createdAt": "2026-02-18T14:30:00Z",
+  "ssl": {
+    "enabled": true,
+    "certificate": {
+      "issuer": "Let's Encrypt",
+      "domain": "customs-jordan.manus.space",
+      "autoRenew": true
+    }
+  },
+  "routing": {
+    "target": "jordan-customs-system.manus.space",
+    "protocol": "https",
+    "path": "/"
+  },
+  "headers": {
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "X-XSS-Protection": "1; mode=block",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains"
+  },
+  "caching": {
+    "enabled": true,
+    "ttl": 3600
+  }
+}
