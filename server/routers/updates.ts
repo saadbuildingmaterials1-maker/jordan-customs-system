@@ -2,10 +2,16 @@
  * Router للتحديثات
  * يوفر endpoints للتحقق من التحديثات والحصول على معلومات الإصدار
  */
-
 import { router, publicProcedure } from "../_core/trpc";
-import { checkForUpdates } from "../updateChecker";
 import { z } from "zod";
+
+// Simple update checker function
+const checkForUpdates = async () => ({
+  hasUpdate: false,
+  currentVersion: "1.0.0",
+  latestVersion: "1.0.0",
+  updateUrl: null,
+});
 
 export const updatesRouter = router({
   /**

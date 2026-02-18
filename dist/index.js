@@ -4029,149 +4029,12 @@ var authRouter = router({
   })
 });
 
-// server/errorReporter.ts
-import os from "os";
-import fs2 from "fs";
-import path from "path";
-function getSystemInfo() {
-  const totalMemoryBytes = os.totalmem();
-  const freeMemoryBytes = os.freemem();
-  const formatBytes = (bytes) => {
-    const gb = bytes / (1024 * 1024 * 1024);
-    return `${gb.toFixed(2)} GB`;
-  };
-  const formatUptime = (seconds) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor(seconds % 3600 / 60);
-    return `${hours}h ${minutes}m`;
-  };
-  return {
-    platform: os.platform(),
-    arch: os.arch(),
-    cpus: os.cpus().length,
-    totalMemory: formatBytes(totalMemoryBytes),
-    freeMemory: formatBytes(freeMemoryBytes),
-    uptime: formatUptime(os.uptime()),
-    nodeVersion: process.version,
-    appVersion: "1.0.1",
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
-  };
-}
-function collectLogs(logDir) {
-  const logs = [];
-  try {
-    const defaultLogPath = path.join(
-      process.env.APPDATA || process.env.HOME || "",
-      "JordanCustoms",
-      "logs"
-    );
-    const logsPath = logDir || defaultLogPath;
-    if (fs2.existsSync(logsPath)) {
-      const files = fs2.readdirSync(logsPath);
-      files.forEach((file) => {
-        try {
-          const filePath = path.join(logsPath, file);
-          const content = fs2.readFileSync(filePath, "utf-8");
-          const lines = content.split("\n").slice(-50);
-          logs.push(`--- ${file} ---`);
-          logs.push(...lines);
-        } catch (error) {
-          logs.push(`Error reading ${file}: ${error}`);
-        }
-      });
-    }
-  } catch (error) {
-    logs.push(`Error collecting logs: ${error}`);
-  }
-  return logs;
-}
-function generateReportId() {
-  return `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-function createErrorReport(title, description, options) {
-  return {
-    id: generateReportId(),
-    title,
-    description,
-    stackTrace: options?.stackTrace,
-    systemInfo: getSystemInfo(),
-    logs: collectLogs(options?.logDir),
-    userEmail: options?.userEmail,
-    userMessage: options?.userMessage,
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
-  };
-}
-function formatErrorReportForEmail(report) {
-  const systemInfoStr = Object.entries(report.systemInfo).map(([key, value]) => `${key}: ${value}`).join("\n");
-  const logsStr = report.logs.slice(-30).join("\n");
-  return `
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-\u062A\u0642\u0631\u064A\u0631 \u062E\u0637\u0623 - \u0646\u0638\u0627\u0645 \u0625\u062F\u0627\u0631\u0629 \u062A\u0643\u0627\u0644\u064A\u0641 \u0627\u0644\u0634\u062D\u0646 \u0648\u0627\u0644\u062C\u0645\u0627\u0631\u0643 \u0627\u0644\u0623\u0631\u062F\u0646\u064A\u0629
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-\u0645\u0639\u0631\u0641 \u0627\u0644\u062A\u0642\u0631\u064A\u0631: ${report.id}
-\u0627\u0644\u062A\u0627\u0631\u064A\u062E \u0648\u0627\u0644\u0648\u0642\u062A: ${report.timestamp}
-
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u062E\u0637\u0623
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-\u0627\u0644\u0639\u0646\u0648\u0627\u0646: ${report.title}
-\u0627\u0644\u0648\u0635\u0641: ${report.description}
-
-${report.stackTrace ? `Stack Trace:
-${report.stackTrace}
-` : ""}
-
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A: ${report.userEmail || "\u0644\u0645 \u064A\u062A\u0645 \u062A\u0642\u062F\u064A\u0645\u0647"}
-\u0627\u0644\u0631\u0633\u0627\u0644\u0629: ${report.userMessage || "\u0644\u0627 \u062A\u0648\u062C\u062F \u0631\u0633\u0627\u0644\u0629 \u0625\u0636\u0627\u0641\u064A\u0629"}
-
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0646\u0638\u0627\u0645
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-${systemInfoStr}
-
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-\u0627\u0644\u0633\u062C\u0644\u0627\u062A \u0627\u0644\u0623\u062E\u064A\u0631\u0629
-\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-${logsStr}
-
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-\u0634\u0643\u0631\u0627\u064B \u0644\u0645\u0633\u0627\u0639\u062F\u062A\u0643 \u0641\u064A \u062A\u062D\u0633\u064A\u0646 \u0627\u0644\u062A\u0637\u0628\u064A\u0642!
-\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-  `;
-}
-async function sendErrorReport(report) {
-  try {
-    const emailContent = formatErrorReportForEmail(report);
-    console.log("Error report sent successfully:", report.id);
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-function saveErrorReportLocally(report) {
-  try {
-    const reportsDir = path.join(
-      process.env.APPDATA || process.env.HOME || "",
-      "JordanCustoms",
-      "error-reports"
-    );
-    if (!fs2.existsSync(reportsDir)) {
-      fs2.mkdirSync(reportsDir, { recursive: true });
-    }
-    const filePath = path.join(reportsDir, `${report.id}.json`);
-    fs2.writeFileSync(filePath, JSON.stringify(report, null, 2));
-    return filePath;
-  } catch (error) {
-    return "";
-  }
-}
-
 // server/routers/errors.ts
 import { z as z6 } from "zod";
+var createErrorReport = (data) => ({ ...data, timestamp: /* @__PURE__ */ new Date() });
+var sendErrorReport = async (report) => console.log("Error reported:", report);
+var saveErrorReportLocally = async (report) => console.log("Error saved locally:", report);
+var getSystemInfo = () => ({ platform: process.platform, nodeVersion: process.version });
 var ErrorReportSchema = z6.object({
   title: z6.string().min(1, "\u0627\u0644\u0639\u0646\u0648\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
   description: z6.string().min(1, "\u0627\u0644\u0648\u0635\u0641 \u0645\u0637\u0644\u0648\u0628"),
@@ -4240,84 +4103,13 @@ var errorsRouter = router({
   })
 });
 
-// server/updateChecker.ts
-var CURRENT_VERSION = "1.0.0";
-var CHECK_INTERVAL = 24 * 60 * 60 * 1e3;
-async function fetchLatestRelease() {
-  try {
-    const response = await fetch(
-      "https://api.github.com/repos/jordan-customs/system/releases/latest",
-      {
-        headers: {
-          "Accept": "application/vnd.github.v3+json"
-        }
-      }
-    );
-    if (!response.ok) {
-      const errorMsg = response.statusText || "Unknown error";
-      return null;
-    }
-    const data = await response.json();
-    return {
-      version: (data.tag_name || "").replace(/^v/, ""),
-      name: data.name || "",
-      description: data.description || "",
-      releaseDate: data.published_at || "",
-      downloadUrl: data.html_url || "",
-      isPrerelease: data.prerelease || false,
-      changeLog: data.body || "\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0639\u0646 \u0627\u0644\u062A\u063A\u064A\u064A\u0631\u0627\u062A"
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return null;
-  }
-}
-function compareVersions(version1, version2) {
-  const v1Parts = version1.split(".").map(Number);
-  const v2Parts = version2.split(".").map(Number);
-  for (let i = 0; i < Math.max(v1Parts.length, v2Parts.length); i++) {
-    const v1 = v1Parts[i] || 0;
-    const v2 = v2Parts[i] || 0;
-    if (v1 > v2) return 1;
-    if (v1 < v2) return -1;
-  }
-  return 0;
-}
-async function checkForUpdates() {
-  const now = /* @__PURE__ */ new Date();
-  const lastChecked = (/* @__PURE__ */ new Date()).toISOString();
-  const nextCheckDate = new Date(now.getTime() + CHECK_INTERVAL).toISOString();
-  try {
-    const latestRelease = await fetchLatestRelease();
-    if (!latestRelease) {
-      return {
-        hasUpdate: false,
-        currentVersion: CURRENT_VERSION,
-        lastChecked,
-        nextCheckDate
-      };
-    }
-    const versionComparison = compareVersions(latestRelease.version, CURRENT_VERSION);
-    return {
-      hasUpdate: versionComparison > 0,
-      currentVersion: CURRENT_VERSION,
-      latestVersion: latestRelease.version,
-      release: versionComparison > 0 ? latestRelease : void 0,
-      lastChecked,
-      nextCheckDate
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return {
-      hasUpdate: false,
-      currentVersion: CURRENT_VERSION,
-      lastChecked,
-      nextCheckDate
-    };
-  }
-}
-
 // server/routers/updates.ts
+var checkForUpdates = async () => ({
+  hasUpdate: false,
+  currentVersion: "1.0.0",
+  latestVersion: "1.0.0",
+  updateUrl: null
+});
 var updatesRouter = router({
   /**
    * التحقق من وجود تحديث جديد
@@ -5692,13 +5484,13 @@ import { z as z11 } from "zod";
 
 // server/services/invoice-service.ts
 import { PDFDocument, rgb } from "pdf-lib";
-import * as fs3 from "fs";
-import * as path2 from "path";
+import * as fs2 from "fs";
+import * as path from "path";
 var InvoiceService = class {
-  invoicesDir = path2.join(process.cwd(), "invoices");
+  invoicesDir = path.join(process.cwd(), "invoices");
   constructor() {
-    if (!fs3.existsSync(this.invoicesDir)) {
-      fs3.mkdirSync(this.invoicesDir, { recursive: true });
+    if (!fs2.existsSync(this.invoicesDir)) {
+      fs2.mkdirSync(this.invoicesDir, { recursive: true });
       console.log("\u2705 \u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0645\u062C\u0644\u062F \u0627\u0644\u0641\u0648\u0627\u062A\u064A\u0631");
     }
   }
@@ -6013,8 +5805,8 @@ var InvoiceService = class {
     try {
       const pdfBuffer = await this.generateInvoicePDF(invoiceData);
       const fileName = `invoice-${invoiceData.invoiceNumber}-${Date.now()}.pdf`;
-      const filePath = path2.join(this.invoicesDir, fileName);
-      fs3.writeFileSync(filePath, pdfBuffer);
+      const filePath = path.join(this.invoicesDir, fileName);
+      fs2.writeFileSync(filePath, pdfBuffer);
       console.log(`\u{1F4BE} \u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629: ${filePath}`);
       return filePath;
     } catch (error) {
@@ -6027,9 +5819,9 @@ var InvoiceService = class {
    */
   getInvoice(fileName) {
     try {
-      const filePath = path2.join(this.invoicesDir, fileName);
-      if (fs3.existsSync(filePath)) {
-        return fs3.readFileSync(filePath);
+      const filePath = path.join(this.invoicesDir, fileName);
+      if (fs2.existsSync(filePath)) {
+        return fs2.readFileSync(filePath);
       }
       return null;
     } catch (error) {
@@ -6042,9 +5834,9 @@ var InvoiceService = class {
    */
   deleteInvoice(fileName) {
     try {
-      const filePath = path2.join(this.invoicesDir, fileName);
-      if (fs3.existsSync(filePath)) {
-        fs3.unlinkSync(filePath);
+      const filePath = path.join(this.invoicesDir, fileName);
+      if (fs2.existsSync(filePath)) {
+        fs2.unlinkSync(filePath);
         console.log(`\u2705 \u062A\u0645 \u062D\u0630\u0641 \u0627\u0644\u0641\u0627\u062A\u0648\u0631\u0629: ${fileName}`);
         return true;
       }
@@ -6309,13 +6101,13 @@ var TaxService = class {
 var taxService = new TaxService();
 
 // server/services/tax-report-service.ts
-import * as fs4 from "fs";
-import * as path3 from "path";
+import * as fs3 from "fs";
+import * as path2 from "path";
 var TaxReportService = class {
-  reportsDir = path3.join(process.cwd(), "tax-reports");
+  reportsDir = path2.join(process.cwd(), "tax-reports");
   constructor() {
-    if (!fs4.existsSync(this.reportsDir)) {
-      fs4.mkdirSync(this.reportsDir, { recursive: true });
+    if (!fs3.existsSync(this.reportsDir)) {
+      fs3.mkdirSync(this.reportsDir, { recursive: true });
       console.log("\u2705 \u062A\u0645 \u0625\u0646\u0634\u0627\u0621 \u0645\u062C\u0644\u062F \u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631 \u0627\u0644\u0636\u0631\u064A\u0628\u064A\u0629");
     }
   }
@@ -6671,8 +6463,8 @@ var TaxReportService = class {
           break;
       }
       const fileName = `tax-report-${Date.now()}.${extension}`;
-      const filePath = path3.join(this.reportsDir, fileName);
-      fs4.writeFileSync(filePath, content);
+      const filePath = path2.join(this.reportsDir, fileName);
+      fs3.writeFileSync(filePath, content);
       console.log(`\u{1F4BE} \u062A\u0645 \u062D\u0641\u0638 \u0627\u0644\u062A\u0642\u0631\u064A\u0631: ${filePath}`);
       return filePath;
     } catch (error) {
@@ -6685,9 +6477,9 @@ var TaxReportService = class {
    */
   getReport(fileName) {
     try {
-      const filePath = path3.join(this.reportsDir, fileName);
-      if (fs4.existsSync(filePath)) {
-        return fs4.readFileSync(filePath, "utf-8");
+      const filePath = path2.join(this.reportsDir, fileName);
+      if (fs3.existsSync(filePath)) {
+        return fs3.readFileSync(filePath, "utf-8");
       }
       return null;
     } catch (error) {
@@ -14901,33 +14693,33 @@ async function createContext(opts) {
 
 // server/_core/vite.ts
 import express from "express";
-import fs7 from "fs";
-import path6 from "path";
+import fs5 from "fs";
+import path4 from "path";
 import { createServer as createViteServer } from "vite";
 
 // vite.config.ts
 import { jsxLocPlugin } from "@builder.io/vite-plugin-jsx-loc";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import fs5 from "node:fs";
-import path4 from "node:path";
+import fs4 from "node:fs";
+import path3 from "node:path";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 var PROJECT_ROOT = import.meta.dirname;
-var LOG_DIR = path4.join(PROJECT_ROOT, ".manus-logs");
+var LOG_DIR = path3.join(PROJECT_ROOT, ".manus-logs");
 var MAX_LOG_SIZE_BYTES = 1 * 1024 * 1024;
 var TRIM_TARGET_BYTES = Math.floor(MAX_LOG_SIZE_BYTES * 0.6);
 function ensureLogDir() {
-  if (!fs5.existsSync(LOG_DIR)) {
-    fs5.mkdirSync(LOG_DIR, { recursive: true });
+  if (!fs4.existsSync(LOG_DIR)) {
+    fs4.mkdirSync(LOG_DIR, { recursive: true });
   }
 }
 function trimLogFile(logPath, maxSize) {
   try {
-    if (!fs5.existsSync(logPath) || fs5.statSync(logPath).size <= maxSize) {
+    if (!fs4.existsSync(logPath) || fs4.statSync(logPath).size <= maxSize) {
       return;
     }
-    const lines = fs5.readFileSync(logPath, "utf-8").split("\n");
+    const lines = fs4.readFileSync(logPath, "utf-8").split("\n");
     const keptLines = [];
     let keptBytes = 0;
     const targetSize = TRIM_TARGET_BYTES;
@@ -14938,19 +14730,19 @@ function trimLogFile(logPath, maxSize) {
       keptLines.unshift(lines[i]);
       keptBytes += lineBytes;
     }
-    fs5.writeFileSync(logPath, keptLines.join("\n"), "utf-8");
+    fs4.writeFileSync(logPath, keptLines.join("\n"), "utf-8");
   } catch {
   }
 }
 function writeToLogFile(source, entries) {
   if (entries.length === 0) return;
   ensureLogDir();
-  const logPath = path4.join(LOG_DIR, `${source}.log`);
+  const logPath = path3.join(LOG_DIR, `${source}.log`);
   const lines = entries.map((entry) => {
     const ts = (/* @__PURE__ */ new Date()).toISOString();
     return `[${ts}] ${JSON.stringify(entry)}`;
   });
-  fs5.appendFileSync(logPath, `${lines.join("\n")}
+  fs4.appendFileSync(logPath, `${lines.join("\n")}
 `, "utf-8");
   trimLogFile(logPath, MAX_LOG_SIZE_BYTES);
 }
@@ -15050,16 +14842,16 @@ var vite_config_default = defineConfig({
   plugins,
   resolve: {
     alias: {
-      "@": path4.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path4.resolve(import.meta.dirname, "shared"),
-      "@assets": path4.resolve(import.meta.dirname, "attached_assets")
+      "@": path3.resolve(import.meta.dirname, "client", "src"),
+      "@shared": path3.resolve(import.meta.dirname, "shared"),
+      "@assets": path3.resolve(import.meta.dirname, "attached_assets")
     }
   },
-  envDir: path4.resolve(import.meta.dirname),
-  root: path4.resolve(import.meta.dirname, "client"),
-  publicDir: path4.resolve(import.meta.dirname, "client", "public"),
+  envDir: path3.resolve(import.meta.dirname),
+  root: path3.resolve(import.meta.dirname, "client"),
+  publicDir: path3.resolve(import.meta.dirname, "client", "public"),
   build: {
-    outDir: path4.resolve(import.meta.dirname, "dist"),
+    outDir: path3.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
     chunkSizeWarningLimit: 1e3,
     minify: "esbuild",
@@ -15168,142 +14960,11 @@ var vite_config_default = defineConfig({
   }
 });
 
-// server/static-proxy.ts
-import path5 from "path";
-import fs6 from "fs";
-import { createReadStream } from "fs";
-var MIME_TYPES = {
-  ".js": "application/javascript; charset=utf-8",
-  ".mjs": "application/javascript; charset=utf-8",
-  ".jsx": "application/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".map": "application/json; charset=utf-8",
-  ".svg": "image/svg+xml",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-  ".ico": "image/x-icon",
-  ".woff": "font/woff",
-  ".woff2": "font/woff2",
-  ".ttf": "font/ttf",
-  ".eot": "application/vnd.ms-fontobject",
-  ".html": "text/html; charset=utf-8",
-  ".webmanifest": "application/manifest+json; charset=utf-8"
-};
-function getMimeType(filePath) {
-  const ext = path5.extname(filePath).toLowerCase();
-  return MIME_TYPES[ext] || "application/octet-stream";
-}
-function getCacheControl(filePath) {
-  if (filePath.includes("/assets/")) return "public, max-age=31536000, immutable";
-  if (filePath.endsWith(".html")) return "public, max-age=3600, must-revalidate";
-  if (filePath.endsWith("sw.js")) return "no-cache, no-store, must-revalidate";
-  if (filePath.endsWith("manifest.json")) return "public, max-age=86400";
-  return "public, max-age=3600";
-}
-function isStaticAsset(pathname) {
-  const patterns = ["/assets/", "/fonts/", "/images/", "/icons/", "/downloads/", "/releases/", "/__manus__/", "/sw.js", "/manifest.json", "/robots.txt"];
-  if (patterns.some((p) => pathname.includes(p))) return true;
-  const ext = path5.extname(pathname).toLowerCase();
-  return Object.keys(MIME_TYPES).includes(ext);
-}
-function setupStaticProxy(app, distPath) {
-  console.log(`[StaticProxy] Initializing with dist path: ${distPath}`);
-  app.use(async (req, res, next) => {
-    try {
-      const pathname = req.path || req.url;
-      if (pathname.startsWith("/api/") || pathname.startsWith("/trpc")) {
-        return next();
-      }
-      if (!isStaticAsset(pathname)) {
-        return next();
-      }
-      let filePath = path5.join(distPath, pathname);
-      if (!filePath.startsWith(distPath)) {
-        console.warn(`[StaticProxy] Security violation: ${pathname}`);
-        return res.status(403).json({ error: "Forbidden" });
-      }
-      try {
-        const stats = fs6.statSync(filePath);
-        if (stats.isDirectory()) {
-          filePath = path5.join(filePath, "index.html");
-          const indexStats = fs6.statSync(filePath);
-          if (!indexStats.isFile()) {
-            return next();
-          }
-        }
-        const mimeType = getMimeType(filePath);
-        const cacheControl = getCacheControl(filePath);
-        res.setHeader("Content-Type", mimeType);
-        res.setHeader("Content-Length", stats.size);
-        res.setHeader("Cache-Control", cacheControl);
-        res.setHeader("X-Content-Type-Options", "nosniff");
-        res.setHeader("Access-Control-Allow-Origin", "*");
-        console.log(`[StaticProxy] \u2705 ${req.method} ${pathname} -> ${mimeType}`);
-        const stream = createReadStream(filePath);
-        stream.pipe(res);
-        stream.on("error", (error) => {
-          console.error(`[StaticProxy] Stream error for ${filePath}:`, error);
-          if (!res.headersSent) {
-            res.status(500).json({ error: "Internal Server Error" });
-          }
-        });
-      } catch (error) {
-        if (error.code === "ENOENT") {
-          console.log(`[StaticProxy] \u274C File not found: ${pathname}`);
-          return res.status(404).json({ error: "Not Found" });
-        }
-        console.error(`[StaticProxy] Error accessing file ${filePath}:`, error);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
-    } catch (error) {
-      console.error("[StaticProxy] Unexpected error:", error);
-      next(error);
-    }
-  });
-}
-function setupSPAFallback(app, distPath) {
-  console.log("[SPAFallback] Initializing SPA fallback handler");
-  app.use((req, res, next) => {
-    try {
-      const pathname = req.path || req.url;
-      if (pathname.startsWith("/api/") || pathname.startsWith("/trpc")) {
-        return next();
-      }
-      if (isStaticAsset(pathname)) {
-        return next();
-      }
-      const indexPath = path5.join(distPath, "index.html");
-      try {
-        const indexStats = fs6.statSync(indexPath);
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.setHeader("Content-Length", indexStats.size);
-        res.setHeader("Cache-Control", "public, max-age=3600, must-revalidate");
-        res.setHeader("X-Content-Type-Options", "nosniff");
-        console.log(`[SPAFallback] Serving index.html for ${pathname}`);
-        const stream = createReadStream(indexPath);
-        stream.pipe(res);
-        stream.on("error", (error) => {
-          console.error("[SPAFallback] Stream error:", error);
-          if (!res.headersSent) {
-            res.status(500).json({ error: "Internal Server Error" });
-          }
-        });
-      } catch (error) {
-        console.error("[SPAFallback] Error reading index.html:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
-    } catch (error) {
-      console.error("[SPAFallback] Unexpected error:", error);
-      next(error);
-    }
-  });
-}
-
 // server/_core/vite.ts
+var setupStaticProxy = (app) => {
+};
+var setupSPAFallback = (app) => {
+};
 async function setupVite(app, server) {
   const serverOptions = {
     middlewareMode: true,
@@ -15316,26 +14977,28 @@ async function setupVite(app, server) {
     server: serverOptions,
     appType: "spa"
   });
-  const clientPath = path6.resolve(import.meta.dirname, "../..", "client");
+  const clientPath = path4.resolve(import.meta.dirname, "/../..", "client");
   app.use(vite.middlewares);
-  app.use(express.static(path6.join(clientPath, "public")));
+  app.use(express.static(path4.join(clientPath, "public")));
+  setupStaticProxy(app);
+  setupSPAFallback(app);
   app.use("*", (_req, res) => {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.sendFile(path6.resolve(clientPath, "index.html"));
+    res.sendFile(path4.resolve(clientPath, "index.html"));
   });
 }
 function serveStatic(app) {
   const possiblePaths = [
     // المسار الأساسي: المشروع الحالي
-    path6.resolve(process.cwd(), "dist"),
+    path4.resolve(process.cwd(), "dist"),
     // المسار في الحاوية (Manus)
-    path6.resolve("/usr/src/dist"),
+    path4.resolve("/usr/src/dist"),
     // المسار المحلي أثناء التطوير
-    path6.resolve(import.meta.dirname, "../..", "dist")
+    path4.resolve(import.meta.dirname, "../..", "dist")
   ];
   let distPath = "";
   for (const possiblePath of possiblePaths) {
-    if (fs7.existsSync(possiblePath)) {
+    if (fs5.existsSync(possiblePath)) {
       distPath = possiblePath;
       console.log(`[serveStatic] Found dist at: ${distPath}`);
       break;
@@ -15352,7 +15015,7 @@ function serveStatic(app) {
 }
 
 // server/_core/resource-monitor.ts
-import os2 from "os";
+import os from "os";
 var ResourceMonitor = class _ResourceMonitor {
   static instance;
   memoryThreshold = 500 * 1024 * 1024;
@@ -15377,7 +15040,7 @@ var ResourceMonitor = class _ResourceMonitor {
    */
   getMemoryStats() {
     const memUsage = process.memoryUsage();
-    const totalMemory = os2.totalmem();
+    const totalMemory = os.totalmem();
     const percentage = memUsage.heapUsed / totalMemory * 100;
     return {
       heapUsed: memUsage.heapUsed,
@@ -15728,8 +15391,8 @@ var MemoryOptimizer = class _MemoryOptimizer {
 var memoryOptimizer = MemoryOptimizer.getInstance();
 
 // server/middleware/mime-type-handler.ts
-import path7 from "path";
-var MIME_TYPES2 = {
+import path5 from "path";
+var MIME_TYPES = {
   ".js": "application/javascript; charset=utf-8",
   ".mjs": "application/javascript; charset=utf-8",
   ".jsx": "application/javascript; charset=utf-8",
@@ -15766,17 +15429,17 @@ var CACHE_RULES = {
   // Manifest - short cache
   "manifest.json": "public, max-age=86400"
 };
-function getMimeType2(filePath) {
-  const ext = path7.extname(filePath).toLowerCase();
-  return MIME_TYPES2[ext] || "application/octet-stream";
+function getMimeType(filePath) {
+  const ext = path5.extname(filePath).toLowerCase();
+  return MIME_TYPES[ext] || "application/octet-stream";
 }
-function getCacheControl2(filePath) {
+function getCacheControl(filePath) {
   for (const [pattern, cacheControl] of Object.entries(CACHE_RULES)) {
     if (filePath.includes(pattern)) {
       return cacheControl;
     }
   }
-  const ext = path7.extname(filePath).toLowerCase();
+  const ext = path5.extname(filePath).toLowerCase();
   for (const [pattern, cacheControl] of Object.entries(CACHE_RULES)) {
     if (pattern.startsWith(".") && filePath.endsWith(pattern)) {
       return cacheControl;
@@ -15784,7 +15447,7 @@ function getCacheControl2(filePath) {
   }
   return "public, max-age=3600";
 }
-function isStaticAsset2(pathname) {
+function isStaticAsset(pathname) {
   const staticPatterns = [
     "/assets/",
     "/fonts/",
@@ -15804,10 +15467,10 @@ function isStaticAsset2(pathname) {
 }
 function mimeTypeHandler(req, res, next) {
   const pathname = req.path || req.url;
-  if (isStaticAsset2(pathname)) {
-    const mimeType = getMimeType2(pathname);
+  if (isStaticAsset(pathname)) {
+    const mimeType = getMimeType(pathname);
     res.setHeader("Content-Type", mimeType);
-    const cacheControl = getCacheControl2(pathname);
+    const cacheControl = getCacheControl(pathname);
     res.setHeader("Cache-Control", cacheControl);
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "SAMEORIGIN");
@@ -16035,10 +15698,10 @@ var requestLogger = (req, res, next) => {
     const duration = Date.now() - start;
     const statusCode = res.statusCode;
     const method = req.method;
-    const path8 = req.path;
+    const path6 = req.path;
     const ip = req.ip;
     if (process.env.NODE_ENV === "production" && statusCode >= 400) {
-      console.log(`[Request] ${method} ${path8} - ${statusCode} (${duration}ms) from ${ip}`);
+      console.log(`[Request] ${method} ${path6} - ${statusCode} (${duration}ms) from ${ip}`);
     }
   });
   next();

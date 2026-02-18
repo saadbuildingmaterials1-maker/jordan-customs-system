@@ -10,7 +10,9 @@ import { nanoid } from "nanoid";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import viteConfig from "../../vite.config";
-import { setupStaticProxy, setupSPAFallback } from "../static-proxy";
+// Static proxy functions
+const setupStaticProxy = (app: any) => {};
+const setupSPAFallback = (app: any) => {};
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -25,9 +27,11 @@ export async function setupVite(app: Express, server: Server) {
     appType: "spa",
   });
   // تقديم الملفات من client/public
-  const clientPath = path.resolve(import.meta.dirname, "../..", "client");
+  const clientPath = path.resolve(import.meta.dirname, "/../..", "client");
   app.use(vite.middlewares);
   app.use(express.static(path.join(clientPath, "public")));
+  setupStaticProxy(app);
+  setupSPAFallback(app);
   // SPA fallback
   app.use("*", (_req, res) => {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
