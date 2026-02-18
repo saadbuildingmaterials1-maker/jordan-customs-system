@@ -1,7 +1,7 @@
 /**
- * Home Page - Simple Version
+ * Home Page - Optimized Version
  * 
- * صفحة الرئيسية - نسخة بسيطة
+ * صفحة الرئيسية - نسخة محسّنة
  * 
  * @module ./client/src/pages/Home
  */
@@ -13,24 +13,24 @@ export default function Home() {
   const [, navigate] = useLocation();
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white">
+    <div className="min-h-screen w-full bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden">
       {/* Hero Section */}
-      <header className="pt-20 pb-32 px-4 md:px-8">
+      <header className="pt-16 pb-24 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-              نظام إدارة تكاليف الشحن والجمارك الأردنية
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
+              نظام إدارة الجمارك الأردنية
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100/80 mb-8 max-w-3xl mx-auto">
-              منصة متكاملة وذكية لإدارة البيانات الجمركية والشحنات والتكاليف بكفاءة عالية
+            <p className="text-lg md:text-xl text-blue-100/80 mb-6 max-w-2xl mx-auto">
+              منصة ذكية لإدارة الشحنات والتكاليف الجمركية
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button 
                 size="lg" 
-                className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
                 onClick={() => navigate("/dashboard")}
               >
-                <Plus className="w-5 h-5 ml-2" />
+                <Plus className="w-4 h-4 ml-2" />
                 ابدأ الآن
               </Button>
               <Button 
@@ -39,8 +39,8 @@ export default function Home() {
                 className="border-blue-400 text-blue-200 hover:bg-blue-500/10"
                 onClick={() => navigate("/about")}
               >
-                <FileText className="w-5 h-5 ml-2" />
-                المزيد من المعلومات
+                <FileText className="w-4 h-4 ml-2" />
+                المزيد
               </Button>
             </div>
           </div>
@@ -48,21 +48,18 @@ export default function Home() {
       </header>
 
       {/* Features Section */}
-      <section className="py-20 px-4 md:px-8 bg-slate-900/50">
+      <section className="py-16 px-4 md:px-8 bg-slate-900/50">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">المميزات الرئيسية</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <h2 className="text-3xl font-bold text-center mb-12">المميزات</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { title: "إدارة الشحنات", desc: "تتبع شامل للشحنات والحاويات" },
-              { title: "إدارة التكاليف", desc: "حساب الرسوم الجمركية تلقائياً" },
-              { title: "التقارير المتقدمة", desc: "تحليلات وتقارير شاملة" },
-              { title: "الشحن الدولي", desc: "تكامل مع خدمات الشحن العالمية" },
-              { title: "الأمان والحماية", desc: "تشفير عالي وحماية البيانات" },
-              { title: "الأداء العالي", desc: "نظام سريع وموثوق" },
+              { title: "الشحنات", desc: "تتبع الشحنات" },
+              { title: "التكاليف", desc: "حساب الرسوم" },
+              { title: "التقارير", desc: "تحليلات شاملة" },
             ].map((feature, i) => (
-              <div key={i} className="p-6 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-blue-500 transition-colors">
-                <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                <p className="text-slate-300">{feature.desc}</p>
+              <div key={i} className="p-4 rounded-lg bg-slate-800/50 border border-slate-700">
+                <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
+                <p className="text-slate-300 text-sm">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -70,61 +67,24 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 md:px-8 bg-gradient-to-r from-blue-600 to-cyan-600">
+      <section className="py-16 px-4 md:px-8 bg-blue-600">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">جاهز للبدء؟</h2>
-          <p className="text-xl text-blue-100 mb-8">انضم إلى آلاف المستخدمين الذين يثقون بنا</p>
+          <h2 className="text-3xl font-bold text-white mb-4">جاهز للبدء؟</h2>
           <Button 
             size="lg" 
             className="bg-white text-blue-600 hover:bg-blue-50"
             onClick={() => navigate("/login")}
           >
-            <LogIn className="w-5 h-5 ml-2" />
-            سجل الآن مجاناً
+            <LogIn className="w-4 h-4 ml-2" />
+            سجل الآن
           </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 border-t border-slate-800 py-12 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-            <div>
-              <h3 className="text-white font-semibold mb-4">عن النظام</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-blue-400">المميزات</a></li>
-                <li><a href="#" className="hover:text-blue-400">الأسعار</a></li>
-                <li><a href="#" className="hover:text-blue-400">الدعم</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">الروابط السريعة</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-blue-400">البيانات الجمركية</a></li>
-                <li><a href="#" className="hover:text-blue-400">التقارير</a></li>
-                <li><a href="#" className="hover:text-blue-400">لوحة التحكم</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">المساعدة</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-blue-400">الدعم الفني</a></li>
-                <li><a href="#" className="hover:text-blue-400">التوثيق</a></li>
-                <li><a href="#" className="hover:text-blue-400">الأسئلة الشائعة</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-white font-semibold mb-4">القانوني</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="#" className="hover:text-blue-400">سياسة الخصوصية</a></li>
-                <li><a href="#" className="hover:text-blue-400">شروط الاستخدام</a></li>
-                <li><a href="#" className="hover:text-blue-400">اتصل بنا</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-slate-800 pt-8 text-center text-slate-400">
-            <p>&copy; 2026 نظام إدارة تكاليف الشحن والجمارك الأردنية. جميع الحقوق محفوظة.</p>
-          </div>
+      <footer className="bg-slate-900 border-t border-slate-800 py-8 px-4 md:px-8">
+        <div className="max-w-7xl mx-auto text-center text-slate-400 text-sm">
+          <p>&copy; 2026 نظام إدارة الجمارك الأردنية. جميع الحقوق محفوظة.</p>
         </div>
       </footer>
     </div>
