@@ -84,7 +84,7 @@ export const liveChatRouter = router({
   getConversations: protectedProcedure
     .input(
       z.object({
-        limit: z.number().default(20).max(100),
+        limit: z.number().max(100).default(20),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -107,7 +107,7 @@ export const liveChatRouter = router({
     .input(
       z.object({
         conversationId: z.string().uuid(),
-        limit: z.number().default(50).max(200),
+        limit: z.number().max(200).default(50),
       })
     )
     .query(async ({ input, ctx }) => {
@@ -279,7 +279,7 @@ export const liveChatRouter = router({
   getNotificationHistory: protectedProcedure
     .input(
       z.object({
-        limit: z.number().default(50).max(200),
+        limit: z.number().max(200).default(50),
         offset: z.number().default(0),
       })
     )

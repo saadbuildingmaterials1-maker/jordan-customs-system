@@ -15031,7 +15031,7 @@ var liveChatRouter = router({
    */
   getConversations: protectedProcedure.input(
     z21.object({
-      limit: z21.number().default(20).max(100)
+      limit: z21.number().max(100).default(20)
     })
   ).query(async ({ input, ctx }) => {
     const conversations = await getUserConversations(
@@ -15050,7 +15050,7 @@ var liveChatRouter = router({
   getMessages: protectedProcedure.input(
     z21.object({
       conversationId: z21.string().uuid(),
-      limit: z21.number().default(50).max(200)
+      limit: z21.number().max(200).default(50)
     })
   ).query(async ({ input, ctx }) => {
     const messages = await getConversationMessages(
@@ -15194,7 +15194,7 @@ var liveChatRouter = router({
    */
   getNotificationHistory: protectedProcedure.input(
     z21.object({
-      limit: z21.number().default(50).max(200),
+      limit: z21.number().max(200).default(50),
       offset: z21.number().default(0)
     })
   ).query(async ({ input, ctx }) => {
