@@ -89,6 +89,9 @@ const PerformanceDashboard = lazy(() => import('@/pages/PerformanceDashboard'));
 const ScheduledReports = lazy(() => import('@/pages/ScheduledReports'));
 const DocumentManagement = lazy(() => import('@/pages/DocumentManagement'));
 const ProjectManagement = lazy(() => import('@/pages/ProjectManagement'));
+const ComplianceAudit = lazy(() => import('@/pages/ComplianceAudit'));
+const ExternalIntegration = lazy(() => import('@/pages/ExternalIntegration'));
+const InventoryManagement = lazy(() => import('@/pages/InventoryManagement'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -179,6 +182,9 @@ function Router() {
         <Route path="/scheduled-reports" component={ScheduledReports} />
         <Route path="/document-management" component={DocumentManagement} />
         <Route path="/project-management" component={ProjectManagement} />
+        <Route path="/compliance-audit" component={ComplianceAudit} />
+        <Route path="/external-integration" component={ExternalIntegration} />
+        <Route path="/inventory-management" component={InventoryManagement} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
