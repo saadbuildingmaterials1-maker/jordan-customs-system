@@ -26,25 +26,25 @@ if (import.meta.env.DEV) {
 // Initialize performance monitoring
 initializePerformanceMonitoring();
 
-// Initialize analytics (Google Analytics and Sentry) - DISABLED TEMPORARILY
-// if (typeof window !== 'undefined') {
-//   initializeAnalytics({
-//     googleAnalytics: {
-//       measurementId: import.meta.env.VITE_GA_MEASUREMENT_ID || '',
-//       enabled: !!import.meta.env.VITE_GA_MEASUREMENT_ID,
-//     },
-//     sentry: {
-//       dsn: import.meta.env.VITE_SENTRY_DSN || '',
-//       environment: import.meta.env.MODE,
-//       tracesSampleRate: 0.1,
-//       enabled: !!import.meta.env.VITE_SENTRY_DSN,
-//     },
-//   }).catch(err => {
-//     if (import.meta.env.DEV) {
-//       console.warn('[Analytics] Failed to initialize:', err);
-//     }
-//   });
-// }
+// Initialize analytics (Google Analytics and Sentry)
+if (typeof window !== 'undefined') {
+  initializeAnalytics({
+    googleAnalytics: {
+      measurementId: import.meta.env.VITE_GA_MEASUREMENT_ID || '',
+      enabled: !!import.meta.env.VITE_GA_MEASUREMENT_ID,
+    },
+    sentry: {
+      dsn: import.meta.env.VITE_SENTRY_DSN || '',
+      environment: import.meta.env.MODE,
+      tracesSampleRate: 0.1,
+      enabled: !!import.meta.env.VITE_SENTRY_DSN,
+    },
+  }).catch(err => {
+    if (import.meta.env.DEV) {
+      console.warn('[Analytics] Failed to initialize:', err);
+    }
+  });
+}
 
 const queryClient = new QueryClient();
 
