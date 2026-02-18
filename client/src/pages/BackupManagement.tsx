@@ -29,7 +29,7 @@ interface StorageStats {
   remainingSpace: number;
 }
 
-export default function BackupManagement() {
+export function BackupManagementPage() {
   const [backups, setBackups] = useState<Backup[]>([]);
   const [storageStats, setStorageStats] = useState<StorageStats | null>(null);
   const [loading, setLoading] = useState(false);
