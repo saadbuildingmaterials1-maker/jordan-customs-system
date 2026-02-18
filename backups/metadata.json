@@ -5587,5 +5587,248 @@
     "timestamp": 1771418477060,
     "expiresAt": 1774010477060,
     "checksum": "606de384fa46e8df44717d812f6b6dcccead4dee0378742f17bf9a8022607993"
+  },
+  {
+    "id": "aeb77481-b702-4cea-97c4-e5f2fa70db04",
+    "name": "test-backup",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419148878,
+    "expiresAt": 1774011148878,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "05ee5739-c2b3-40c0-9dc7-fcaad08468f5",
+    "name": "restore-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419148949,
+    "expiresAt": 1774011148949,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "bc01f2d2-dcdf-4440-af4a-b7dda373c213",
+    "name": "wrong-password-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419149115,
+    "expiresAt": 1774011149115,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "2cf9c669-8740-4874-9cef-57a15bbb20f9",
+    "name": "list-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419149263,
+    "expiresAt": 1774011149263,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "f755d383-5305-4786-8e09-cc89cd7565f8",
+    "name": "list-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419149348,
+    "expiresAt": 1774011149348,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "5a9bde1c-b7ba-442c-b43d-6f54dff9d181",
+    "name": "stats-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419149447,
+    "expiresAt": 1774011149447,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "1dfbff3d-032d-4b83-b837-ce8fe0a8f414",
+    "name": "stats-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419149616,
+    "expiresAt": 1774011149616,
+    "checksum": "44b24d7b4cf9f79a8a818fb1b80b84311b96896490d7101c237c5c84ad184027"
+  },
+  {
+    "id": "9f611538-92f9-41e4-800c-52d8184a7a3a",
+    "name": "empty-backup",
+    "size": 0,
+    "encrypted": true,
+    "timestamp": 1771419150837,
+    "expiresAt": 1774011150837,
+    "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "id": "8172270c-dc9b-4d7c-9893-a47b44805ab0",
+    "name": "special-backup",
+    "size": 142,
+    "encrypted": true,
+    "timestamp": 1771419151055,
+    "expiresAt": 1774011151055,
+    "checksum": "606de384fa46e8df44717d812f6b6dcccead4dee0378742f17bf9a8022607993"
+  },
+  {
+    "id": "99fdc20e-81cb-48db-b06a-399e5a4afede",
+    "name": "test-backup",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419266590,
+    "expiresAt": 1774011266590,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "3b4d69c0-5583-43c2-9718-47fa95bf3625",
+    "name": "restore-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419266660,
+    "expiresAt": 1774011266660,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "c13bed49-732a-483f-992e-147f9a5c0401",
+    "name": "wrong-password-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419266823,
+    "expiresAt": 1774011266823,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "60a46091-f254-42c4-92ee-ba4e1a58c4bc",
+    "name": "list-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419266963,
+    "expiresAt": 1774011266963,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "100e8c9c-f647-4005-90c4-fda7725daa60",
+    "name": "list-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419267034,
+    "expiresAt": 1774011267034,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "6d327f7d-b8f5-4de7-ab85-77e82d097768",
+    "name": "stats-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419267131,
+    "expiresAt": 1774011267131,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "9614e5a5-69f3-4117-a176-509120950617",
+    "name": "stats-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419267301,
+    "expiresAt": 1774011267301,
+    "checksum": "85586ae5eb362d5867d2777d33d6f36a30f353bae6accd92b022c564657c9d0f"
+  },
+  {
+    "id": "36bfb973-2495-4e6d-89bb-b22b25c1707e",
+    "name": "empty-backup",
+    "size": 0,
+    "encrypted": true,
+    "timestamp": 1771419268428,
+    "expiresAt": 1774011268428,
+    "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "id": "0ea72aa4-c556-4183-a19a-02fd01e43956",
+    "name": "special-backup",
+    "size": 142,
+    "encrypted": true,
+    "timestamp": 1771419268629,
+    "expiresAt": 1774011268629,
+    "checksum": "606de384fa46e8df44717d812f6b6dcccead4dee0378742f17bf9a8022607993"
+  },
+  {
+    "id": "76dd2339-ca86-47cf-8c56-582cf6d2df8d",
+    "name": "test-backup",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301194,
+    "expiresAt": 1774011301194,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "328a04c6-013f-4bad-8628-f26544b3329b",
+    "name": "restore-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301270,
+    "expiresAt": 1774011301270,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "a0e6990d-198a-4c22-b786-6d89478f09fe",
+    "name": "wrong-password-test",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301426,
+    "expiresAt": 1774011301426,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "e60fe88a-802c-4e9b-a1cb-da7127ed0a67",
+    "name": "list-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301578,
+    "expiresAt": 1774011301578,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "f83bcbaf-2ed6-41b4-85ca-11c70aca1cf1",
+    "name": "list-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301654,
+    "expiresAt": 1774011301654,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "0e5c1cb9-e8ac-4b0e-882e-48803a8e5374",
+    "name": "stats-test-1",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301748,
+    "expiresAt": 1774011301748,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "b43e5138-cc73-4684-adb4-87707fdc2b88",
+    "name": "stats-test-2",
+    "size": 112,
+    "encrypted": true,
+    "timestamp": 1771419301935,
+    "expiresAt": 1774011301935,
+    "checksum": "69996f52b7439491694898f242fc984eaaa68ca5f74ae23ace3304b96325deb2"
+  },
+  {
+    "id": "dc618d5c-3c3a-4436-8825-60c1e1f62007",
+    "name": "empty-backup",
+    "size": 0,
+    "encrypted": true,
+    "timestamp": 1771419302942,
+    "expiresAt": 1774011302942,
+    "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "id": "d280f8cc-c64a-402f-8765-a7eed4107680",
+    "name": "special-backup",
+    "size": 142,
+    "encrypted": true,
+    "timestamp": 1771419303137,
+    "expiresAt": 1774011303137,
+    "checksum": "606de384fa46e8df44717d812f6b6dcccead4dee0378742f17bf9a8022607993"
   }
 ]
