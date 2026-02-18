@@ -1,0 +1,158 @@
+{
+  "appName": "نظام إدارة تكاليف الشحن والجمارك الأردنية",
+  "appNameEnglish": "Jordan Customs System",
+  "version": "1.0.0",
+  "buildNumber": 1,
+  "description": "تطبيق متقدم لإدارة تكاليف الشحن والجمارك والرسوم الجمركية",
+  "platforms": {
+    "ios": {
+      "bundleId": "com.jordancustoms.app",
+      "minimumOSVersion": "13.0",
+      "targetOSVersion": "17.0",
+      "supportedDevices": ["iPhone", "iPad"],
+      "capabilities": [
+        "network",
+        "camera",
+        "location",
+        "contacts",
+        "calendar",
+        "photos"
+      ]
+    },
+    "android": {
+      "packageName": "com.jordancustoms.app",
+      "minimumSDKVersion": 24,
+      "targetSDKVersion": 34,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.READ_CONTACTS",
+        "android.permission.READ_CALENDAR",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    }
+  },
+  "features": {
+    "authentication": {
+      "enabled": true,
+      "methods": ["oauth", "biometric", "password"]
+    },
+    "payments": {
+      "enabled": true,
+      "gateways": ["stripe", "hyperpay", "telr"],
+      "currencies": ["JOD", "USD", "EUR"]
+    },
+    "banking": {
+      "enabled": true,
+      "banks": ["abc", "jib", "cb", "hb", "kb", "ib"]
+    },
+    "shipping": {
+      "enabled": true,
+      "providers": ["dhl", "fedex", "aramex"]
+    },
+    "notifications": {
+      "enabled": true,
+      "types": ["push", "email", "sms", "whatsapp"]
+    },
+    "offline": {
+      "enabled": true,
+      "syncInterval": 300000
+    },
+    "analytics": {
+      "enabled": true,
+      "trackingId": "UA-XXXXXXXXX-X"
+    }
+  },
+  "screens": [
+    {
+      "name": "Home",
+      "arabicName": "الرئيسية",
+      "icon": "home",
+      "route": "/",
+      "requiresAuth": false
+    },
+    {
+      "name": "Dashboard",
+      "arabicName": "لوحة التحكم",
+      "icon": "dashboard",
+      "route": "/dashboard",
+      "requiresAuth": true
+    },
+    {
+      "name": "Payments",
+      "arabicName": "الدفع",
+      "icon": "credit-card",
+      "route": "/payments",
+      "requiresAuth": true
+    },
+    {
+      "name": "Shipping",
+      "arabicName": "الشحن",
+      "icon": "truck",
+      "route": "/shipping",
+      "requiresAuth": true
+    },
+    {
+      "name": "Reports",
+      "arabicName": "التقارير",
+      "icon": "chart-bar",
+      "route": "/reports",
+      "requiresAuth": true
+    },
+    {
+      "name": "Settings",
+      "arabicName": "الإعدادات",
+      "icon": "settings",
+      "route": "/settings",
+      "requiresAuth": true
+    }
+  ],
+  "api": {
+    "baseUrl": "https://jordan-customs-system.manus.space",
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "theme": {
+    "primaryColor": "#3b82f6",
+    "secondaryColor": "#10b981",
+    "accentColor": "#f59e0b",
+    "darkMode": true,
+    "language": "ar"
+  },
+  "security": {
+    "enableSSL": true,
+    "certificatePinning": true,
+    "encryptionAlgorithm": "AES-256",
+    "biometricAuth": true,
+    "sessionTimeout": 1800000
+  },
+  "storage": {
+    "type": "sqlite",
+    "encryption": true,
+    "maxSize": 52428800
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info",
+    "maxLogSize": 10485760
+  },
+  "buildSettings": {
+    "development": {
+      "apiUrl": "https://dev-api.jordan-customs-system.manus.space",
+      "debugMode": true,
+      "logLevel": "debug"
+    },
+    "staging": {
+      "apiUrl": "https://staging-api.jordan-customs-system.manus.space",
+      "debugMode": false,
+      "logLevel": "info"
+    },
+    "production": {
+      "apiUrl": "https://jordan-customs-system.manus.space",
+      "debugMode": false,
+      "logLevel": "error"
+    }
+  }
+}
