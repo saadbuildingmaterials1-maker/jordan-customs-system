@@ -15372,13 +15372,13 @@ var vite_config_default = defineConfig({
   build: {
     outDir: path3.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1e3,
+    chunkSizeWarningLimit: 2e3,
     minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
     sourcemap: false,
     target: "esnext",
-    assetsInlineLimit: 4096,
+    assetsInlineLimit: 8192,
     // terserOptions removed - use esbuild minify instead
     // terserOptions: {
     //   compress: {
@@ -15462,8 +15462,11 @@ var vite_config_default = defineConfig({
     }
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "wouter", "lucide-react"],
-    exclude: ["@vite/client"]
+    include: ["react", "react-dom", "wouter", "lucide-react", "@tanstack/react-query", "@trpc/client"],
+    exclude: ["@vite/client"],
+    esbuildOptions: {
+      target: "esnext"
+    }
   },
   server: {
     host: true,

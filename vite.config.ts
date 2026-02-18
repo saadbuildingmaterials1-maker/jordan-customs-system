@@ -210,13 +210,13 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist"),
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 2000,
     minify: "esbuild",
     cssCodeSplit: true,
     reportCompressedSize: false,
     sourcemap: false,
     target: 'esnext',
-    assetsInlineLimit: 4096,
+    assetsInlineLimit: 8192,
     // terserOptions removed - use esbuild minify instead
     // terserOptions: {
     //   compress: {
@@ -332,8 +332,11 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'wouter', 'lucide-react'],
+    include: ['react', 'react-dom', 'wouter', 'lucide-react', '@tanstack/react-query', '@trpc/client'],
     exclude: ['@vite/client'],
+    esbuildOptions: {
+      target: 'esnext',
+    },
   },
   server: {
     host: true,

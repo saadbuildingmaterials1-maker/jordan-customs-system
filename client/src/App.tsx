@@ -145,7 +145,10 @@ import LiveChat from "./components/LiveChat";
 function PageLoader() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
-      <LoadingSpinner />
+      <div className="flex flex-col items-center gap-4">
+        <LoadingSpinner message="جاري تحميل الصفحة..." />
+        <p className="text-xs text-muted-foreground">قد يستغرق بعض الوقت في الزيارة الأولى</p>
+      </div>
     </div>
   );
 }
