@@ -178,7 +178,7 @@ export function NotificationsPage() {
                 <label className="text-sm font-medium">إشعارات البريد الإلكتروني</label>
                 <input
                   type="checkbox"
-                  checked={preferences.emailNotifications}
+                  checked={preferences.emailNotifications ?? false}
                   onChange={(e) =>
                     updatePreferencesMutation.mutate({
                       emailNotifications: e.target.checked,
@@ -192,7 +192,7 @@ export function NotificationsPage() {
                 <label className="text-sm font-medium">إشعارات SMS</label>
                 <input
                   type="checkbox"
-                  checked={preferences.smsNotifications}
+                  checked={preferences.smsNotifications ?? false}
                   onChange={(e) =>
                     updatePreferencesMutation.mutate({
                       smsNotifications: e.target.checked,
@@ -206,7 +206,7 @@ export function NotificationsPage() {
                 <label className="text-sm font-medium">إشعارات الدفع</label>
                 <input
                   type="checkbox"
-                  checked={preferences.pushNotifications}
+                  checked={preferences.pushNotifications ?? false}
                   onChange={(e) =>
                     updatePreferencesMutation.mutate({
                       pushNotifications: e.target.checked,
@@ -220,7 +220,7 @@ export function NotificationsPage() {
                 <label className="text-sm font-medium">إشعارات داخل التطبيق</label>
                 <input
                   type="checkbox"
-                  checked={preferences.inAppNotifications}
+                  checked={preferences.inAppNotifications ?? false}
                   onChange={(e) =>
                     updatePreferencesMutation.mutate({
                       inAppNotifications: e.target.checked,

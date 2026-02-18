@@ -155,7 +155,7 @@ describe("ResourceMonitor", () => {
     expect(percentage).toBeLessThanOrEqual(100);
   });
 
-  it("should update stats timestamp", () => {
+  it("should update stats timestamp", async () => {
     const stats1 = resourceMonitor.getStats();
     const timestamp1 = stats1.timestamp;
 
