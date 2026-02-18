@@ -124,6 +124,9 @@ const SmartAlertsAdvanced = lazy(() => import('@/pages/SmartAlertsAdvanced'));
 const AdvancedReportingSystem = lazy(() => import('@/pages/AdvancedReportingSystem'));
 const CEODashboard = lazy(() => import('@/pages/CEODashboard'));
 const JordanCustomsIntegration = lazy(() => import('@/pages/JordanCustomsIntegration'));
+const InternationalShippingIntegration = lazy(() => import('@/pages/InternationalShippingIntegration'));
+const MobileAppDevelopmentAdvanced = lazy(() => import('@/pages/MobileAppDevelopmentAdvanced'));
+const SmartAnalyticsAdvanced = lazy(() => import('@/pages/SmartAnalyticsAdvanced'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -249,6 +252,9 @@ function Router() {
         <Route path="/advanced-reporting-system" component={AdvancedReportingSystem} />
         <Route path="/ceo-dashboard" component={CEODashboard} />
         <Route path="/jordan-customs-integration" component={JordanCustomsIntegration} />
+        <Route path="/international-shipping-integration" component={InternationalShippingIntegration} />
+        <Route path="/mobile-app-development-advanced" component={MobileAppDevelopmentAdvanced} />
+        <Route path="/smart-analytics-advanced" component={SmartAnalyticsAdvanced} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />

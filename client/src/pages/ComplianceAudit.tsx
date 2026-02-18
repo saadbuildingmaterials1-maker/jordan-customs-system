@@ -174,8 +174,6 @@ export default function ComplianceAudit() {
         return 'متوافق';
       case 'non-compliant':
         return 'غير متوافق';
-      case 'warning':
-        return 'تحذير';
       default:
         return '';
     }
