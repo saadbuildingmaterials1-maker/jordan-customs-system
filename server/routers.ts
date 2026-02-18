@@ -50,6 +50,7 @@ import { couponsRouter } from "./routers/coupons";
 import { billingRouter } from "./routers/billing";
 import { operationsRouter } from "./routers/operations";
 import { localPaymentGatewaysRouter } from "./routers/local-payment-gateways";
+import { localPaymentGatewayRouter } from "./routers/local-payment-gateway";
 import { webhooksRouter } from "./routers/webhooks";
 import { notificationsAccountingRouter } from "./routers/notifications-accounting";
 import { paymentApisRouter } from "./routers/payment-apis";
@@ -667,6 +668,7 @@ export const appRouter = router({
   billing: billingRouter,
   operations: operationsRouter,
   localPaymentGateways: localPaymentGatewaysRouter,
+  localPaymentGateway: localPaymentGatewayRouter,
   webhooks: webhooksRouter,
   notificationsAccounting: notificationsAccountingRouter,
   paymentApis: paymentApisRouter,

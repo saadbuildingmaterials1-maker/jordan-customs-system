@@ -740,3 +740,37 @@ export async function getContainerNotifications(containerId: number) {
 
   return result;
 }
+
+
+/**
+ * ===== معاملات الدفع =====
+ */
+
+interface PaymentTransaction {
+  userId: string;
+  gateway: 'hyperpay' | 'telr';
+  transactionId: string;
+  orderId: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled';
+}
+
+export async function savePaymentTransaction(transaction: PaymentTransaction) {
+  // محاكاة حفظ المعاملة في قاعدة البيانات
+  // في الإنتاج، يجب إضافة جدول payment_transactions إلى schema.ts
+  console.log('Payment Transaction Saved:', transaction);
+  return transaction;
+}
+
+export async function getPaymentTransactions(userId: string, limit: number, offset: number) {
+  // محاكاة استرجاع المعاملات
+  // في الإنتاج، يجب الاستعلام من جدول payment_transactions
+  return [];
+}
+
+export async function getPaymentTransaction(userId: string, transactionId: string) {
+  // محاكاة استرجاع معاملة محددة
+  // في الإنتاج، يجب الاستعلام من جدول payment_transactions
+  return null;
+}

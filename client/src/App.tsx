@@ -71,6 +71,8 @@ const SubscriptionPlans = lazy(() => import('@/pages/SubscriptionPlans'));
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 const ConfirmPlan = lazy(() => import('@/pages/ConfirmPlan'));
 const AdvancedPaymentPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
+const LocalPaymentPage = lazy(() => import('@/pages/LocalPaymentPage'));
+const AdvancedPaymentDashboard = lazy(() => import('@/pages/AdvancedPaymentDashboard'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -97,6 +99,7 @@ function Router() {
       <Switch>
         {/* الصفحة الرئيسية */}
         <Route path={"/"} component={Home} />
+        <Route path={"/payment/local"} component={LocalPaymentPage} />
         
         {/* البيانات الجمركية */}
         <Route path={"/declarations"} component={DeclarationsList} />
@@ -142,6 +145,8 @@ function Router() {
         <Route path="/payment-system" component={PaymentSystem} />
         <Route path="/click-payment" component={ClickPayment} />
         <Route path="/advanced-payment" component={AdvancedPaymentPage} />
+        <Route path="/local-payment" component={LocalPaymentPage} />
+        <Route path="/payment-dashboard" component={AdvancedPaymentDashboard} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
