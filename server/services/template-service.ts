@@ -1,4 +1,3 @@
-import { db } from '../db';
 import {
   exportTemplates,
   templateUsageHistory,
@@ -9,6 +8,17 @@ import {
 } from '../../drizzle/export-template-schema';
 import { eq, and } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
+import { getDb } from '../db';
+
+let db: any = null;
+
+// Initialize db on first use
+async function ensureDb() {
+  if (!db) {
+    db = await getDb();
+  }
+  return db;
+}
 
 /**
  * خدمة إدارة قوالب التصدير
@@ -245,9 +255,9 @@ export async function getFavoriteTemplates(userId: number) {
       where: eq(favoriteTemplates.userId, userId),
     });
 
-    const templateIds = favorites.map((f) => f.templateId);
+    const templateIds = favorites.map((f: any) => f.templateId);
     const templates = await db.query.exportTemplates.findMany({
-      where: (t) => t.id.inArray(templateIds),
+      where: (t: any) => t.id.inArray(templateIds),
     });
 
     return templates;
@@ -265,7 +275,7 @@ export async function getFavoriteTemplates(userId: number) {
 export async function shareTemplate(
   templateId: number,
   userId: number,
-  shareWithUserId: number,
+  sharedWithUserId: number,
   permissions: { canView?: boolean; canEdit?: boolean; canDelete?: boolean; canShare?: boolean }
 ) {
   try {
@@ -312,9 +322,9 @@ export async function getSharedTemplates(userId: number) {
       where: eq(sharedTemplates.sharedWithUserId, userId),
     });
 
-    const templateIds = shared.map((s) => s.templateId);
+    const templateIds = shared.map((s: any) => s.templateId);
     const templates = await db.query.exportTemplates.findMany({
-      where: (t) => t.id.inArray(templateIds),
+      where: (t: any) => t.id.inArray(templateIds),
     });
 
     return templates;
@@ -433,10 +443,14 @@ export async function recordTemplateUsage(
     });
 
     // تحديث عدد الاستخدامات
+    const template = await db.query.exportTemplates.findFirst({
+      where: eq(exportTemplates.id, templateId),
+    });
+    
     await db
       .update(exportTemplates)
       .set({
-        usageCount: (exportTemplates.usageCount || 0) + 1,
+        usageCount: ((template?.usageCount as number) || 0) + 1,
         lastUsedAt: new Date(),
       })
       .where(eq(exportTemplates.id, templateId));

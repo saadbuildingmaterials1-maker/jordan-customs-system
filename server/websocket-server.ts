@@ -24,6 +24,8 @@ export enum WebSocketMessageType {
   AUTHENTICATE = "authenticate",
   AUTHENTICATED = "authenticated",
   DISCONNECT = "disconnect",
+  SUBSCRIBE = "subscribe",
+  UNSUBSCRIBE = "unsubscribe",
 
   // المحادثات
   CONVERSATION_CREATED = "conversation_created",
@@ -72,22 +74,50 @@ interface UserConnection {
  * فئة خادم WebSocket
  */
 export class LiveChatWebSocketServer {
-  private wss: WebSocketServer;
+  private wss: WebSocketServer | null = null;
   private userConnections: Map<string, UserConnection> = new Map();
   private conversationSubscribers: Map<string, Set<string>> = new Map(); // conversationId -> connectionIds
   private heartbeatInterval: NodeJS.Timeout | null = null;
+  private isRunning: boolean = false;
 
   constructor(port: number = 3001) {
-    this.wss = new WebSocketServer({ port });
+    // Don't create server here, wait for attachToServer
+  }
+
+  /**
+   * Attach WebSocket server to existing HTTP server
+   */
+  public attachToServer(httpServer: any): void {
+    if (this.wss) {
+      console.warn("[WebSocket] Server already attached");
+      return;
+    }
+    this.wss = new WebSocketServer({ server: httpServer });
     this.setupServer();
+  }
+
+  /**
+   * Start the WebSocket server
+   */
+  public start(): void {
+    if (this.isRunning) {
+      console.warn("[WebSocket] Server already running");
+      return;
+    }
+    this.isRunning = true;
     this.startHeartbeat();
+    console.log("[WebSocket] Server started");
   }
 
   /**
    * إعداد خادم WebSocket
    */
   private setupServer(): void {
-    this.wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
+    if (!this.wss) {
+      console.error("[WebSocket] WSS not initialized");
+      return;
+    }
+    this.wss!.on("connection", (ws: WebSocket, req: IncomingMessage) => {
       const connectionId = uuidv4();
 
       console.log(`[WebSocket] New connection: ${connectionId}`);
@@ -420,9 +450,11 @@ export class LiveChatWebSocketServer {
       clearInterval(this.heartbeatInterval);
     }
 
-    this.wss.close(() => {
-      console.log("[WebSocket] Server stopped");
-    });
+    if (this.wss) {
+      this.wss.close(() => {
+        console.log("[WebSocket] Server stopped");
+      });
+    }
   }
 
   /**

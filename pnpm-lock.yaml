@@ -112,13 +112,13 @@ importers:
         version: 5.90.21(react@19.2.4)
       '@trpc/client':
         specifier: ^11.6.0
-        version: 11.10.0(@trpc/server@11.10.0(typescript@5.6.3))(typescript@5.6.3)
+        version: 11.10.0(@trpc/server@11.10.0(typescript@5.9.3))(typescript@5.9.3)
       '@trpc/react-query':
         specifier: ^11.6.0
-        version: 11.10.0(@tanstack/react-query@5.90.21(react@19.2.4))(@trpc/client@11.10.0(@trpc/server@11.10.0(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.10.0(typescript@5.6.3))(react@19.2.4)(typescript@5.6.3)
+        version: 11.10.0(@tanstack/react-query@5.90.21(react@19.2.4))(@trpc/client@11.10.0(@trpc/server@11.10.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.10.0(typescript@5.9.3))(react@19.2.4)(typescript@5.9.3)
       '@trpc/server':
         specifier: ^11.6.0
-        version: 11.10.0(typescript@5.6.3)
+        version: 11.10.0(typescript@5.9.3)
       '@types/cors':
         specifier: ^2.8.19
         version: 2.8.19
@@ -217,7 +217,7 @@ importers:
         version: 0.17.2
       puppeteer:
         specifier: ^24.37.3
-        version: 24.37.3(typescript@5.6.3)
+        version: 24.37.3(typescript@5.9.3)
       qrcode.react:
         specifier: ^4.2.0
         version: 4.2.0(react@19.2.4)
@@ -310,7 +310,7 @@ importers:
         specifier: ^9.0.10
         version: 9.0.10
       '@types/node':
-        specifier: ^20.10.0
+        specifier: ^20.19.33
         version: 20.19.33
       '@types/node-cron':
         specifier: ^3.0.11
@@ -391,8 +391,8 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0
       typescript:
-        specifier: 5.6.3
-        version: 5.6.3
+        specifier: 5.9.3
+        version: 5.9.3
       vite:
         specifier: ^7.1.7
         version: 7.3.1(@types/node@20.19.33)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)
@@ -6467,8 +6467,8 @@ packages:
   typed-query-selector@2.12.0:
     resolution: {integrity: sha512-SbklCd1F0EiZOyPiW192rrHZzZ5sBijB6xM+cpmrwDqObvdtunOHHIk9fCGsoK5JVIYXoyEp4iEdE3upFH3PAg==}
 
-  typescript@5.6.3:
-    resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -9549,22 +9549,22 @@ snapshots:
 
   '@tootallnate/quickjs-emscripten@0.23.0': {}
 
-  '@trpc/client@11.10.0(@trpc/server@11.10.0(typescript@5.6.3))(typescript@5.6.3)':
+  '@trpc/client@11.10.0(@trpc/server@11.10.0(typescript@5.9.3))(typescript@5.9.3)':
     dependencies:
-      '@trpc/server': 11.10.0(typescript@5.6.3)
-      typescript: 5.6.3
+      '@trpc/server': 11.10.0(typescript@5.9.3)
+      typescript: 5.9.3
 
-  '@trpc/react-query@11.10.0(@tanstack/react-query@5.90.21(react@19.2.4))(@trpc/client@11.10.0(@trpc/server@11.10.0(typescript@5.6.3))(typescript@5.6.3))(@trpc/server@11.10.0(typescript@5.6.3))(react@19.2.4)(typescript@5.6.3)':
+  '@trpc/react-query@11.10.0(@tanstack/react-query@5.90.21(react@19.2.4))(@trpc/client@11.10.0(@trpc/server@11.10.0(typescript@5.9.3))(typescript@5.9.3))(@trpc/server@11.10.0(typescript@5.9.3))(react@19.2.4)(typescript@5.9.3)':
     dependencies:
       '@tanstack/react-query': 5.90.21(react@19.2.4)
-      '@trpc/client': 11.10.0(@trpc/server@11.10.0(typescript@5.6.3))(typescript@5.6.3)
-      '@trpc/server': 11.10.0(typescript@5.6.3)
+      '@trpc/client': 11.10.0(@trpc/server@11.10.0(typescript@5.9.3))(typescript@5.9.3)
+      '@trpc/server': 11.10.0(typescript@5.9.3)
       react: 19.2.4
-      typescript: 5.6.3
+      typescript: 5.9.3
 
-  '@trpc/server@11.10.0(typescript@5.6.3)':
+  '@trpc/server@11.10.0(typescript@5.9.3)':
     dependencies:
-      typescript: 5.6.3
+      typescript: 5.9.3
 
   '@types/babel__core@7.20.5':
     dependencies:
@@ -10524,14 +10524,14 @@ snapshots:
     dependencies:
       layout-base: 2.0.1
 
-  cosmiconfig@9.0.0(typescript@5.6.3):
+  cosmiconfig@9.0.0(typescript@5.9.3):
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
       js-yaml: 4.1.1
       parse-json: 5.2.0
     optionalDependencies:
-      typescript: 5.6.3
+      typescript: 5.9.3
 
   crc-32@1.2.2: {}
 
@@ -13038,11 +13038,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  puppeteer@24.37.3(typescript@5.6.3):
+  puppeteer@24.37.3(typescript@5.9.3):
     dependencies:
       '@puppeteer/browsers': 2.12.1
       chromium-bidi: 14.0.0(devtools-protocol@0.0.1566079)
-      cosmiconfig: 9.0.0(typescript@5.6.3)
+      cosmiconfig: 9.0.0(typescript@5.9.3)
       devtools-protocol: 0.0.1566079
       puppeteer-core: 24.37.3
       typed-query-selector: 2.12.0
@@ -13859,7 +13859,7 @@ snapshots:
 
   typed-query-selector@2.12.0: {}
 
-  typescript@5.6.3: {}
+  typescript@5.9.3: {}
 
   ufo@1.6.3: {}
 

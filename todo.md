@@ -534,7 +534,8 @@
 - [x] تطبيق معالجة الاتصالات والمصادقة
 - [x] تطبيق البث إلى المحادثات
 - [x] تطبيق نبضات القلب (Heartbeat)
-- [ ] دمج WebSocket مع Express server
+- [x] دمج WebSocket مع Express server
+- [x] إضافة attachToServer() و start() methods
 - [ ] اختبار الاتصالات
 
 ### عميل WebSocket (React)
@@ -553,7 +554,7 @@
 - [ ] إضافة الرسائل المحفوظة
 
 ### التكامل
-- [ ] دمج WebSocket مع خادم Express
+- [x] دمج WebSocket مع خادم Express
 - [ ] إضافة المكون إلى App.tsx
 - [ ] اختبار التحديثات الفورية
 - [ ] اختبار إعادة الاتصال التلقائي

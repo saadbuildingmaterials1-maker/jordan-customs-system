@@ -283,9 +283,9 @@ export async function analyzeUsagePatterns(userId: number) {
     patterns.successRate = Math.round((successCount / usageHistory.length) * 100);
 
     // حساب متوسط المدة
-    const validDurations = usageHistory.filter((u) => u.duration).map((u) => u.duration || 0);
+    const validDurations = usageHistory.filter((u: any) => u.duration).map((u: any) => u.duration || 0);
     if (validDurations.length > 0) {
-      patterns.averageDuration = Math.round(validDurations.reduce((a, b) => a + b, 0) / validDurations.length);
+      patterns.averageDuration = Math.round(validDurations.reduce((a: number, b: number) => a + b, 0) / validDurations.length);
     }
 
     return patterns;

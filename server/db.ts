@@ -740,3 +740,48 @@ export async function getContainerNotifications(containerId: number) {
 
   return result;
 }
+
+/**
+ * Lazy-loaded database instance for backward compatibility
+ */
+let _dbInstance: ReturnType<typeof drizzle> | null = null;
+
+export async function initializeDb() {
+  if (!_dbInstance && process.env.DATABASE_URL) {
+    try {
+      _dbInstance = drizzle(process.env.DATABASE_URL);
+    } catch (error) {
+      console.warn("[Database] Failed to initialize:", error);
+    }
+  }
+  return _dbInstance;
+}
+
+// Export db for backward compatibility
+export const db = {
+  async query() {
+    const instance = await initializeDb();
+    if (!instance) throw new Error('Database not initialized');
+    return instance.query;
+  },
+  async insert(table: any) {
+    const instance = await initializeDb();
+    if (!instance) throw new Error('Database not initialized');
+    return instance.insert(table);
+  },
+  async select() {
+    const instance = await initializeDb();
+    if (!instance) throw new Error('Database not initialized');
+    return instance.select();
+  },
+  async update(table: any) {
+    const instance = await initializeDb();
+    if (!instance) throw new Error('Database not initialized');
+    return instance.update(table);
+  },
+  async delete(table: any) {
+    const instance = await initializeDb();
+    if (!instance) throw new Error('Database not initialized');
+    return instance.delete(table);
+  },
+} as any;

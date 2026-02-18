@@ -18,6 +18,7 @@ import { serveStatic, setupVite } from "./vite";
 import { resourceMonitor } from "./resource-monitor";
 import { healthChecker } from "./health-check";
 import { memoryOptimizer } from "../memory-optimization";
+import { LiveChatWebSocketServer } from "../websocket-server";
 import { mimeTypeHandler } from "../middleware/mime-type-handler";
 import {
   generalLimiter,
@@ -55,6 +56,10 @@ async function findAvailablePort(startPort: number = 3000): Promise<number> {
 async function startServer() {
   const app = express();
   const server = createServer(app);
+  
+  // Initialize WebSocket server on the same HTTP server
+  const wsServer = new LiveChatWebSocketServer();
+  wsServer.attachToServer(server);
   
   // تفعيل Trust Proxy للعمل مع Rate Limiting
   app.set('trust proxy', 1);
@@ -241,13 +246,16 @@ async function startServer() {
     res.status(404).json({ error: 'Not found' });
   });
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
+   const preferredPort = parseInt(process.env.PORT || "3000");
   const port = await findAvailablePort(preferredPort);
 
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
-
+  
+  // Start WebSocket server
+  wsServer.start();
+  
   server.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${port}/`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);

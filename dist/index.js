@@ -19527,6 +19527,319 @@ var MemoryOptimizer = class _MemoryOptimizer {
 };
 var memoryOptimizer = MemoryOptimizer.getInstance();
 
+// server/websocket-server.ts
+import { WebSocketServer, WebSocket } from "ws";
+import { v4 as uuidv44 } from "uuid";
+var LiveChatWebSocketServer = class {
+  wss = null;
+  userConnections = /* @__PURE__ */ new Map();
+  conversationSubscribers = /* @__PURE__ */ new Map();
+  // conversationId -> connectionIds
+  heartbeatInterval = null;
+  isRunning = false;
+  constructor(port = 3001) {
+  }
+  /**
+   * Attach WebSocket server to existing HTTP server
+   */
+  attachToServer(httpServer) {
+    if (this.wss) {
+      console.warn("[WebSocket] Server already attached");
+      return;
+    }
+    this.wss = new WebSocketServer({ server: httpServer });
+    this.setupServer();
+  }
+  /**
+   * Start the WebSocket server
+   */
+  start() {
+    if (this.isRunning) {
+      console.warn("[WebSocket] Server already running");
+      return;
+    }
+    this.isRunning = true;
+    this.startHeartbeat();
+    console.log("[WebSocket] Server started");
+  }
+  /**
+   * إعداد خادم WebSocket
+   */
+  setupServer() {
+    if (!this.wss) {
+      console.error("[WebSocket] WSS not initialized");
+      return;
+    }
+    this.wss.on("connection", (ws, req) => {
+      const connectionId = uuidv44();
+      console.log(`[WebSocket] New connection: ${connectionId}`);
+      const connection = {
+        userId: 0,
+        conversationIds: /* @__PURE__ */ new Set(),
+        socket: ws,
+        isAuthenticated: false,
+        lastActivity: Date.now()
+      };
+      this.userConnections.set(connectionId, connection);
+      ws.on("message", (data) => {
+        this.handleMessage(connectionId, data);
+      });
+      ws.on("close", () => {
+        this.handleDisconnect(connectionId);
+      });
+      ws.on("error", (error) => {
+        console.error(`[WebSocket] Error on connection ${connectionId}:`, error);
+      });
+      this.sendMessage(connectionId, {
+        type: "connect" /* CONNECT */,
+        data: { connectionId, message: "\u0645\u0631\u062D\u0628\u0627\u064B \u0628\u0643 \u0641\u064A \u0646\u0638\u0627\u0645 \u0627\u0644\u062F\u0639\u0645 \u0627\u0644\u062D\u064A" }
+      });
+    });
+    console.log("[WebSocket] Server started");
+  }
+  /**
+   * معالجة الرسائل الواردة
+   */
+  async handleMessage(connectionId, data) {
+    try {
+      const message = JSON.parse(data.toString());
+      const connection = this.userConnections.get(connectionId);
+      if (!connection) {
+        console.warn(`[WebSocket] Connection not found: ${connectionId}`);
+        return;
+      }
+      connection.lastActivity = Date.now();
+      switch (message.type) {
+        case "authenticate" /* AUTHENTICATE */:
+          await this.handleAuthenticate(connectionId, message.data);
+          break;
+        case "subscribe" /* SUBSCRIBE */:
+          this.handleSubscribe(connectionId, message.data);
+          break;
+        case "unsubscribe" /* UNSUBSCRIBE */:
+          this.handleUnsubscribe(connectionId, message.data);
+          break;
+        case "message_sent" /* MESSAGE_SENT */:
+          await this.handleMessageSent(connectionId, message.data);
+          break;
+        case "message_typing" /* MESSAGE_TYPING */:
+          this.handleTyping(connectionId, message.data);
+          break;
+        case "ping" /* PING */:
+          this.sendMessage(connectionId, {
+            type: "pong" /* PONG */,
+            data: { timestamp: Date.now() }
+          });
+          break;
+        default:
+          console.warn(
+            `[WebSocket] Unknown message type: ${message.type}`
+          );
+      }
+    } catch (error) {
+      console.error("[WebSocket] Error handling message:", error);
+      this.sendMessage(connectionId, {
+        type: "error" /* ERROR */,
+        data: { error: "\u0641\u0634\u0644 \u0641\u064A \u0645\u0639\u0627\u0644\u062C\u0629 \u0627\u0644\u0631\u0633\u0627\u0644\u0629" }
+      });
+    }
+  }
+  /**
+   * معالجة المصادقة
+   */
+  async handleAuthenticate(connectionId, data) {
+    const connection = this.userConnections.get(connectionId);
+    if (!connection) return;
+    const { userId, token } = data;
+    if (userId) {
+      connection.userId = userId;
+      connection.isAuthenticated = true;
+      this.sendMessage(connectionId, {
+        type: "authenticated" /* AUTHENTICATED */,
+        data: { userId, message: "\u062A\u0645 \u0627\u0644\u0645\u0635\u0627\u062F\u0642\u0629 \u0628\u0646\u062C\u0627\u062D" }
+      });
+      console.log(
+        `[WebSocket] User authenticated: ${userId} (${connectionId})`
+      );
+    } else {
+      this.sendMessage(connectionId, {
+        type: "error" /* ERROR */,
+        data: { error: "\u0641\u0634\u0644 \u0627\u0644\u0645\u0635\u0627\u062F\u0642\u0629" }
+      });
+    }
+  }
+  /**
+   * الاشتراك في محادثة
+   */
+  handleSubscribe(connectionId, data) {
+    const connection = this.userConnections.get(connectionId);
+    if (!connection || !connection.isAuthenticated) return;
+    const { conversationId } = data;
+    if (!conversationId) return;
+    if (!this.conversationSubscribers.has(conversationId)) {
+      this.conversationSubscribers.set(conversationId, /* @__PURE__ */ new Set());
+    }
+    this.conversationSubscribers.get(conversationId).add(connectionId);
+    connection.conversationIds.add(conversationId);
+    console.log(
+      `[WebSocket] User ${connection.userId} subscribed to conversation ${conversationId}`
+    );
+  }
+  /**
+   * إلغاء الاشتراك من محادثة
+   */
+  handleUnsubscribe(connectionId, data) {
+    const connection = this.userConnections.get(connectionId);
+    if (!connection) return;
+    const { conversationId } = data;
+    if (!conversationId) return;
+    this.conversationSubscribers.get(conversationId)?.delete(connectionId);
+    connection.conversationIds.delete(conversationId);
+    console.log(
+      `[WebSocket] User ${connection.userId} unsubscribed from conversation ${conversationId}`
+    );
+  }
+  /**
+   * معالجة إرسال الرسالة
+   */
+  async handleMessageSent(connectionId, data) {
+    const connection = this.userConnections.get(connectionId);
+    if (!connection || !connection.isAuthenticated) return;
+    const { conversationId, message, messageId } = data;
+    this.broadcastToConversation(conversationId, {
+      type: "message_received" /* MESSAGE_RECEIVED */,
+      data: {
+        conversationId,
+        messageId: messageId || uuidv44(),
+        senderId: connection.userId,
+        message,
+        timestamp: Date.now()
+      }
+    });
+    console.log(
+      `[WebSocket] Message sent in conversation ${conversationId} by user ${connection.userId}`
+    );
+  }
+  /**
+   * معالجة الكتابة
+   */
+  handleTyping(connectionId, data) {
+    const connection = this.userConnections.get(connectionId);
+    if (!connection || !connection.isAuthenticated) return;
+    const { conversationId, isTyping } = data;
+    this.broadcastToConversation(conversationId, {
+      type: "message_typing" /* MESSAGE_TYPING */,
+      data: {
+        conversationId,
+        userId: connection.userId,
+        isTyping,
+        timestamp: Date.now()
+      }
+    });
+  }
+  /**
+   * معالجة قطع الاتصال
+   */
+  handleDisconnect(connectionId) {
+    const connection = this.userConnections.get(connectionId);
+    if (connection) {
+      console.log(
+        `[WebSocket] User ${connection.userId} disconnected (${connectionId})`
+      );
+      connection.conversationIds.forEach((conversationId) => {
+        this.conversationSubscribers.get(conversationId)?.delete(connectionId);
+      });
+    }
+    this.userConnections.delete(connectionId);
+  }
+  /**
+   * إرسال رسالة إلى اتصال معين
+   */
+  sendMessage(connectionId, message) {
+    const connection = this.userConnections.get(connectionId);
+    if (connection && connection.socket.readyState === WebSocket.OPEN) {
+      connection.socket.send(JSON.stringify(message));
+    }
+  }
+  /**
+   * بث رسالة إلى جميع المشتركين في محادثة
+   */
+  broadcastToConversation(conversationId, message) {
+    const subscribers = this.conversationSubscribers.get(conversationId);
+    if (subscribers) {
+      subscribers.forEach((connectionId) => {
+        this.sendMessage(connectionId, message);
+      });
+    }
+  }
+  /**
+   * بث رسالة إلى مستخدم معين
+   */
+  broadcastToUser(userId, message) {
+    this.userConnections.forEach((connection, connectionId) => {
+      if (connection.userId === userId) {
+        this.sendMessage(connectionId, message);
+      }
+    });
+  }
+  /**
+   * إرسال إشعار إلى جميع المستخدمين
+   */
+  broadcastToAll(message) {
+    this.userConnections.forEach((connection, connectionId) => {
+      this.sendMessage(connectionId, message);
+    });
+  }
+  /**
+   * بدء نبضات القلب للتحقق من الاتصالات
+   */
+  startHeartbeat() {
+    this.heartbeatInterval = setInterval(() => {
+      const now = Date.now();
+      const timeout = 6e4;
+      this.userConnections.forEach((connection, connectionId) => {
+        if (now - connection.lastActivity > timeout) {
+          console.log(
+            `[WebSocket] Closing inactive connection: ${connectionId}`
+          );
+          connection.socket.close();
+          this.handleDisconnect(connectionId);
+        } else {
+          this.sendMessage(connectionId, {
+            type: "ping" /* PING */,
+            data: { timestamp: now }
+          });
+        }
+      });
+    }, 3e4);
+  }
+  /**
+   * إيقاف الخادم
+   */
+  stop() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+    if (this.wss) {
+      this.wss.close(() => {
+        console.log("[WebSocket] Server stopped");
+      });
+    }
+  }
+  /**
+   * الحصول على عدد الاتصالات النشطة
+   */
+  getActiveConnections() {
+    return this.userConnections.size;
+  }
+  /**
+   * الحصول على عدد المشتركين في محادثة
+   */
+  getConversationSubscribers(conversationId) {
+    return this.conversationSubscribers.get(conversationId)?.size || 0;
+  }
+};
+
 // server/middleware/mime-type-handler.ts
 import path7 from "path";
 var MIME_TYPES2 = {
@@ -19865,6 +20178,8 @@ async function findAvailablePort(startPort = 3e3) {
 async function startServer() {
   const app = express2();
   const server = createServer(app);
+  const wsServer = new LiveChatWebSocketServer();
+  wsServer.attachToServer(server);
   app.set("trust proxy", 1);
   app.get("/api/health", (req, res) => {
     res.status(200).json({ status: "ok" });
@@ -19972,6 +20287,7 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+  wsServer.start();
   server.listen(port, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${port}/`);
     console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
