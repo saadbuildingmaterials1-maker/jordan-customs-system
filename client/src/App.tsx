@@ -1,16 +1,15 @@
 /**
- * Main Application Component
+ * Main Application Component - Clean Version
  * 
- * المكون الرئيسي للتطبيق
+ * المكون الرئيسي للتطبيق - النسخة النظيفة
  * 
  * @module client/src/App
  */
 import { Toaster } from "@/components/ui/sonner";
 import { lazy, Suspense } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import LoadingSpinner from "./components/LoadingSpinner";
 
-// Lazy load all pages
+// Lazy load pages
 const Home = lazy(() => import("@/pages/Home"));
 const DeclarationForm = lazy(() => import("@/pages/DeclarationForm"));
 const DeclarationFormAdvanced = lazy(() => import("@/pages/DeclarationFormAdvanced"));
@@ -26,7 +25,6 @@ const SupplierInvoice = lazy(() => import("@/pages/SupplierInvoice"));
 const ShippingPage = lazy(() => import("@/pages/ShippingPage"));
 const ExpensesPage = lazy(() => import("@/pages/ExpensesPage"));
 const AdvancedCustomsDeclaration = lazy(() => import("@/pages/AdvancedCustomsDeclaration"));
-const PaymentsManagement = lazy(() => import("@/pages/PaymentsManagement").then((m: any) => ({ default: m.PaymentsManagement || m.default })));
 const Checkout = lazy(() => import("@/pages/Checkout"));
 const SmartDashboard = lazy(() => import("@/pages/SmartDashboard"));
 const FactoriesAndInvoices = lazy(() => import("@/pages/FactoriesAndInvoices"));
@@ -66,7 +64,6 @@ const Login = lazy(() => import('@/pages/Login'));
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const PaymentSystem = lazy(() => import('@/pages/PaymentSystem'));
 const ClickPayment = lazy(() => import('@/pages/ClickPayment'));
-const AdvancedPaymentGatewayPage = lazy(() => import('@/pages/AdvancedPaymentPage'));
 const SubscriptionPlans = lazy(() => import('@/pages/SubscriptionPlans'));
 const SubscriptionDashboard = lazy(() => import('@/pages/SubscriptionDashboard'));
 const ConfirmPlan = lazy(() => import('@/pages/ConfirmPlan'));
@@ -78,58 +75,41 @@ const ExportAndReports = lazy(() => import('@/pages/ExportAndReports'));
 const NotificationsAndAlerts = lazy(() => import('@/pages/NotificationsAndAlerts'));
 const SecurityAndPerformance = lazy(() => import('@/pages/SecurityAndPerformance'));
 const TeamAndRoles = lazy(() => import('@/pages/TeamAndRoles'));
-const AdvancedSettings = lazy(() => import('@/pages/AdvancedSettings'));
-const EmailNotifications = lazy(() => import('@/pages/EmailNotifications'));
-const ArchiveAndBackup = lazy(() => import('@/pages/ArchiveAndBackup'));
-const UserManagement = lazy(() => import('@/pages/UserManagement'));
-const ActivityLog = lazy(() => import('@/pages/ActivityLog'));
-const BranchManagement = lazy(() => import('@/pages/BranchManagement'));
-const SmartAlerts = lazy(() => import('@/pages/SmartAlerts'));
-const PerformanceDashboard = lazy(() => import('@/pages/PerformanceDashboard'));
-const ScheduledReports = lazy(() => import('@/pages/ScheduledReports'));
-const DocumentManagement = lazy(() => import('@/pages/DocumentManagement'));
-const ProjectManagement = lazy(() => import('@/pages/ProjectManagement'));
 const ComplianceAudit = lazy(() => import('@/pages/ComplianceAudit'));
-const ExternalIntegration = lazy(() => import('@/pages/ExternalIntegration'));
-const InventoryManagement = lazy(() => import('@/pages/InventoryManagement'));
-const AIPredictions = lazy(() => import('@/pages/AIPredictions'));
-const AdvancedInvoicing = lazy(() => import('@/pages/AdvancedInvoicing'));
+const DocumentManagement = lazy(() => import('@/pages/DocumentManagement'));
+const BankIntegration = lazy(() => import('@/pages/BankIntegration'));
+const InternationalShippingIntegration = lazy(() => import('@/pages/InternationalShippingIntegration'));
+const SurveysAndRatings = lazy(() => import('@/pages/SurveysAndRatings'));
+const SmartAlerts = lazy(() => import('@/pages/SmartAlerts'));
+const ExternalSystemsIntegration = lazy(() => import('@/pages/ExternalSystemsIntegration'));
+const HRManagementDashboard = lazy(() => import('@/pages/HRManagementDashboard'));
+const SmartAlertsAdvanced = lazy(() => import('@/pages/SmartAlertsAdvanced'));
 const CustomerRelationship = lazy(() => import('@/pages/CustomerRelationship'));
-const AdvancedNotifications = lazy(() => import('@/pages/AdvancedNotifications'));
-const AdvancedAnalyticsPage = lazy(() => import('@/pages/AdvancedAnalyticsPage'));
-const AdvancedReporting = lazy(() => import('@/pages/AdvancedReporting'));
+const SalesDashboard = lazy(() => import('@/pages/SalesDashboard'));
+const SMSWhatsAppNotifications = lazy(() => import('@/pages/SMSWhatsAppNotifications'));
+const ProjectManagement = lazy(() => import('@/pages/ProjectManagement'));
+const ArchiveAndBackup = lazy(() => import('@/pages/ArchiveAndBackup'));
+const AdvancedSettings = lazy(() => import('@/pages/AdvancedSettings'));
+const ShippingServicesIntegration = lazy(() => import('@/pages/ShippingServicesIntegration'));
+const VoiceVideoAlerts = lazy(() => import('@/pages/VoiceVideoAlerts'));
+const SmartRecommendations = lazy(() => import('@/pages/SmartRecommendations'));
+const CustomsDashboard = lazy(() => import('@/pages/CustomsDashboard'));
+const ScheduledReportingSystem = lazy(() => import('@/pages/ScheduledReportingSystem'));
+const AdvancedHRSystem = lazy(() => import('@/pages/AdvancedHRSystem'));
+const RealPaymentIntegration = lazy(() => import('@/pages/RealPaymentIntegration'));
 const PaymentGatewayIntegration = lazy(() => import('@/pages/PaymentGatewayIntegration'));
 const InstantMessaging = lazy(() => import('@/pages/InstantMessaging'));
-const VoiceVideoAlerts = lazy(() => import('@/pages/VoiceVideoAlerts'));
-const SalesDashboard = lazy(() => import('@/pages/SalesDashboard'));
-const SurveysAndRatings = lazy(() => import('@/pages/SurveysAndRatings'));
 const EmailNotificationSystem = lazy(() => import('@/pages/EmailNotificationSystem'));
-const HRManagementDashboard = lazy(() => import('@/pages/HRManagementDashboard'));
-const SmartRecommendations = lazy(() => import('@/pages/SmartRecommendations'));
-const AutomatedInvoicing = lazy(() => import('@/pages/AutomatedInvoicing'));
-const RealTimeAnalyticsDashboard = lazy(() => import('@/pages/RealTimeAnalyticsDashboard'));
-const AdvancedNotificationSystem = lazy(() => import('@/pages/AdvancedNotificationSystem'));
 const TechnicalSupport = lazy(() => import('@/pages/TechnicalSupport'));
 const AdvancedSalesDashboard = lazy(() => import('@/pages/AdvancedSalesDashboard'));
-const ExternalSystemsIntegration = lazy(() => import('@/pages/ExternalSystemsIntegration'));
-const AdvancedHRSystem = lazy(() => import('@/pages/AdvancedHRSystem'));
 const SmartAnalyticsDashboard = lazy(() => import('@/pages/SmartAnalyticsDashboard'));
 const FinalAdvancedAlerts = lazy(() => import('@/pages/FinalAdvancedAlerts'));
-const ScheduledReportingSystem = lazy(() => import('@/pages/ScheduledReportingSystem'));
 const MobileAppDevelopment = lazy(() => import('@/pages/MobileAppDevelopment'));
-const RealPaymentIntegration = lazy(() => import('@/pages/RealPaymentIntegration'));
-const ShippingServicesIntegration = lazy(() => import('@/pages/ShippingServicesIntegration'));
-const CustomsDashboard = lazy(() => import('@/pages/CustomsDashboard'));
-const SmartAlertsAdvanced = lazy(() => import('@/pages/SmartAlertsAdvanced'));
-const AdvancedReportingSystem = lazy(() => import('@/pages/AdvancedReportingSystem'));
 const CEODashboard = lazy(() => import('@/pages/CEODashboard'));
 const JordanCustomsIntegration = lazy(() => import('@/pages/JordanCustomsIntegration'));
-const InternationalShippingIntegration = lazy(() => import('@/pages/InternationalShippingIntegration'));
 const MobileAppDevelopmentAdvanced = lazy(() => import('@/pages/MobileAppDevelopmentAdvanced'));
 const SmartAnalyticsAdvanced = lazy(() => import('@/pages/SmartAnalyticsAdvanced'));
-const BankIntegration = lazy(() => import('@/pages/BankIntegration'));
 const PWADevelopment = lazy(() => import('@/pages/PWADevelopment'));
-const SMSWhatsAppNotifications = lazy(() => import('@/pages/SMSWhatsAppNotifications'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -139,6 +119,7 @@ const InstantNotificationSystem = lazy(() => import('@/pages/InstantNotification
 const AdvancedPaymentSystem = lazy(() => import('@/pages/AdvancedPaymentSystem'));
 const PerformanceAndSEO = lazy(() => import('@/pages/PerformanceAndSEO'));
 const LiveTechnicalSupport = lazy(() => import('@/pages/LiveTechnicalSupport'));
+const AdvancedAnalyticsDashboard = lazy(() => import('@/pages/AdvancedAnalyticsDashboard'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -147,179 +128,126 @@ import { ToastProvider } from "./contexts/ToastContext";
 import { ToastContainer } from "./components/ToastContainer";
 import LiveChat from "./components/LiveChat";
 
-// Loading component
-function PageLoader() {
+// Simple fallback
+function SimpleFallback() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <LoadingSpinner message="جاري تحميل الصفحة..." />
-        <p className="text-xs text-muted-foreground">قد يستغرق بعض الوقت في الزيارة الأولى</p>
-      </div>
+    <div className="flex items-center justify-center min-h-screen">
+      <p>جاري التحميل...</p>
     </div>
   );
 }
 
 function Router() {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Switch>
-        {/* الصفحة الرئيسية */}
-        <Route path={"/"} component={Home} />
-        <Route path={"/payment/local"} component={LocalPaymentPage} />
-        
-        {/* البيانات الجمركية */}
-        <Route path={"/declarations"} component={DeclarationsList} />
-        <Route path={"/declarations/new"} component={DeclarationForm} />
-        <Route path={"/declarations/new/advanced"} component={DeclarationFormAdvanced} />
-        <Route path={"/declarations/:id"} component={DeclarationDetail} />
-        <Route path={"/declarations/:id/items"} component={ItemsManagement} />
-        <Route path={"/declarations/:id/variance"} component={VarianceAnalysis} />
-        <Route path={"/:id/customs-declaration"} component={AdvancedCustomsDeclaration} />
-        <Route path={"/advanced-customs"} component={AdvancedCustomsDeclarationPage} />
-        
-        {/* الإدارة والتحكم */}
-        <Route path={"/admin"} component={AdminPanel} />
-        <Route path={"/dashboard"} component={Dashboard} />
-        <Route path={"/smart-dashboard"} component={SmartDashboard} />
-        
-        {/* المحاسبة والتقارير */}
-        <Route path={"/accounting"} component={AccountingDashboard} />
-        <Route path={"/reports"} component={AdvancedReports} />
-        <Route path={"/reports-page"} component={ReportsPage} />
-        
-        {/* التنبيهات والإشعارات */}
-        <Route path={"/alerts"} component={AlertsManagement} />
-        <Route path={"/alerts-notifications"} component={AlertsAndNotifications} />
-        <Route path={"/notifications-center"} component={NotificationsCenter} />
-        <Route path={"/notifications-management"} component={NotificationsManagement} />
-        
-        {/* الشحن والتتبع */}
-        <Route path={"/shipping"} component={ShippingPage} />
-        <Route path={"/shipping-management"} component={ShippingManagement} />
-        <Route path={"/tracking"} component={ContainerTracking} />
-        
-        {/* المصروفات والفواتير */}
-        <Route path={"/expenses"} component={ExpensesPage} />
-        <Route path={"/expenses-management"} component={ExpensesManagement} />
-        <Route path={"/supplier-invoice"} component={SupplierInvoice} />
-        <Route path={"/factories-invoices"} component={FactoriesAndInvoices} />
-        
-            {/* الدفع والحسابات البنكية */}
-        <Route path="/payments" component={PaymentsManagement} />
-        <Route path="/checkout" component={Checkout} />
-        <Route path="/payment" component={PaymentPage} />
-        <Route path="/payment-system" component={PaymentSystem} />
-        <Route path="/click-payment" component={ClickPayment} />
-        <Route path="/advanced-payment" component={AdvancedPaymentPage} />
-        <Route path="/local-payment" component={LocalPaymentPage} />
-        <Route path="/payment-dashboard" component={AdvancedPaymentDashboard} />
-        <Route path="/invoices-receipts" component={InvoicesAndReceipts} />
-        <Route path="/export-reports" component={ExportAndReports} />
-        <Route path="/notifications-alerts" component={NotificationsAndAlerts} />
-        <Route path="/security-performance" component={SecurityAndPerformance} />
-        <Route path="/team-roles" component={TeamAndRoles} />
-        <Route path="/advanced-settings" component={AdvancedSettings} />
-        <Route path="/email-notifications" component={EmailNotifications} />
-        <Route path="/archive-backup" component={ArchiveAndBackup} />
-        <Route path="/user-management" component={UserManagement} />
-        <Route path="/activity-log" component={ActivityLog} />
-        <Route path="/branch-management" component={BranchManagement} />
-        <Route path="/smart-alerts" component={SmartAlerts} />
-        <Route path="/performance-dashboard" component={PerformanceDashboard} />
-        <Route path="/scheduled-reports" component={ScheduledReports} />
-        <Route path="/document-management" component={DocumentManagement} />
-        <Route path="/project-management" component={ProjectManagement} />
-        <Route path="/compliance-audit" component={ComplianceAudit} />
-        <Route path="/external-integration" component={ExternalIntegration} />
-        <Route path="/inventory-management" component={InventoryManagement} />
-        <Route path="/ai-predictions" component={AIPredictions} />
-        <Route path="/advanced-invoicing" component={AdvancedInvoicing} />
-        <Route path="/customer-relationship" component={CustomerRelationship} />
-        <Route path="/advanced-notifications" component={AdvancedNotifications} />
-        <Route path="/advanced-analytics" component={AdvancedAnalyticsPage} />
-        <Route path="/advanced-reporting" component={AdvancedReporting} />
-        <Route path="/payment-gateway-integration" component={PaymentGatewayIntegration} />
-        <Route path="/instant-messaging" component={InstantMessaging} />
-        <Route path="/voice-video-alerts" component={VoiceVideoAlerts} />
-        <Route path="/sales-dashboard" component={SalesDashboard} />
-        <Route path="/surveys-ratings" component={SurveysAndRatings} />
-        <Route path="/email-notification-system" component={EmailNotificationSystem} />
-        <Route path="/hr-management" component={HRManagementDashboard} />
-        <Route path="/smart-recommendations" component={SmartRecommendations} />
-        <Route path="/automated-invoicing" component={AutomatedInvoicing} />
-        <Route path="/real-time-analytics" component={RealTimeAnalyticsDashboard} />
-        <Route path="/advanced-notification-system" component={AdvancedNotificationSystem} />
-        <Route path="/technical-support" component={TechnicalSupport} />
-        <Route path="/advanced-sales-dashboard" component={AdvancedSalesDashboard} />
-        <Route path="/external-systems-integration" component={ExternalSystemsIntegration} />
-        <Route path="/advanced-hr-system" component={AdvancedHRSystem} />
-        <Route path="/smart-analytics-dashboard" component={SmartAnalyticsDashboard} />
-        <Route path="/final-advanced-alerts" component={FinalAdvancedAlerts} />
-        <Route path="/scheduled-reporting" component={ScheduledReportingSystem} />
-        <Route path="/mobile-app-development" component={MobileAppDevelopment} />
-        <Route path="/real-payment-integration" component={RealPaymentIntegration} />
-        <Route path="/shipping-services-integration" component={ShippingServicesIntegration} />
-        <Route path="/customs-dashboard" component={CustomsDashboard} />
-        <Route path="/smart-alerts-advanced" component={SmartAlertsAdvanced} />
-        <Route path="/advanced-reporting-system" component={AdvancedReportingSystem} />
-        <Route path="/ceo-dashboard" component={CEODashboard} />
-        <Route path="/jordan-customs-integration" component={JordanCustomsIntegration} />
-        <Route path="/international-shipping-integration" component={InternationalShippingIntegration} />
-        <Route path="/mobile-app-development-advanced" component={MobileAppDevelopmentAdvanced} />
-        <Route path="/smart-analytics-advanced" component={SmartAnalyticsAdvanced} />
-        <Route path="/bank-integration" component={BankIntegration} />
-        <Route path="/pwa-development" component={PWADevelopment} />
-        <Route path="/sms-whatsapp-notifications" component={SMSWhatsAppNotifications} />
-        <Route path="/payments-dashboard" component={PaymentsDashboard} />
-        <Route path="/owner-dashboard" component={OwnerDashboard} />
-        <Route path="/bank-accounts" component={BankAccountManagement} />
-        <Route path="/subscription-plans" component={SubscriptionPlans} />
-        <Route path="/subscription-dashboard" component={SubscriptionDashboard} />
-        <Route path="/confirm-plan" component={ConfirmPlan} />
-        
-        {/* إدارة المستخدمين والأدوار */}
-        <Route path={"/users-management"} component={UsersManagement} />
-        <Route path={"/users-roles"} component={UsersAndRoles} />
-        
-        {/* الإعدادات والأمان */}
-        <Route path="/settings" component={SettingsAndSecurity} />
-        <Route path="/settings-page" component={SettingsPage} />
-        
-        {/* البحث والتحميل */}
-        <Route path="/advanced-search" component={AdvancedSearch} />
-        <Route path="/download" component={DownloadPage} />
-        <Route path="/downloads" component={DownloadPage} />
-        <Route path="/pdf-import" component={PdfImport} />
-        
-        {/* النسخ الاحتياطي */}
-        <Route path="/backup-notifications" component={BackupAndNotifications} />
-        <Route path="/notifications" component={Notifications} />
-        
-        {/* المساعدة والمعلومات */}
-        <Route path="/login" component={Login} />
-        <Route path="/advanced-login" component={AdvancedLogin} />
-        <Route path="/forgot-password" component={ForgotPassword} />
-        <Route path="/instant-notifications" component={InstantNotificationSystem} />
-        <Route path="/advanced-payment-system" component={AdvancedPaymentSystem} />
-        <Route path="/performance-seo" component={PerformanceAndSEO} />
-        <Route path="/live-support" component={LiveTechnicalSupport} />
-        <Route path="/help" component={Help} />
-        <Route path="/help-center" component={HelpCenter} />
-        <Route path="/tutorials" component={VideoTutorials} />
-        <Route path="/about" component={About} />
-        <Route path="/privacy" component={Privacy} />
-        <Route path="/terms" component={Terms} />
-        <Route path="/contact" component={Contact} />
-        <Route path="/support" component={Support} />
-        <Route path="/faq" component={FAQ} />
-        <Route path="/documentation" component={Documentation} />
-        <Route path="/pricing" component={Pricing} />
-        
-        {/* صفحة 404 */}
-        <Route path={"/404"} component={NotFound} />
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <Switch>
+      <Route path={"/"} component={Home} />
+      <Route path={"/payment/local"} component={LocalPaymentPage} />
+      <Route path={"/declarations"} component={DeclarationsList} />
+      <Route path={"/declarations/new"} component={DeclarationForm} />
+      <Route path={"/declarations/new/advanced"} component={DeclarationFormAdvanced} />
+      <Route path={"/declarations/:id"} component={DeclarationDetail} />
+      <Route path={"/declarations/:id/items"} component={ItemsManagement} />
+      <Route path={"/declarations/:id/variance"} component={VarianceAnalysis} />
+      <Route path={"/:id/customs-declaration"} component={AdvancedCustomsDeclaration} />
+      <Route path={"/advanced-customs"} component={AdvancedCustomsDeclarationPage} />
+      <Route path={"/admin"} component={AdminPanel} />
+      <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/smart-dashboard"} component={SmartDashboard} />
+      <Route path={"/accounting"} component={AccountingDashboard} />
+      <Route path={"/reports"} component={AdvancedReports} />
+      <Route path={"/reports-page"} component={ReportsPage} />
+      <Route path={"/alerts"} component={AlertsManagement} />
+      <Route path={"/alerts-notifications"} component={AlertsAndNotifications} />
+      <Route path={"/notifications-center"} component={NotificationsCenter} />
+      <Route path={"/notifications-management"} component={NotificationsManagement} />
+      <Route path={"/shipping"} component={ShippingPage} />
+      <Route path={"/shipping-management"} component={ShippingManagement} />
+      <Route path={"/tracking"} component={ContainerTracking} />
+      <Route path={"/expenses"} component={ExpensesPage} />
+      <Route path={"/expenses-management"} component={ExpensesManagement} />
+      <Route path={"/supplier-invoice"} component={SupplierInvoice} />
+      <Route path={"/payment"} component={PaymentPage} />
+      <Route path={"/payment-system"} component={PaymentSystem} />
+      <Route path={"/click-payment"} component={ClickPayment} />
+      <Route path={"/checkout"} component={Checkout} />
+      <Route path={"/factories"} component={FactoriesAndInvoices} />
+      <Route path={"/invoices"} component={InvoicesAndReceipts} />
+      <Route path={"/export-reports"} component={ExportAndReports} />
+      <Route path={"/users-management"} component={UsersManagement} />
+      <Route path={"/users-roles"} component={UsersAndRoles} />
+      <Route path="/settings" component={SettingsAndSecurity} />
+      <Route path="/settings-page" component={SettingsPage} />
+      <Route path="/advanced-search" component={AdvancedSearch} />
+      <Route path="/download" component={DownloadPage} />
+      <Route path="/downloads" component={DownloadPage} />
+      <Route path="/pdf-import" component={PdfImport} />
+      <Route path="/backup-notifications" component={BackupAndNotifications} />
+      <Route path="/notifications" component={Notifications} />
+      <Route path="/login" component={Login} />
+      <Route path="/advanced-login" component={AdvancedLogin} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/instant-notifications" component={InstantNotificationSystem} />
+      <Route path="/advanced-payment-system" component={AdvancedPaymentSystem} />
+      <Route path="/performance-seo" component={PerformanceAndSEO} />
+      <Route path="/live-support" component={LiveTechnicalSupport} />
+      <Route path="/help" component={Help} />
+      <Route path="/help-center" component={HelpCenter} />
+      <Route path="/tutorials" component={VideoTutorials} />
+      <Route path="/about" component={About} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/support" component={Support} />
+      <Route path="/faq" component={FAQ} />
+      <Route path="/documentation" component={Documentation} />
+      <Route path="/pricing" component={Pricing} />
+      <Route path="/compliance-audit" component={ComplianceAudit} />
+      <Route path="/document-management" component={DocumentManagement} />
+      <Route path="/bank-integration" component={BankIntegration} />
+      <Route path="/international-shipping" component={InternationalShippingIntegration} />
+      <Route path="/surveys-ratings" component={SurveysAndRatings} />
+      <Route path="/smart-alerts" component={SmartAlerts} />
+      <Route path="/external-systems" component={ExternalSystemsIntegration} />
+      <Route path="/hr-management" component={HRManagementDashboard} />
+      <Route path="/smart-alerts-advanced" component={SmartAlertsAdvanced} />
+      <Route path="/customer-relationship" component={CustomerRelationship} />
+      <Route path="/sales-dashboard" component={SalesDashboard} />
+      <Route path="/sms-whatsapp" component={SMSWhatsAppNotifications} />
+      <Route path="/project-management" component={ProjectManagement} />
+      <Route path="/archive-backup" component={ArchiveAndBackup} />
+      <Route path="/advanced-settings" component={AdvancedSettings} />
+      <Route path="/shipping-services" component={ShippingServicesIntegration} />
+      <Route path="/voice-video-alerts" component={VoiceVideoAlerts} />
+      <Route path="/smart-recommendations" component={SmartRecommendations} />
+      <Route path="/customs-dashboard" component={CustomsDashboard} />
+      <Route path="/scheduled-reporting" component={ScheduledReportingSystem} />
+      <Route path="/advanced-hr" component={AdvancedHRSystem} />
+      <Route path="/real-payment" component={RealPaymentIntegration} />
+      <Route path="/payment-gateway" component={PaymentGatewayIntegration} />
+      <Route path="/instant-messaging" component={InstantMessaging} />
+      <Route path="/email-notifications" component={EmailNotificationSystem} />
+      <Route path="/technical-support" component={TechnicalSupport} />
+      <Route path="/advanced-sales" component={AdvancedSalesDashboard} />
+      <Route path="/smart-analytics" component={SmartAnalyticsDashboard} />
+      <Route path="/final-alerts" component={FinalAdvancedAlerts} />
+      <Route path="/mobile-app" component={MobileAppDevelopment} />
+      <Route path="/ceo-dashboard" component={CEODashboard} />
+      <Route path="/jordan-customs" component={JordanCustomsIntegration} />
+      <Route path="/mobile-app-advanced" component={MobileAppDevelopmentAdvanced} />
+      <Route path="/smart-analytics-advanced" component={SmartAnalyticsAdvanced} />
+      <Route path="/pwa" component={PWADevelopment} />
+      <Route path="/payments-dashboard" component={PaymentsDashboard} />
+      <Route path="/owner-dashboard" component={OwnerDashboard} />
+      <Route path="/subscription-plans" component={SubscriptionPlans} />
+      <Route path="/subscription-dashboard" component={SubscriptionDashboard} />
+      <Route path="/confirm-plan" component={ConfirmPlan} />
+      <Route path="/advanced-payments" component={AdvancedPaymentPage} />
+      <Route path="/advanced-payments-dashboard" component={AdvancedPaymentDashboard} />
+      <Route path="/bank-accounts" component={BankAccountManagement} />
+      <Route path="/advanced-analytics" component={AdvancedAnalyticsDashboard} />
+      <Route path={"/404"} component={NotFound} />
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
