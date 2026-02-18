@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useToast } from '@/hooks/use-toast';
+import { TrackingMap } from '@/components/TrackingMap';
 
 /**
  * صفحة تتبع الشحنات
@@ -156,7 +157,9 @@ export default function ShipmentTracking() {
 
           {/* تبويب التتبع */}
           <TabsContent value="tracking" className="space-y-4">
-            {trackingQuery.isLoading ? (
+            {/* الخريطة التفاعلية */}
+            {searchedTracking && <TrackingMap trackingNumber={searchedTracking} companyCode={companyCode} />}
+            {trackingQuery.isLoading && !searchedTracking ? (
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-center text-muted-foreground">جاري التحميل...</p>
