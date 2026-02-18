@@ -62,6 +62,7 @@ import { supportAgentRouter } from "./routers/support-agent-router";
 import { notificationsAdvancedRouter } from "./routers/notifications-advanced-router";
 import { performanceAnalyticsRouter } from "./routers/performance-analytics-router";
 import { ratingsAdvancedRouter } from "./routers/ratings-advanced-router";
+import { contactRouter } from "./routers/contact-router";
 
 /**
  * Main Application Router
@@ -685,6 +686,7 @@ export const appRouter = router({
   notificationsAdvanced: notificationsAdvancedRouter,
   performanceAnalytics: performanceAnalyticsRouter,
   ratingsAdvanced: ratingsAdvancedRouter,
+  contact: contactRouter,
 });
 
 export type AppRouter = typeof appRouter;

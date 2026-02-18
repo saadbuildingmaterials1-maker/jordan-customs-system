@@ -1474,7 +1474,7 @@ function registerOAuthRoutes(app) {
 }
 
 // server/routers.ts
-import { z as z26 } from "zod";
+import { z as z27 } from "zod";
 
 // server/_core/systemRouter.ts
 import { z } from "zod";
@@ -2150,7 +2150,7 @@ ${itemsList}
 }
 
 // server/ai-data-extraction.ts
-async function extractDataFromText(text4) {
+async function extractDataFromText(text5) {
   try {
     const response = await invokeLLM({
       messages: [
@@ -2185,7 +2185,7 @@ async function extractDataFromText(text4) {
           role: "user",
           content: `\u0627\u0633\u062A\u062E\u0631\u062C \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A \u0645\u0646 \u0627\u0644\u0646\u0635 \u0627\u0644\u062A\u0627\u0644\u064A:
 
-${text4}`
+${text5}`
         }
       ],
       response_format: {
@@ -2274,12 +2274,12 @@ function validateExtractedData(data) {
     issues.push("\u062A\u0643\u0644\u0641\u0629 \u0627\u0644\u0634\u062D\u0646 \u0633\u0627\u0644\u0628\u0629");
   }
   if (data.items && data.items.length > 0) {
-    data.items.forEach((item, index) => {
+    data.items.forEach((item, index2) => {
       if (!item.description) {
-        issues.push(`\u0627\u0644\u0635\u0646\u0641 ${index + 1}: \u0627\u0644\u0648\u0635\u0641 \u0645\u0641\u0642\u0648\u062F`);
+        issues.push(`\u0627\u0644\u0635\u0646\u0641 ${index2 + 1}: \u0627\u0644\u0648\u0635\u0641 \u0645\u0641\u0642\u0648\u062F`);
       }
       if (item.quantity !== void 0 && item.quantity !== null && item.quantity <= 0) {
-        issues.push(`\u0627\u0644\u0635\u0646\u0641 ${index + 1}: \u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629`);
+        issues.push(`\u0627\u0644\u0635\u0646\u0641 ${index2 + 1}: \u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629`);
       }
     });
   }
@@ -5850,8 +5850,8 @@ var InvoiceService = class {
       });
       yPosition -= 35;
       let itemYPosition = yPosition;
-      invoiceData.items.forEach((item, index) => {
-        if (index % 2 === 0) {
+      invoiceData.items.forEach((item, index2) => {
+        if (index2 % 2 === 0) {
           page.drawRectangle({
             x: 40,
             y: itemYPosition - 20,
@@ -6068,9 +6068,9 @@ var InvoiceService = class {
    * إنشاء رقم فاتورة فريد
    */
   generateInvoiceNumber() {
-    const timestamp4 = Date.now();
+    const timestamp5 = Date.now();
     const random = Math.floor(Math.random() * 1e4);
-    return `INV-${timestamp4}-${random}`;
+    return `INV-${timestamp5}-${random}`;
   }
 };
 var invoiceService = new InvoiceService();
@@ -7496,8 +7496,8 @@ var ShippingIntegrationService = class {
       UPS: "1Z"
     }[carrier] || "1Z";
     const random = Math.random().toString(36).substring(2, 15).toUpperCase();
-    const timestamp4 = Date.now().toString().slice(-8);
-    return `${prefix}${timestamp4}${random}`;
+    const timestamp5 = Date.now().toString().slice(-8);
+    return `${prefix}${timestamp5}${random}`;
   }
   /**
    * الحصول على حالة الشحنة
@@ -16015,9 +16015,9 @@ var NotificationManager = class extends EventEmitter {
    * حذف الإشعار
    */
   deleteNotification(notificationId) {
-    const index = this.notificationHistory.findIndex((n) => n.id === notificationId);
-    if (index !== -1) {
-      this.notificationHistory.splice(index, 1);
+    const index2 = this.notificationHistory.findIndex((n) => n.id === notificationId);
+    if (index2 !== -1) {
+      this.notificationHistory.splice(index2, 1);
     }
   }
   /**
@@ -17493,6 +17493,671 @@ var ratingsAdvancedRouter = router({
   })
 });
 
+// server/routers/contact-router.ts
+import { z as z26 } from "zod";
+
+// drizzle/contact-schema.ts
+import {
+  varchar as varchar4,
+  text as text4,
+  timestamp as timestamp4,
+  mysqlEnum as mysqlEnum4,
+  boolean as boolean4,
+  int as int4,
+  mysqlTable as mysqlTable4,
+  index
+} from "drizzle-orm/mysql-core";
+var contactMessages = mysqlTable4("contact_messages", {
+  id: varchar4("id", { length: 36 }).primaryKey(),
+  // معلومات المرسل
+  name: varchar4("name", { length: 255 }).notNull(),
+  email: varchar4("email", { length: 255 }).notNull(),
+  phone: varchar4("phone", { length: 20 }).notNull(),
+  company: varchar4("company", { length: 255 }),
+  // معلومات الرسالة
+  subject: varchar4("subject", { length: 255 }).notNull(),
+  category: mysqlEnum4("category", [
+    "general_inquiry",
+    "technical_support",
+    "billing",
+    "partnership",
+    "feedback",
+    "complaint",
+    "other"
+  ]).notNull(),
+  message: text4("message").notNull(),
+  // حالة الرسالة
+  status: mysqlEnum4("status", [
+    "new",
+    "read",
+    "in_progress",
+    "resolved",
+    "closed"
+  ]).default("new").notNull(),
+  // معلومات الرد
+  adminReply: text4("admin_reply"),
+  repliedBy: varchar4("replied_by", { length: 64 }),
+  repliedAt: timestamp4("replied_at"),
+  // معلومات إضافية
+  attachmentUrl: varchar4("attachment_url", { length: 500 }),
+  ipAddress: varchar4("ip_address", { length: 45 }),
+  userAgent: text4("user_agent"),
+  priority: mysqlEnum4("priority", ["low", "medium", "high"]).default("medium").notNull(),
+  isSpam: boolean4("is_spam").default(false),
+  // الطوابع الزمنية
+  createdAt: timestamp4("created_at").notNull().defaultNow(),
+  updatedAt: timestamp4("updated_at").notNull().defaultNow()
+}, (table) => ({
+  emailIdx: index("email_idx").on(table.email),
+  statusIdx: index("status_idx").on(table.status),
+  categoryIdx: index("category_idx").on(table.category),
+  createdAtIdx: index("created_at_idx").on(table.createdAt)
+}));
+var contactEmailTemplates = mysqlTable4("contact_email_templates", {
+  id: varchar4("id", { length: 36 }).primaryKey(),
+  // معلومات القالب
+  name: varchar4("name", { length: 255 }).notNull(),
+  templateType: mysqlEnum4("template_type", [
+    "confirmation",
+    "admin_notification",
+    "reply",
+    "auto_response"
+  ]).notNull(),
+  // محتوى القالب
+  subject: varchar4("subject", { length: 255 }).notNull(),
+  body: text4("body").notNull(),
+  // متغيرات القالب
+  variables: text4("variables"),
+  // JSON: ['name', 'email', 'subject', 'message', etc.]
+  // الإعدادات
+  isActive: boolean4("is_active").default(true),
+  isDefault: boolean4("is_default").default(false),
+  // الطوابع الزمنية
+  createdAt: timestamp4("created_at").notNull().defaultNow(),
+  updatedAt: timestamp4("updated_at").notNull().defaultNow()
+});
+var contactStatistics = mysqlTable4("contact_statistics", {
+  id: varchar4("id", { length: 36 }).primaryKey(),
+  // الفترة الزمنية
+  date: timestamp4("date").notNull(),
+  period: mysqlEnum4("period", ["daily", "weekly", "monthly"]).notNull(),
+  // الإحصائيات
+  totalMessages: int4("total_messages").default(0),
+  newMessages: int4("new_messages").default(0),
+  resolvedMessages: int4("resolved_messages").default(0),
+  averageResponseTime: int4("average_response_time"),
+  // بالدقائق
+  // التصنيفات
+  byCategory: text4("by_category"),
+  // JSON: { category: count }
+  byPriority: text4("by_priority"),
+  // JSON: { priority: count }
+  // الرضا
+  satisfactionScore: int4("satisfaction_score"),
+  // من 1 إلى 5
+  // الطوابع الزمنية
+  createdAt: timestamp4("created_at").notNull().defaultNow(),
+  updatedAt: timestamp4("updated_at").notNull().defaultNow()
+}, (table) => ({
+  dateIdx: index("date_idx").on(table.date),
+  periodIdx: index("period_idx").on(table.period)
+}));
+var emailNotifications = mysqlTable4("email_notifications", {
+  id: varchar4("id", { length: 36 }).primaryKey(),
+  // معلومات الإشعار
+  contactMessageId: varchar4("contact_message_id", { length: 36 }).references(() => contactMessages.id),
+  recipientEmail: varchar4("recipient_email", { length: 255 }).notNull(),
+  recipientType: mysqlEnum4("recipient_type", [
+    "customer",
+    "admin",
+    "support_team"
+  ]).notNull(),
+  // نوع الإشعار
+  notificationType: mysqlEnum4("notification_type", [
+    "confirmation",
+    "admin_alert",
+    "reply",
+    "auto_response"
+  ]).notNull(),
+  // حالة الإرسال
+  status: mysqlEnum4("status", [
+    "pending",
+    "sent",
+    "failed",
+    "bounced"
+  ]).default("pending").notNull(),
+  // محاولات الإرسال
+  attemptCount: int4("attempt_count").default(0),
+  lastAttemptAt: timestamp4("last_attempt_at"),
+  failureReason: text4("failure_reason"),
+  // معلومات البريد
+  subject: varchar4("subject", { length: 255 }).notNull(),
+  body: text4("body").notNull(),
+  // الطوابع الزمنية
+  createdAt: timestamp4("created_at").notNull().defaultNow(),
+  sentAt: timestamp4("sent_at"),
+  updatedAt: timestamp4("updated_at").notNull().defaultNow()
+}, (table) => ({
+  contactMessageIdIdx: index("contact_message_id_idx").on(table.contactMessageId),
+  recipientEmailIdx: index("recipient_email_idx").on(table.recipientEmail),
+  statusIdx: index("status_idx").on(table.status)
+}));
+
+// server/services/contact-service.ts
+import { eq as eq8, and as and6, desc as desc5, gte as gte3, lte as lte3 } from "drizzle-orm";
+import { v4 as uuidv43 } from "uuid";
+async function submitContactForm(data) {
+  try {
+    validateContactForm(data);
+    const messageId = uuidv43();
+    const now = /* @__PURE__ */ new Date();
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const message = await db.insert(contactMessages).values({
+      id: messageId,
+      name: data.name.trim(),
+      email: data.email.toLowerCase().trim(),
+      phone: data.phone.trim(),
+      company: data.company?.trim(),
+      subject: data.subject.trim(),
+      category: data.category,
+      message: data.message.trim(),
+      status: "new",
+      priority: calculatePriority(data.category),
+      ipAddress: data.ipAddress,
+      userAgent: data.userAgent,
+      createdAt: now,
+      updatedAt: now
+    });
+    await sendConfirmationEmail(data.email, data.name, messageId);
+    await sendAdminNotification(data, messageId);
+    await updateContactStatistics(data.category);
+    return {
+      success: true,
+      messageId,
+      message: "\u062A\u0645 \u0627\u0633\u062A\u0642\u0628\u0627\u0644 \u0631\u0633\u0627\u0644\u062A\u0643 \u0628\u0646\u062C\u0627\u062D. \u0633\u0646\u062A\u0648\u0627\u0635\u0644 \u0645\u0639\u0643 \u0642\u0631\u064A\u0628\u0627\u064B."
+    };
+  } catch (error) {
+    console.error("Error submitting contact form:", error);
+    throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0631\u0633\u0627\u0644\u0629. \u064A\u0631\u062C\u0649 \u0627\u0644\u0645\u062D\u0627\u0648\u0644\u0629 \u0644\u0627\u062D\u0642\u0627\u064B.");
+  }
+}
+function validateContactForm(data) {
+  const errors = [];
+  if (!data.name || data.name.trim().length < 2) {
+    errors.push("\u0627\u0644\u0627\u0633\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 \u062D\u0631\u0641\u064A\u0646");
+  }
+  if (data.name.length > 255) {
+    errors.push("\u0627\u0644\u0627\u0633\u0645 \u0637\u0648\u064A\u0644 \u062C\u062F\u0627\u064B");
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!data.email || !emailRegex.test(data.email)) {
+    errors.push("\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A \u063A\u064A\u0631 \u0635\u062D\u064A\u062D");
+  }
+  const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+  if (!data.phone || !phoneRegex.test(data.phone) || data.phone.length < 9) {
+    errors.push("\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D");
+  }
+  if (!data.subject || data.subject.trim().length < 5) {
+    errors.push("\u0627\u0644\u0645\u0648\u0636\u0648\u0639 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 5 \u0623\u062D\u0631\u0641");
+  }
+  if (data.subject.length > 255) {
+    errors.push("\u0627\u0644\u0645\u0648\u0636\u0648\u0639 \u0637\u0648\u064A\u0644 \u062C\u062F\u0627\u064B");
+  }
+  if (!data.message || data.message.trim().length < 10) {
+    errors.push("\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644 10 \u0623\u062D\u0631\u0641");
+  }
+  if (data.message.length > 5e3) {
+    errors.push("\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u0637\u0648\u064A\u0644\u0629 \u062C\u062F\u0627\u064B");
+  }
+  const validCategories = ["general_inquiry", "technical_support", "billing", "partnership", "feedback", "complaint", "other"];
+  if (!validCategories.includes(data.category)) {
+    errors.push("\u0641\u0626\u0629 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D\u0629");
+  }
+  if (isSpam(data.message)) {
+    errors.push("\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u062A\u062D\u062A\u0648\u064A \u0639\u0644\u0649 \u0645\u062D\u062A\u0648\u0649 \u063A\u064A\u0631 \u0645\u0633\u0645\u0648\u062D");
+  }
+  if (errors.length > 0) {
+    throw new Error(errors.join(", "));
+  }
+}
+function isSpam(message) {
+  const spamPatterns = [
+    /viagra|cialis|casino|lottery|prize|click here|buy now/gi,
+    /http:\/\/|https:\/\//gi
+    // Multiple links
+  ];
+  let linkCount = (message.match(/http[s]?:\/\//gi) || []).length;
+  if (linkCount > 2) return true;
+  for (const pattern of spamPatterns) {
+    if (pattern.test(message)) return true;
+  }
+  return false;
+}
+function calculatePriority(category) {
+  const highPriorityCategories = ["technical_support", "complaint", "billing"];
+  const mediumPriorityCategories = ["partnership", "feedback"];
+  if (highPriorityCategories.includes(category)) return "high";
+  if (mediumPriorityCategories.includes(category)) return "medium";
+  return "low";
+}
+async function sendConfirmationEmail(email, name, messageId) {
+  try {
+    const notificationId = uuidv43();
+    const now = /* @__PURE__ */ new Date();
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    await db.insert(emailNotifications).values({
+      id: notificationId,
+      contactMessageId: messageId,
+      recipientEmail: email,
+      recipientType: "customer",
+      notificationType: "confirmation",
+      status: "pending",
+      subject: "\u062A\u0623\u0643\u064A\u062F \u0627\u0633\u062A\u0642\u0628\u0627\u0644 \u0631\u0633\u0627\u0644\u062A\u0643 - \u0646\u0638\u0627\u0645 \u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u062C\u0645\u0627\u0631\u0643",
+      body: generateConfirmationEmailBody(name, messageId),
+      createdAt: now,
+      updatedAt: now
+    });
+    await sendEmailNotification(notificationId);
+  } catch (error) {
+    console.error("Error sending confirmation email:", error);
+  }
+}
+async function sendAdminNotification(data, messageId) {
+  try {
+    await notifyOwner({
+      title: `\u0631\u0633\u0627\u0644\u0629 \u0627\u062A\u0635\u0627\u0644 \u062C\u062F\u064A\u062F\u0629 \u0645\u0646 ${data.name}`,
+      content: `
+        \u0627\u0644\u0641\u0626\u0629: ${getCategoryLabel(data.category)}
+        \u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A: ${data.email}
+        \u0627\u0644\u0647\u0627\u062A\u0641: ${data.phone}
+        \u0627\u0644\u0645\u0648\u0636\u0648\u0639: ${data.subject}
+        
+        \u0627\u0644\u0631\u0633\u0627\u0644\u0629:
+        ${data.message}
+      `
+    });
+    const notificationId = uuidv43();
+    const now = /* @__PURE__ */ new Date();
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    await db.insert(emailNotifications).values({
+      id: notificationId,
+      contactMessageId: messageId,
+      recipientEmail: process.env.DEVELOPER_EMAIL || "admin@example.com",
+      recipientType: "admin",
+      notificationType: "admin_alert",
+      status: "pending",
+      subject: `\u0631\u0633\u0627\u0644\u0629 \u0627\u062A\u0635\u0627\u0644 \u062C\u062F\u064A\u062F\u0629: ${data.subject}`,
+      body: generateAdminEmailBody(data, messageId),
+      createdAt: now,
+      updatedAt: now
+    });
+    await sendEmailNotification(notificationId);
+  } catch (error) {
+    console.error("Error sending admin notification:", error);
+  }
+}
+async function sendEmailNotification(notificationId) {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const notification = await db.query.emailNotifications.findFirst({
+      where: eq8(emailNotifications.id, notificationId)
+    });
+    if (!notification) return;
+    await db.update(emailNotifications).set({
+      status: "sent",
+      sentAt: /* @__PURE__ */ new Date()
+    }).where(eq8(emailNotifications.id, notificationId));
+    console.log(`Email sent to ${notification.recipientEmail}`);
+  } catch (error) {
+    console.error("Error sending email notification:", error);
+    const db = await getDb();
+    if (db) {
+      await db.update(emailNotifications).set({
+        status: "failed",
+        failureReason: error instanceof Error ? error.message : "Unknown error"
+      }).where(eq8(emailNotifications.id, notificationId));
+    }
+  }
+}
+async function updateContactStatistics(category) {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const today = /* @__PURE__ */ new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const stats = await db.query.contactStatistics.findFirst({
+      where: and6(
+        gte3(contactStatistics.date, today),
+        lte3(contactStatistics.date, tomorrow),
+        eq8(contactStatistics.period, "daily")
+      )
+    });
+    if (stats) {
+      const byCategory = JSON.parse(stats.byCategory || "{}");
+      byCategory[category] = (byCategory[category] || 0) + 1;
+      await db.update(contactStatistics).set({
+        totalMessages: stats.totalMessages + 1,
+        newMessages: stats.newMessages + 1,
+        byCategory: JSON.stringify(byCategory),
+        updatedAt: /* @__PURE__ */ new Date()
+      }).where(eq8(contactStatistics.id, stats.id));
+    } else {
+      const byCategory = { [category]: 1 };
+      await db.insert(contactStatistics).values({
+        id: uuidv43(),
+        date: today,
+        period: "daily",
+        totalMessages: 1,
+        newMessages: 1,
+        resolvedMessages: 0,
+        byCategory: JSON.stringify(byCategory),
+        byPriority: JSON.stringify({ low: 0, medium: 0, high: 0 }),
+        createdAt: /* @__PURE__ */ new Date(),
+        updatedAt: /* @__PURE__ */ new Date()
+      });
+    }
+  } catch (error) {
+    console.error("Error updating contact statistics:", error);
+  }
+}
+async function getContactMessages(limit = 20, offset = 0, status) {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const where = status ? eq8(contactMessages.status, status) : void 0;
+    const messages = await db.query.contactMessages.findMany({
+      where,
+      orderBy: [desc5(contactMessages.createdAt)],
+      limit,
+      offset
+    });
+    const total = await db.query.contactMessages.findMany({
+      where
+    });
+    return {
+      messages,
+      total: total.length,
+      limit,
+      offset
+    };
+  } catch (error) {
+    console.error("Error getting contact messages:", error);
+    throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0631\u0633\u0627\u0626\u0644");
+  }
+}
+async function getContactMessageById(id) {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const message = await db.query.contactMessages.findFirst({
+      where: eq8(contactMessages.id, id)
+    });
+    return message;
+  } catch (error) {
+    console.error("Error getting contact message:", error);
+    throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0631\u0633\u0627\u0644\u0629");
+  }
+}
+async function replyToContactMessage(messageId, reply, repliedBy) {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const now = /* @__PURE__ */ new Date();
+    await db.update(contactMessages).set({
+      adminReply: reply,
+      repliedBy,
+      repliedAt: now,
+      status: "resolved",
+      updatedAt: now
+    }).where(eq8(contactMessages.id, messageId));
+    const message = await getContactMessageById(messageId);
+    if (message) {
+      await sendReplyEmail(message.email, message.name, reply, messageId);
+    }
+    return { success: true };
+  } catch (error) {
+    console.error("Error replying to contact message:", error);
+    throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0631\u062F");
+  }
+}
+async function sendReplyEmail(email, name, reply, messageId) {
+  try {
+    const notificationId = uuidv43();
+    const now = /* @__PURE__ */ new Date();
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    await db.insert(emailNotifications).values({
+      id: notificationId,
+      contactMessageId: messageId,
+      recipientEmail: email,
+      recipientType: "customer",
+      notificationType: "reply",
+      status: "pending",
+      subject: "\u0631\u062F \u0639\u0644\u0649 \u0631\u0633\u0627\u0644\u062A\u0643 - \u0646\u0638\u0627\u0645 \u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u062C\u0645\u0627\u0631\u0643",
+      body: generateReplyEmailBody(name, reply),
+      createdAt: now,
+      updatedAt: now
+    });
+    await sendEmailNotification(notificationId);
+  } catch (error) {
+    console.error("Error sending reply email:", error);
+  }
+}
+async function getContactStatistics(period = "daily") {
+  try {
+    const db = await getDb();
+    if (!db) throw new Error("Database connection failed");
+    const stats = await db.query.contactStatistics.findMany({
+      where: eq8(contactStatistics.period, period),
+      orderBy: [desc5(contactStatistics.date)],
+      limit: 30
+    });
+    return stats;
+  } catch (error) {
+    console.error("Error getting contact statistics:", error);
+    throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A");
+  }
+}
+function generateConfirmationEmailBody(name, messageId) {
+  return `
+    <h2>\u0634\u0643\u0631\u0627\u064B \u0644\u062A\u0648\u0627\u0635\u0644\u0643 \u0645\u0639\u0646\u0627</h2>
+    <p>\u0627\u0644\u0633\u0644\u0627\u0645 \u0639\u0644\u064A\u0643\u0645 ${name},</p>
+    <p>\u0634\u0643\u0631\u0627\u064B \u0644\u0643 \u0639\u0644\u0649 \u0631\u0633\u0627\u0644\u062A\u0643. \u062A\u0645 \u0627\u0633\u062A\u0642\u0628\u0627\u0644 \u0631\u0633\u0627\u0644\u062A\u0643 \u0628\u0646\u062C\u0627\u062D \u0648\u0633\u064A\u062A\u0645 \u0627\u0644\u0631\u062F \u0639\u0644\u064A\u0647\u0627 \u0641\u064A \u0623\u0642\u0631\u0628 \u0648\u0642\u062A \u0645\u0645\u0643\u0646.</p>
+    <p><strong>\u0631\u0642\u0645 \u0627\u0644\u0631\u0633\u0627\u0644\u0629:</strong> ${messageId}</p>
+    <p>\u064A\u0645\u0643\u0646\u0643 \u0627\u0633\u062A\u062E\u062F\u0627\u0645 \u0647\u0630\u0627 \u0627\u0644\u0631\u0642\u0645 \u0644\u0644\u0631\u062C\u0648\u0639 \u0625\u0644\u0649 \u0631\u0633\u0627\u0644\u062A\u0643.</p>
+    <p>\u0645\u0639 \u0623\u0637\u064A\u0628 \u0627\u0644\u062A\u062D\u064A\u0627\u062A,<br>\u0641\u0631\u064A\u0642 \u0627\u0644\u062F\u0639\u0645</p>
+  `;
+}
+function generateAdminEmailBody(data, messageId) {
+  return `
+    <h2>\u0631\u0633\u0627\u0644\u0629 \u0627\u062A\u0635\u0627\u0644 \u062C\u062F\u064A\u062F\u0629</h2>
+    <p><strong>\u0627\u0644\u0645\u0631\u0633\u0644:</strong> ${data.name}</p>
+    <p><strong>\u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A:</strong> ${data.email}</p>
+    <p><strong>\u0627\u0644\u0647\u0627\u062A\u0641:</strong> ${data.phone}</p>
+    <p><strong>\u0627\u0644\u0634\u0631\u0643\u0629:</strong> ${data.company || "\u063A\u064A\u0631 \u0645\u062D\u062F\u062F"}</p>
+    <p><strong>\u0627\u0644\u0641\u0626\u0629:</strong> ${getCategoryLabel(data.category)}</p>
+    <p><strong>\u0627\u0644\u0645\u0648\u0636\u0648\u0639:</strong> ${data.subject}</p>
+    <p><strong>\u0631\u0642\u0645 \u0627\u0644\u0631\u0633\u0627\u0644\u0629:</strong> ${messageId}</p>
+    <hr>
+    <h3>\u0627\u0644\u0631\u0633\u0627\u0644\u0629:</h3>
+    <p>${data.message.replace(/\n/g, "<br>")}</p>
+  `;
+}
+function generateReplyEmailBody(name, reply) {
+  return `
+    <h2>\u0631\u062F \u0639\u0644\u0649 \u0631\u0633\u0627\u0644\u062A\u0643</h2>
+    <p>\u0627\u0644\u0633\u0644\u0627\u0645 \u0639\u0644\u064A\u0643\u0645 ${name},</p>
+    <p>\u0634\u0643\u0631\u0627\u064B \u0644\u062A\u0648\u0627\u0635\u0644\u0643 \u0645\u0639\u0646\u0627. \u0625\u0644\u064A\u0643 \u0631\u062F\u0646\u0627 \u0639\u0644\u0649 \u0631\u0633\u0627\u0644\u062A\u0643:</p>
+    <hr>
+    <p>${reply.replace(/\n/g, "<br>")}</p>
+    <hr>
+    <p>\u0625\u0630\u0627 \u0643\u0627\u0646 \u0644\u062F\u064A\u0643 \u0623\u064A \u0627\u0633\u062A\u0641\u0633\u0627\u0631\u0627\u062A \u0625\u0636\u0627\u0641\u064A\u0629\u060C \u064A\u0631\u062C\u0649 \u0639\u062F\u0645 \u0627\u0644\u062A\u0631\u062F\u062F \u0641\u064A \u0627\u0644\u062A\u0648\u0627\u0635\u0644 \u0645\u0639\u0646\u0627.</p>
+    <p>\u0645\u0639 \u0623\u0637\u064A\u0628 \u0627\u0644\u062A\u062D\u064A\u0627\u062A,<br>\u0641\u0631\u064A\u0642 \u0627\u0644\u062F\u0639\u0645</p>
+  `;
+}
+function getCategoryLabel(category) {
+  const labels = {
+    general_inquiry: "\u0627\u0633\u062A\u0641\u0633\u0627\u0631 \u0639\u0627\u0645",
+    technical_support: "\u0627\u0644\u062F\u0639\u0645 \u0627\u0644\u0641\u0646\u064A",
+    billing: "\u0627\u0644\u0641\u0648\u0627\u062A\u064A\u0631 \u0648\u0627\u0644\u062F\u0641\u0639",
+    partnership: "\u0627\u0644\u0634\u0631\u0627\u0643\u0627\u062A",
+    feedback: "\u0627\u0644\u062A\u0639\u0644\u064A\u0642\u0627\u062A \u0648\u0627\u0644\u0627\u0642\u062A\u0631\u0627\u062D\u0627\u062A",
+    complaint: "\u0634\u0643\u0648\u0649",
+    other: "\u0623\u062E\u0631\u0649"
+  };
+  return labels[category] || category;
+}
+
+// server/routers/contact-router.ts
+import { TRPCError as TRPCError8 } from "@trpc/server";
+var contactRouter = router({
+  /**
+   * Submit a contact form
+   * Public procedure - no authentication required
+   */
+  submitForm: publicProcedure.input(
+    z26.object({
+      name: z26.string().min(2).max(255),
+      email: z26.string().email(),
+      phone: z26.string().min(9).max(20),
+      company: z26.string().max(255).optional(),
+      subject: z26.string().min(5).max(255),
+      category: z26.enum([
+        "general_inquiry",
+        "technical_support",
+        "billing",
+        "partnership",
+        "feedback",
+        "complaint",
+        "other"
+      ]),
+      message: z26.string().min(10).max(5e3)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    try {
+      const result = await submitContactForm({
+        ...input,
+        ipAddress: ctx.req.ip,
+        userAgent: ctx.req.headers["user-agent"]
+      });
+      return result;
+    } catch (error) {
+      throw new TRPCError8({
+        code: "BAD_REQUEST",
+        message: error instanceof Error ? error.message : "\u0641\u0634\u0644 \u0641\u064A \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0631\u0633\u0627\u0644\u0629"
+      });
+    }
+  }),
+  /**
+   * Get contact messages (admin only)
+   */
+  getMessages: protectedProcedure.input(
+    z26.object({
+      limit: z26.number().int().min(1).max(100).default(20),
+      offset: z26.number().int().min(0).default(0),
+      status: z26.enum(["new", "read", "in_progress", "resolved", "closed"]).optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError8({
+        code: "FORBIDDEN",
+        message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+    try {
+      return await getContactMessages(input.limit, input.offset, input.status);
+    } catch (error) {
+      throw new TRPCError8({
+        code: "INTERNAL_SERVER_ERROR",
+        message: error instanceof Error ? error.message : "\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0631\u0633\u0627\u0626\u0644"
+      });
+    }
+  }),
+  /**
+   * Get contact message by ID (admin only)
+   */
+  getMessageById: protectedProcedure.input(z26.object({ id: z26.string() })).query(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError8({
+        code: "FORBIDDEN",
+        message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+    try {
+      const message = await getContactMessageById(input.id);
+      if (!message) {
+        throw new TRPCError8({
+          code: "NOT_FOUND",
+          message: "\u0627\u0644\u0631\u0633\u0627\u0644\u0629 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F\u0629"
+        });
+      }
+      return message;
+    } catch (error) {
+      throw new TRPCError8({
+        code: "INTERNAL_SERVER_ERROR",
+        message: error instanceof Error ? error.message : "\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0631\u0633\u0627\u0644\u0629"
+      });
+    }
+  }),
+  /**
+   * Reply to contact message (admin only)
+   */
+  replyToMessage: protectedProcedure.input(
+    z26.object({
+      messageId: z26.string(),
+      reply: z26.string().min(10).max(5e3)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError8({
+        code: "FORBIDDEN",
+        message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u062A\u0646\u0641\u064A\u0630 \u0647\u0630\u0627 \u0627\u0644\u0625\u062C\u0631\u0627\u0621"
+      });
+    }
+    try {
+      return await replyToContactMessage(
+        input.messageId,
+        input.reply,
+        ctx.user.id
+      );
+    } catch (error) {
+      throw new TRPCError8({
+        code: "INTERNAL_SERVER_ERROR",
+        message: error instanceof Error ? error.message : "\u0641\u0634\u0644 \u0641\u064A \u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0631\u062F"
+      });
+    }
+  }),
+  /**
+   * Get contact statistics (admin only)
+   */
+  getStatistics: protectedProcedure.input(
+    z26.object({
+      period: z26.enum(["daily", "weekly", "monthly"]).default("daily")
+    })
+  ).query(async ({ input, ctx }) => {
+    if (ctx.user.role !== "admin") {
+      throw new TRPCError8({
+        code: "FORBIDDEN",
+        message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+    try {
+      return await getContactStatistics(input.period);
+    } catch (error) {
+      throw new TRPCError8({
+        code: "INTERNAL_SERVER_ERROR",
+        message: error instanceof Error ? error.message : "\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  })
+});
+
 // server/routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -17505,24 +18170,24 @@ var appRouter = router({
      * إنشاء بيان جمركي جديد
      */
     createDeclaration: protectedProcedure.input(
-      z26.object({
-        declarationNumber: z26.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        registrationDate: z26.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
-        clearanceCenter: z26.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
-        exchangeRate: z26.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        exportCountry: z26.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
-        billOfLadingNumber: z26.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        grossWeight: z26.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        netWeight: z26.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        numberOfPackages: z26.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        packageType: z26.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
-        fobValue: z26.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        freightCost: z26.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        insuranceCost: z26.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
-        customsDuty: z26.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        additionalFees: z26.number().nonnegative().optional().default(0),
-        customsServiceFee: z26.number().nonnegative().optional().default(0),
-        penalties: z26.number().nonnegative().optional().default(0)
+      z27.object({
+        declarationNumber: z27.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        registrationDate: z27.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
+        clearanceCenter: z27.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
+        exchangeRate: z27.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        exportCountry: z27.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
+        billOfLadingNumber: z27.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        grossWeight: z27.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        netWeight: z27.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        numberOfPackages: z27.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        packageType: z27.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
+        fobValue: z27.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        freightCost: z27.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        insuranceCost: z27.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
+        customsDuty: z27.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        additionalFees: z27.number().nonnegative().optional().default(0),
+        customsServiceFee: z27.number().nonnegative().optional().default(0),
+        penalties: z27.number().nonnegative().optional().default(0)
       })
     ).mutation(async ({ ctx, input }) => {
       const calculations = calculateAllCosts({
@@ -17572,7 +18237,7 @@ var appRouter = router({
     /**
      * الحصول على بيان جمركي
      */
-    getDeclaration: protectedProcedure.input(z26.object({ id: z26.number() })).query(async ({ ctx, input }) => {
+    getDeclaration: protectedProcedure.input(z27.object({ id: z27.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u064A\u0647");
@@ -17589,11 +18254,11 @@ var appRouter = router({
      * تحديث بيان جمركي
      */
     updateDeclaration: protectedProcedure.input(
-      z26.object({
-        id: z26.number(),
-        data: z26.object({
-          status: z26.enum(["draft", "submitted", "approved", "cleared"]).optional(),
-          notes: z26.string().optional()
+      z27.object({
+        id: z27.number(),
+        data: z27.object({
+          status: z27.enum(["draft", "submitted", "approved", "cleared"]).optional(),
+          notes: z27.string().optional()
         })
       })
     ).mutation(async ({ ctx, input }) => {
@@ -17606,7 +18271,7 @@ var appRouter = router({
     /**
      * حذف بيان جمركي
      */
-    deleteDeclaration: protectedProcedure.input(z26.object({ id: z26.number() })).mutation(async ({ ctx, input }) => {
+    deleteDeclaration: protectedProcedure.input(z27.object({ id: z27.number() })).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u062D\u0630\u0641\u0647");
@@ -17623,11 +18288,11 @@ var appRouter = router({
      * إضافة صنف جديد
      */
     createItem: protectedProcedure.input(
-      z26.object({
-        declarationId: z26.number(),
-        itemName: z26.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
-        quantity: z26.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        unitPriceForeign: z26.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
+      z27.object({
+        declarationId: z27.number(),
+        itemName: z27.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
+        quantity: z27.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        unitPriceForeign: z27.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -17666,7 +18331,7 @@ var appRouter = router({
     /**
      * الحصول على أصناف البيان الجمركي
      */
-    getItems: protectedProcedure.input(z26.object({ declarationId: z26.number() })).query(async ({ ctx, input }) => {
+    getItems: protectedProcedure.input(z27.object({ declarationId: z27.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -17677,14 +18342,14 @@ var appRouter = router({
      * تحديث صنف
      */
     updateItem: protectedProcedure.input(
-      z26.object({
-        id: z26.number(),
-        itemName: z26.string().optional(),
-        itemCode: z26.string().optional(),
-        quantity: z26.number().positive().optional(),
-        unitPriceForeign: z26.number().positive().optional(),
-        description: z26.string().optional(),
-        customsCode: z26.string().optional()
+      z27.object({
+        id: z27.number(),
+        itemName: z27.string().optional(),
+        itemCode: z27.string().optional(),
+        quantity: z27.number().positive().optional(),
+        unitPriceForeign: z27.number().positive().optional(),
+        description: z27.string().optional(),
+        customsCode: z27.string().optional()
       })
     ).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
@@ -17707,7 +18372,7 @@ var appRouter = router({
     /**
      * حذف صنف
      */
-    deleteItem: protectedProcedure.input(z26.object({ id: z26.number() })).mutation(async ({ ctx, input }) => {
+    deleteItem: protectedProcedure.input(z27.object({ id: z27.number() })).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
       if (!item) {
         throw new Error("\u0627\u0644\u0635\u0646\u0641 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -17727,13 +18392,13 @@ var appRouter = router({
      * حساب وحفظ الانحرافات
      */
     calculateVariances: protectedProcedure.input(
-      z26.object({
-        declarationId: z26.number(),
-        estimatedFobValue: z26.number().nonnegative(),
-        estimatedFreight: z26.number().nonnegative(),
-        estimatedInsurance: z26.number().nonnegative(),
-        estimatedCustomsDuty: z26.number().nonnegative(),
-        estimatedSalesTax: z26.number().nonnegative()
+      z27.object({
+        declarationId: z27.number(),
+        estimatedFobValue: z27.number().nonnegative(),
+        estimatedFreight: z27.number().nonnegative(),
+        estimatedInsurance: z27.number().nonnegative(),
+        estimatedCustomsDuty: z27.number().nonnegative(),
+        estimatedSalesTax: z27.number().nonnegative()
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -17780,7 +18445,7 @@ var appRouter = router({
     /**
      * الحصول على الانحرافات
      */
-    getVariances: protectedProcedure.input(z26.object({ declarationId: z26.number() })).query(async ({ ctx, input }) => {
+    getVariances: protectedProcedure.input(z27.object({ declarationId: z27.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -17795,7 +18460,7 @@ var appRouter = router({
     /**
      * الحصول على الملخص المالي
      */
-    getSummary: protectedProcedure.input(z26.object({ declarationId: z26.number() })).query(async ({ ctx, input }) => {
+    getSummary: protectedProcedure.input(z27.object({ declarationId: z27.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -17808,8 +18473,8 @@ var appRouter = router({
    */
   pdfImport: router({
     importDeclaration: protectedProcedure.input(
-      z26.object({
-        filePath: z26.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
+      z27.object({
+        filePath: z27.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
       })
     ).mutation(async ({ ctx, input }) => {
       try {
@@ -17831,9 +18496,9 @@ var appRouter = router({
    */
   notifications: router({
     getNotifications: protectedProcedure.input(
-      z26.object({
-        limit: z26.number().int().positive().default(50),
-        offset: z26.number().int().nonnegative().default(0)
+      z27.object({
+        limit: z27.number().int().positive().default(50),
+        offset: z27.number().int().nonnegative().default(0)
       })
     ).query(async ({ ctx, input }) => {
       return await getNotificationsByUserId(ctx.user.id, input.limit, input.offset);
@@ -17841,7 +18506,7 @@ var appRouter = router({
     getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
       return await getUnreadNotificationCount(ctx.user.id);
     }),
-    markAsRead: protectedProcedure.input(z26.object({ notificationId: z26.number().int().positive() })).mutation(async ({ input }) => {
+    markAsRead: protectedProcedure.input(z27.object({ notificationId: z27.number().int().positive() })).mutation(async ({ input }) => {
       await markNotificationAsRead(input.notificationId);
       return { success: true };
     }),
@@ -17849,7 +18514,7 @@ var appRouter = router({
       await markAllNotificationsAsRead(ctx.user.id);
       return { success: true };
     }),
-    delete: protectedProcedure.input(z26.object({ notificationId: z26.number().int().positive() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z27.object({ notificationId: z27.number().int().positive() })).mutation(async ({ input }) => {
       await deleteNotification(input.notificationId);
       return { success: true };
     })
@@ -17859,17 +18524,17 @@ var appRouter = router({
    */
   tracking: router({
     createContainer: protectedProcedure.input(
-      z26.object({
-        containerNumber: z26.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
-        containerType: z26.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
-        shippingCompany: z26.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        billOfLadingNumber: z26.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        portOfLoading: z26.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        portOfDischarge: z26.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
-        sealNumber: z26.string().optional(),
-        loadingDate: z26.string().optional(),
-        estimatedArrivalDate: z26.string().optional(),
-        notes: z26.string().optional()
+      z27.object({
+        containerNumber: z27.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
+        containerType: z27.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
+        shippingCompany: z27.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        billOfLadingNumber: z27.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        portOfLoading: z27.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        portOfDischarge: z27.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
+        sealNumber: z27.string().optional(),
+        loadingDate: z27.string().optional(),
+        estimatedArrivalDate: z27.string().optional(),
+        notes: z27.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -17890,7 +18555,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    searchContainers: protectedProcedure.input(z26.object({ query: z26.string().min(1) })).query(async ({ input, ctx }) => {
+    searchContainers: protectedProcedure.input(z27.object({ query: z27.string().min(1) })).query(async ({ input, ctx }) => {
       try {
         const results = await searchContainers(ctx.user.id, input.query);
         return results;
@@ -17898,7 +18563,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u0628\u062D\u062B \u0639\u0646 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    getContainerByNumber: protectedProcedure.input(z26.object({ containerNumber: z26.string().min(1) })).query(async ({ input }) => {
+    getContainerByNumber: protectedProcedure.input(z27.object({ containerNumber: z27.string().min(1) })).query(async ({ input }) => {
       try {
         const container = await getContainerByNumber(input.containerNumber);
         return container;
@@ -17907,14 +18572,14 @@ var appRouter = router({
       }
     }),
     addTrackingEvent: protectedProcedure.input(
-      z26.object({
-        containerId: z26.number().int().positive(),
-        eventType: z26.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
-        eventLocation: z26.string().optional(),
-        eventDescription: z26.string().optional(),
-        eventDateTime: z26.string(),
-        documentUrl: z26.string().optional(),
-        notes: z26.string().optional()
+      z27.object({
+        containerId: z27.number().int().positive(),
+        eventType: z27.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
+        eventLocation: z27.string().optional(),
+        eventDescription: z27.string().optional(),
+        eventDateTime: z27.string(),
+        documentUrl: z27.string().optional(),
+        notes: z27.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -17933,7 +18598,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0636\u0627\u0641\u0629 \u062D\u062F\u062B \u0627\u0644\u062A\u062A\u0628\u0639");
       }
     }),
-    getTrackingHistory: protectedProcedure.input(z26.object({ containerId: z26.number().int().positive() })).query(async ({ input }) => {
+    getTrackingHistory: protectedProcedure.input(z27.object({ containerId: z27.number().int().positive() })).query(async ({ input }) => {
       try {
         const history = await getContainerTrackingHistory(input.containerId);
         return history;
@@ -17942,9 +18607,9 @@ var appRouter = router({
       }
     }),
     updateContainerStatus: protectedProcedure.input(
-      z26.object({
-        containerId: z26.number().int().positive(),
-        status: z26.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
+      z27.object({
+        containerId: z27.number().int().positive(),
+        status: z27.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
       })
     ).mutation(async ({ input }) => {
       try {
@@ -17955,20 +18620,20 @@ var appRouter = router({
       }
     }),
     createShipmentDetail: protectedProcedure.input(
-      z26.object({
-        containerId: z26.number().int().positive(),
-        shipmentNumber: z26.string().min(1),
-        totalWeight: z26.number().positive(),
-        totalVolume: z26.number().optional(),
-        numberOfPackages: z26.number().int().positive(),
-        packageType: z26.string().optional(),
-        shipper: z26.string().min(1),
-        consignee: z26.string().min(1),
-        freightCharges: z26.number().optional(),
-        insuranceCharges: z26.number().optional(),
-        handlingCharges: z26.number().optional(),
-        otherCharges: z26.number().optional(),
-        notes: z26.string().optional()
+      z27.object({
+        containerId: z27.number().int().positive(),
+        shipmentNumber: z27.string().min(1),
+        totalWeight: z27.number().positive(),
+        totalVolume: z27.number().optional(),
+        numberOfPackages: z27.number().int().positive(),
+        packageType: z27.string().optional(),
+        shipper: z27.string().min(1),
+        consignee: z27.string().min(1),
+        freightCharges: z27.number().optional(),
+        insuranceCharges: z27.number().optional(),
+        handlingCharges: z27.number().optional(),
+        otherCharges: z27.number().optional(),
+        notes: z27.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -17981,7 +18646,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0634\u062D\u0646\u0629");
       }
     }),
-    getShipmentDetail: protectedProcedure.input(z26.object({ shipmentContainerId: z26.number().int().positive() })).query(async ({ input }) => {
+    getShipmentDetail: protectedProcedure.input(z27.object({ shipmentContainerId: z27.number().int().positive() })).query(async ({ input }) => {
       try {
         const detail = await getShipmentDetail(input.shipmentContainerId);
         return detail;
@@ -18015,7 +18680,8 @@ var appRouter = router({
   supportAgent: supportAgentRouter,
   notificationsAdvanced: notificationsAdvancedRouter,
   performanceAnalytics: performanceAnalyticsRouter,
-  ratingsAdvanced: ratingsAdvancedRouter
+  ratingsAdvanced: ratingsAdvancedRouter,
+  contact: contactRouter
 });
 
 // server/_core/context.ts
