@@ -79,6 +79,11 @@ const NotificationsAndAlerts = lazy(() => import('@/pages/NotificationsAndAlerts
 const SecurityAndPerformance = lazy(() => import('@/pages/SecurityAndPerformance'));
 const TeamAndRoles = lazy(() => import('@/pages/TeamAndRoles'));
 const AdvancedSettings = lazy(() => import('@/pages/AdvancedSettings'));
+const EmailNotifications = lazy(() => import('@/pages/EmailNotifications'));
+const ArchiveAndBackup = lazy(() => import('@/pages/ArchiveAndBackup'));
+const UserManagement = lazy(() => import('@/pages/UserManagement'));
+const ActivityLog = lazy(() => import('@/pages/ActivityLog'));
+const BranchManagement = lazy(() => import('@/pages/BranchManagement'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -159,6 +164,11 @@ function Router() {
         <Route path="/security-performance" component={SecurityAndPerformance} />
         <Route path="/team-roles" component={TeamAndRoles} />
         <Route path="/advanced-settings" component={AdvancedSettings} />
+        <Route path="/email-notifications" component={EmailNotifications} />
+        <Route path="/archive-backup" component={ArchiveAndBackup} />
+        <Route path="/user-management" component={UserManagement} />
+        <Route path="/activity-log" component={ActivityLog} />
+        <Route path="/branch-management" component={BranchManagement} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
