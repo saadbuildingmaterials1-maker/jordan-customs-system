@@ -18676,7 +18676,6 @@ var appRouter = router({
   advancedOperations: advancedOperationsRouter,
   notificationsCenter: notificationsCenterRouter,
   liveChat: liveChatRouter,
-  notifications: notificationRouter,
   supportAgent: supportAgentRouter,
   notificationsAdvanced: notificationsAdvancedRouter,
   performanceAnalytics: performanceAnalyticsRouter,

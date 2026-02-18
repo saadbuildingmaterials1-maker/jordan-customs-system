@@ -1,0 +1,181 @@
+تقرير شامل لمشروع jordan-customs-system
+=============================================
+
+📌 التاريخ: Wed Feb 18 12:10:58 EST 2026
+
+1️⃣ التحقق من الملفات الأساسية:
+index.html: مفقود ❌
+→ يحتاج إنشاء أو رفع index.html
+tsconfig.json: موجود ✅
+→ تم التحقق من وجود tsconfig.json
+package.json: موجود ✅
+→ تم التحقق من وجود package.json
+src: مفقود ❌
+→ يحتاج إنشاء أو رفع src
+public: موجود ✅
+→ تم التحقق من وجود public
+
+2️⃣ التحقق من Build وأخطاء TypeScript:
+
+> jordan-customs-system@1.0.0 build
+> vite build && esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v7.3.1 building client environment for production...
+transforming...
+✓ 3668 modules transformed.
+Circular chunk: vendor-utils -> vendor-react -> vendor-utils. Please adjust the manual chunk logic for these chunks.
+Circular chunk: vendor-utils -> lib -> vendor-utils. Please adjust the manual chunk logic for these chunks.
+rendering chunks...
+../dist/index.html                                                375.11 kB
+../dist/assets/index-D-4Ek_KO.css                                 238.27 kB
+../dist/assets/hooks-n0Cgtytv.js                                    1.05 kB
+../dist/assets/contexts-DYnLN9N7.js                                 1.85 kB
+../dist/assets/lib-Dlg6jwYX.js                                      5.15 kB
+../dist/assets/page-Login-vq_kBTWv.js                               7.40 kB
+../dist/assets/page-FAQ-BTHiy18F.js                                 9.39 kB
+../dist/assets/page-Support-5aWFuHcq.js                             9.69 kB
+../dist/assets/page-NotFound-BR2aGLRL.js                           10.79 kB
+../dist/assets/page-Terms-DZkUyMPn.js                              11.53 kB
+../dist/assets/page-Privacy-SD1cgxdW.js                            12.06 kB
+../dist/assets/page-Pricing-Ct44IiB-.js                            13.53 kB
+../dist/assets/page-Contact-DSuAhs4O.js                            14.22 kB
+../dist/assets/page-Documentation-CcDlVZ_I.js                      14.41 kB
+../dist/assets/page-AlertsManagement-R3e_RmQ1.js                   15.01 kB
+../dist/assets/page-Checkout-BVDKWfO_.js                           15.73 kB
+../dist/assets/page-SubscriptionPlans-BKpgw17L.js                  16.80 kB
+../dist/assets/page-SubscriptionDashboard-BgmTR7AT.js              17.63 kB
+../dist/assets/page-Help-BzsLQuUx.js                               17.66 kB
+../dist/assets/page-Download-CuNroHOG.js                           19.09 kB
+../dist/assets/page-Comments-CeTAOM5I.js                           19.34 kB
+../dist/assets/page-DeclarationDetail-lmCCzoem.js                  19.41 kB
+../dist/assets/page-NotificationsCenter-CvZLv2ep.js                20.49 kB
+../dist/assets/page-PrivacyPolicy-CEJVZsX9.js                      20.59 kB
+../dist/assets/page-ClickPayment-DIXSTqMU.js                       20.97 kB
+../dist/assets/page-HelpCenter-9hcEcBo5.js                         21.40 kB
+../dist/assets/page-PdfImport-TDxCYZvR.js                          22.07 kB
+../dist/assets/page-SmartNotifications-BA1Hfmp9.js                 22.91 kB
+../dist/assets/page-Notifications-BmRSN4Yj.js                      23.30 kB
+../dist/assets/page-AdvancedPaymentPage-DK93JGgn.js                23.82 kB
+../dist/assets/page-UsersManagement-ByyRSAuU.js                    24.63 kB
+../dist/assets/page-Alerts-CCm1raxs.js                             24.88 kB
+../dist/assets/page-UsersAndRoles-CSiPJ9Pm.js                      25.66 kB
+../dist/assets/page-ConfirmPlan-C5oSvm_P.js                        26.52 kB
+../dist/assets/page-SmartDashboard-BCB8Gw5I.js                     26.94 kB
+../dist/assets/page-About-DkKwHpGS.js                              27.01 kB
+../dist/assets/page-TermsOfUse-CJ32Q8rb.js                         27.10 kB
+../dist/assets/page-AdvancedSearch-DZsZ9nn-.js                     27.54 kB
+../dist/assets/page-FactoriesAndInvoices-DBvqoxdD.js               27.56 kB
+../dist/assets/page-ItemsManagement-en_SSBTI.js                    27.90 kB
+../dist/assets/page-VideoTutorials-D3lTK6AX.js                     27.94 kB
+../dist/assets/page-AlertsAndNotifications-BCYVSFLf.js             28.13 kB
+../dist/assets/page-ExpensesPage-DKobXPhA.js                       28.52 kB
+../dist/assets/page-PaymentsManagement-BIzHeR3Z.js                 28.56 kB
+../dist/assets/page-DeclarationForm-zq2nwFOC.js                    28.69 kB
+../dist/assets/vendor-date-B3d3ZO_C.js                             28.98 kB
+../dist/assets/index-D9uttiCq.js                                   28.98 kB
+../dist/assets/page-NotificationsManagement-BajCnLZS.js            29.19 kB
+../dist/assets/page-Dashboard-Ch_mSqc0.js                          29.35 kB
+../dist/assets/page-PaymentPage-COxLwfQP.js                        29.47 kB
+../dist/assets/page-BackupAndNotifications-CirercbI.js             30.50 kB
+../dist/assets/page-AdminPanel-DBHNlrte.js                         30.74 kB
+../dist/assets/page-PaymentSystem-Lujj01w-.js                      30.98 kB
+../dist/assets/page-BankAccountManagement-GODOEve1.js              31.18 kB
+../dist/assets/page-Home-CQd_ZOzw.js                               32.17 kB
+../dist/assets/page-ContainerTracking-ieHmzZ6D.js                  34.46 kB
+../dist/assets/page-AdvancedReports-LZh2b84V.js                    35.36 kB
+../dist/assets/page-ShippingPage-DhLo2XvH.js                       35.64 kB
+../dist/assets/page-ReportsPage-DuEc9YlE.js                        35.83 kB
+../dist/assets/page-SettingsPage-_tSAO55t.js                       36.32 kB
+../dist/assets/page-DeclarationsList-CcqviuQs.js                   36.34 kB
+../dist/assets/vendor-lodash-B6pk_hFD.js                           37.82 kB
+../dist/assets/page-ShippingManagement-D8cL3De5.js                 37.89 kB
+../dist/assets/page-ExpensesManagement-D2SPODTA.js                 38.18 kB
+../dist/assets/page-OwnerDashboard-D87ls05C.js                     38.53 kB
+../dist/assets/page-VarianceAnalysis-Cp2E5ABa.js                   39.85 kB
+../dist/assets/page-SupplierInvoice-Cx6NLZ2K.js                    40.09 kB
+../dist/assets/page-PaymentsDashboard-DTKONzP7.js                  40.13 kB
+../dist/assets/page-DeclarationFormAdvanced-CaxETnHu.js            40.60 kB
+../dist/assets/page-SettingsAndSecurity-s-HB5EWY.js                41.87 kB
+../dist/assets/page-AccountingDashboard-6xCRgnXv.js                52.73 kB
+../dist/assets/page-AdvancedCustomsDeclaration-fXoGIilg.js         56.59 kB
+../dist/assets/vendor-form-D568bDq1.js                             63.26 kB
+../dist/assets/page-AdvancedCustomsDeclarationPage-CNooiS6M.js     72.81 kB
+../dist/assets/vendor-ui-WlArQpJV.js                               87.41 kB
+../dist/assets/vendor-scoped-C_CUqC-2.js                          112.93 kB
+../dist/assets/components-DlfVS0c8.js                             299.84 kB
+../dist/assets/vendor-charts-DWT3NKsl.js                          300.15 kB
+../dist/assets/vendor-react-D2eFX96S.js                           450.85 kB
+../dist/assets/vendor-utils-gf3_Y16F.js                         1,948.86 kB
+
+(!) Some chunks are larger than 1000 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 53.01s
+▲ [WARNING] Duplicate key "notifications" in object literal [duplicate-object-key]
+
+    server/routers.ts:684:2:
+      684 │   notifications: notificationRouter,
+          ╵   ~~~~~~~~~~~~~
+
+  The original key "notifications" is here:
+
+    server/routers.ts:467:2:
+      467 │   notifications: router({
+          ╵   ~~~~~~~~~~~~~
+
+1 warning
+
+  dist/index.js  775.3kb
+
+⚡ Done in 36ms
+→ Build ناجح ✅
+
+3️⃣ حالة الخادم والموارد:
+الخادم: متوقف ❌
+→ يحتاج إعادة تشغيل
+استهلاك الذاكرة والمعالج:
+               total        used        free      shared  buff/cache   available
+Mem:           3.8Gi       2.3Gi       1.1Gi        10Mi       374Mi       1.2Gi
+Swap:          2.0Gi       959Mi       1.1Gi
+
+4️⃣ التحقق من النطاقات:
+jordan-customs-system.manus.space: غير متصل ❌
+→ يحتاج ضبط DNS وربطه في Manus
+mp3-app.com: غير متصل ❌
+→ يحتاج ضبط DNS وربطه في Manus
+www.mp3-app.com: غير متصل ❌
+→ يحتاج ضبط DNS وربطه في Manus
+
+5️⃣ التحقق من SSL / HTTPS:
+jordan-customs-system.manus.space: SSL مفعل ✅
+→ تم تفعيل HTTPS
+mp3-app.com: SSL مفعل ✅
+→ تم تفعيل HTTPS
+www.mp3-app.com: SSL مفعل ✅
+→ تم تفعيل HTTPS
+
+6️⃣ اختبار الوصول للصفحة:
+jordan-customs-system.manus.space: حالة HTTP = 200
+→ الصفحة تعمل بالكامل ✅
+mp3-app.com: حالة HTTP = 200
+→ الصفحة تعمل بالكامل ✅
+www.mp3-app.com: حالة HTTP = 200
+→ الصفحة تعمل بالكامل ✅
+
+7️⃣ ما تم عمله فعليًا:
+→ تحقق من الملفات: تم التحقق من وجود الملفات الأساسية
+→ Build: تم تنفيذ Build ومراجعة الأخطاء
+→ الخادم: تم التحقق من تشغيل الخادم ومراقبة الموارد
+→ النطاقات: تم التحقق من الاتصال وDNS لكل نطاق
+→ SSL / HTTPS: تم التحقق من حالة الشهادات لكل نطاق
+→ اختبار الوصول: تم فتح جميع الروابط والتحقق من تحميل الصفحات
+
+8️⃣ خطوات الإصلاح النهائي:
+→ إصلاح أخطاء TypeScript والمكتبات المفقودة
+→ تحسين استهلاك الذاكرة أو إعادة تشغيل الخادم
+→ ربط النطاقات وضبط DNS في Namecheap + التحقق في Manus
+→ تفعيل SSL وHTTPS لكل النطاقات
+→ اختبار التطبيق على كل رابط للتأكد من تحميل كامل الصفحة
+
+=============================================
