@@ -1474,7 +1474,7 @@ function registerOAuthRoutes(app) {
 }
 
 // server/routers.ts
-import { z as z23 } from "zod";
+import { z as z26 } from "zod";
 
 // server/_core/systemRouter.ts
 import { z } from "zod";
@@ -15833,6 +15833,1666 @@ function calculateCustomerSatisfaction(conversations) {
   return Math.round(averageRating * 100) / 100;
 }
 
+// server/routers/notifications-advanced-router.ts
+import { z as z23 } from "zod";
+
+// server/services/notification-manager.ts
+import { EventEmitter } from "events";
+var NotificationManager = class extends EventEmitter {
+  subscribers = /* @__PURE__ */ new Map();
+  notificationHistory = [];
+  maxHistorySize = 1e3;
+  /**
+   * الاشتراك في الإشعارات
+   */
+  subscribe(userId, callback) {
+    if (!this.subscribers.has(userId)) {
+      this.subscribers.set(userId, /* @__PURE__ */ new Set());
+    }
+    this.subscribers.get(userId).add(callback);
+    return () => {
+      const callbacks = this.subscribers.get(userId);
+      if (callbacks) {
+        callbacks.delete(callback);
+        if (callbacks.size === 0) {
+          this.subscribers.delete(userId);
+        }
+      }
+    };
+  }
+  /**
+   * إرسال إشعار جديد
+   */
+  async sendNotification(notification) {
+    this.addToHistory(notification);
+    if (notification.userId) {
+      const callbacks = this.subscribers.get(notification.userId);
+      if (callbacks) {
+        callbacks.forEach((callback) => {
+          try {
+            callback(notification);
+          } catch (error) {
+            console.error("\u062E\u0637\u0623 \u0641\u064A \u0645\u0639\u0627\u0644\u062C \u0627\u0644\u0625\u0634\u0639\u0627\u0631:", error);
+          }
+        });
+      }
+    }
+    if (notification.agentId) {
+      const agentCallbacks = this.subscribers.get(notification.agentId);
+      if (agentCallbacks) {
+        agentCallbacks.forEach((callback) => {
+          try {
+            callback(notification);
+          } catch (error) {
+            console.error("\u062E\u0637\u0623 \u0641\u064A \u0645\u0639\u0627\u0644\u062C \u0627\u0644\u0625\u0634\u0639\u0627\u0631:", error);
+          }
+        });
+      }
+    }
+    this.emit("notification", notification);
+  }
+  /**
+   * إرسال إشعار محادثة جديدة
+   */
+  async notifyNewConversation(conversationId, subject, priority) {
+    await this.sendNotification({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      type: "new_conversation",
+      title: "\u0645\u062D\u0627\u062F\u062B\u0629 \u062C\u062F\u064A\u062F\u0629",
+      message: `\u0645\u062D\u0627\u062F\u062B\u0629 \u062C\u062F\u064A\u062F\u0629: ${subject}`,
+      conversationId,
+      userId: 0,
+      priority,
+      timestamp: /* @__PURE__ */ new Date()
+    });
+  }
+  /**
+   * إرسال إشعار محادثة مصعدة
+   */
+  async notifyEscalated(conversationId, subject, reason) {
+    await this.sendNotification({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      type: "escalated",
+      title: "\u0645\u062D\u0627\u062F\u062B\u0629 \u0645\u0635\u0639\u062F\u0629",
+      message: `\u062A\u0645 \u062A\u0635\u0639\u064A\u062F \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629: ${subject} - \u0627\u0644\u0633\u0628\u0628: ${reason}`,
+      conversationId,
+      userId: 0,
+      priority: "urgent",
+      timestamp: /* @__PURE__ */ new Date(),
+      data: { reason }
+    });
+  }
+  /**
+   * إرسال إشعار تعيين محادثة
+   */
+  async notifyAssigned(conversationId, subject, agentId, agentName) {
+    await this.sendNotification({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      type: "assigned",
+      title: "\u0645\u062D\u0627\u062F\u062B\u0629 \u0645\u0639\u064A\u0646\u0629 \u0644\u0643",
+      message: `\u062A\u0645 \u062A\u0639\u064A\u064A\u0646 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629 "${subject}" \u0644\u0643`,
+      conversationId,
+      userId: agentId,
+      agentId,
+      priority: "high",
+      timestamp: /* @__PURE__ */ new Date(),
+      data: { agentName }
+    });
+  }
+  /**
+   * إرسال إشعار إغلاق محادثة
+   */
+  async notifyConversationClosed(conversationId, subject, agentId) {
+    await this.sendNotification({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      type: "closed",
+      title: "\u062A\u0645 \u0625\u063A\u0644\u0627\u0642 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629",
+      message: `\u062A\u0645 \u0625\u063A\u0644\u0627\u0642 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629: ${subject}`,
+      conversationId,
+      userId: agentId,
+      agentId,
+      priority: "medium",
+      timestamp: /* @__PURE__ */ new Date()
+    });
+  }
+  /**
+   * إرسال إشعار رسالة جديدة
+   */
+  async notifyNewMessage(conversationId, senderName, message, recipientId) {
+    await this.sendNotification({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      type: "message",
+      title: "\u0631\u0633\u0627\u0644\u0629 \u062C\u062F\u064A\u062F\u0629",
+      message: `${senderName}: ${message.substring(0, 50)}${message.length > 50 ? "..." : ""}`,
+      conversationId,
+      userId: recipientId,
+      priority: "medium",
+      timestamp: /* @__PURE__ */ new Date(),
+      data: { senderName, message }
+    });
+  }
+  /**
+   * إرسال إشعار تقييم جديد
+   */
+  async notifyNewRating(conversationId, rating, comment, agentId) {
+    await this.sendNotification({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+      type: "rating",
+      title: "\u062A\u0642\u064A\u064A\u0645 \u062C\u062F\u064A\u062F",
+      message: `\u062A\u0642\u064A\u064A\u0645 \u062C\u062F\u064A\u062F: ${rating}/5 - ${comment}`,
+      conversationId,
+      userId: agentId,
+      agentId,
+      priority: "medium",
+      timestamp: /* @__PURE__ */ new Date(),
+      data: { rating, comment }
+    });
+  }
+  /**
+   * الحصول على سجل الإشعارات
+   */
+  getHistory(limit = 50) {
+    return this.notificationHistory.slice(-limit);
+  }
+  /**
+   * الحصول على الإشعارات غير المقروءة
+   */
+  getUnreadNotifications(userId) {
+    return this.notificationHistory.filter(
+      (n) => (n.userId === userId || n.agentId === userId) && !n.data?.isRead
+    );
+  }
+  /**
+   * تحديد الإشعار كمقروء
+   */
+  markAsRead(notificationId) {
+    const notification = this.notificationHistory.find((n) => n.id === notificationId);
+    if (notification) {
+      notification.data = { ...notification.data, isRead: true };
+    }
+  }
+  /**
+   * حذف الإشعار
+   */
+  deleteNotification(notificationId) {
+    const index = this.notificationHistory.findIndex((n) => n.id === notificationId);
+    if (index !== -1) {
+      this.notificationHistory.splice(index, 1);
+    }
+  }
+  /**
+   * إضافة الإشعار إلى السجل
+   */
+  addToHistory(notification) {
+    this.notificationHistory.push(notification);
+    if (this.notificationHistory.length > this.maxHistorySize) {
+      this.notificationHistory = this.notificationHistory.slice(-this.maxHistorySize);
+    }
+  }
+  /**
+   * مسح السجل
+   */
+  clearHistory() {
+    this.notificationHistory = [];
+  }
+  /**
+   * الحصول على إحصائيات الإشعارات
+   */
+  getStatistics() {
+    const stats = {
+      totalNotifications: this.notificationHistory.length,
+      byType: {},
+      byPriority: {},
+      subscribedUsers: this.subscribers.size
+    };
+    this.notificationHistory.forEach((n) => {
+      stats.byType[n.type] = (stats.byType[n.type] || 0) + 1;
+      stats.byPriority[n.priority] = (stats.byPriority[n.priority] || 0) + 1;
+    });
+    return stats;
+  }
+};
+var notificationManager = new NotificationManager();
+function getNotificationHistory2(limit) {
+  return notificationManager.getHistory(limit);
+}
+function getNotificationStatistics2() {
+  return notificationManager.getStatistics();
+}
+
+// server/routers/notifications-advanced-router.ts
+import { TRPCError as TRPCError5 } from "@trpc/server";
+var notificationsAdvancedRouter = router({
+  /**
+   * الحصول على الإشعارات الحالية للمستخدم
+   */
+  getNotifications: protectedProcedure.input(
+    z23.object({
+      limit: z23.number().int().min(1).max(100).default(20),
+      offset: z23.number().int().min(0).default(0)
+    })
+  ).query(async ({ ctx, input }) => {
+    try {
+      const history = getNotificationHistory2(input.limit + input.offset);
+      const userNotifications = history.filter(
+        (n) => n.userId === ctx.user.id || n.agentId === ctx.user.id
+      );
+      return {
+        notifications: userNotifications.slice(input.offset, input.offset + input.limit),
+        total: userNotifications.length,
+        hasMore: userNotifications.length > input.offset + input.limit
+      };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على الإشعارات غير المقروءة
+   */
+  getUnreadNotifications: protectedProcedure.query(async ({ ctx }) => {
+    try {
+      const history = getNotificationHistory2(1e3);
+      const unreadNotifications = history.filter(
+        (n) => (n.userId === ctx.user.id || n.agentId === ctx.user.id) && !n.data?.isRead
+      );
+      return {
+        notifications: unreadNotifications,
+        count: unreadNotifications.length
+      };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u063A\u064A\u0631 \u0627\u0644\u0645\u0642\u0631\u0648\u0621\u0629:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u063A\u064A\u0631 \u0627\u0644\u0645\u0642\u0631\u0648\u0621\u0629"
+      });
+    }
+  }),
+  /**
+   * تحديد الإشعار كمقروء
+   */
+  markAsRead: protectedProcedure.input(
+    z23.object({
+      notificationId: z23.string()
+    })
+  ).mutation(async ({ input }) => {
+    try {
+      notificationManager.markAsRead(input.notificationId);
+      return { success: true };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u062F\u064A\u062F \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0643\u0645\u0642\u0631\u0648\u0621:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u062D\u062F\u064A\u062F \u0627\u0644\u0625\u0634\u0639\u0627\u0631 \u0643\u0645\u0642\u0631\u0648\u0621"
+      });
+    }
+  }),
+  /**
+   * تحديد جميع الإشعارات كمقروءة
+   */
+  markAllAsRead: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      const history = getNotificationHistory2(1e3);
+      const userNotifications = history.filter(
+        (n) => n.userId === ctx.user.id || n.agentId === ctx.user.id
+      );
+      userNotifications.forEach((n) => {
+        notificationManager.markAsRead(n.id);
+      });
+      return { success: true, count: userNotifications.length };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062A\u062D\u062F\u064A\u062F \u062C\u0645\u064A\u0639 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u0643\u0645\u0642\u0631\u0648\u0621\u0629:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u062D\u062F\u064A\u062B \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * حذف الإشعار
+   */
+  deleteNotification: protectedProcedure.input(
+    z23.object({
+      notificationId: z23.string()
+    })
+  ).mutation(async ({ input }) => {
+    try {
+      notificationManager.deleteNotification(input.notificationId);
+      return { success: true };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631"
+      });
+    }
+  }),
+  /**
+   * حذف جميع الإشعارات
+   */
+  deleteAllNotifications: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      const history = getNotificationHistory2(1e3);
+      const userNotifications = history.filter(
+        (n) => n.userId === ctx.user.id || n.agentId === ctx.user.id
+      );
+      userNotifications.forEach((n) => {
+        notificationManager.deleteNotification(n.id);
+      });
+      return { success: true, count: userNotifications.length };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062D\u0630\u0641 \u062C\u0645\u064A\u0639 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062D\u0630\u0641 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات الإشعارات
+   */
+  getStatistics: protectedProcedure.query(async () => {
+    try {
+      const stats = getNotificationStatistics2();
+      return stats;
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الاشتراك في الإشعارات (للعملاء الفعليين)
+   */
+  subscribe: protectedProcedure.subscription(async function* ({ ctx }) {
+    const channel = new BroadcastChannel(`notifications-${ctx.user.id}`);
+    try {
+      yield { type: "connected", message: "\u062A\u0645 \u0627\u0644\u0627\u062A\u0635\u0627\u0644 \u0628\u0646\u062C\u0627\u062D" };
+      channel.onmessage = (event) => {
+        const notification = event.data;
+        if (notification.userId === ctx.user.id || notification.agentId === ctx.user.id) {
+        }
+      };
+      await new Promise(() => {
+      });
+    } finally {
+      channel.close();
+    }
+  }),
+  /**
+   * إرسال إشعار اختبار
+   */
+  sendTestNotification: protectedProcedure.input(
+    z23.object({
+      title: z23.string().min(1).max(100),
+      message: z23.string().min(1).max(500),
+      type: z23.enum([
+        "new_conversation",
+        "escalated",
+        "assigned",
+        "closed",
+        "message",
+        "rating"
+      ]),
+      priority: z23.enum(["low", "medium", "high", "urgent"])
+    })
+  ).mutation(async ({ ctx, input }) => {
+    try {
+      const testNotification = {
+        id: `test_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        type: input.type,
+        title: input.title,
+        message: input.message,
+        conversationId: "test_conversation",
+        userId: ctx.user.id,
+        priority: input.priority,
+        timestamp: /* @__PURE__ */ new Date(),
+        data: { isTest: true }
+      };
+      await notificationManager.sendNotification(testNotification);
+      return {
+        success: true,
+        notification: testNotification
+      };
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0625\u0631\u0633\u0627\u0644 \u0625\u0634\u0639\u0627\u0631 \u0627\u0644\u0627\u062E\u062A\u0628\u0627\u0631:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0625\u0631\u0633\u0627\u0644 \u0625\u0634\u0639\u0627\u0631 \u0627\u0644\u0627\u062E\u062A\u0628\u0627\u0631"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات الإشعارات حسب النوع
+   */
+  getStatisticsByType: protectedProcedure.query(async () => {
+    try {
+      const stats = getNotificationStatistics2();
+      return stats.byType || {};
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u062D\u0633\u0628 \u0627\u0644\u0646\u0648\u0639:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات الإشعارات حسب الأولوية
+   */
+  getStatisticsByPriority: protectedProcedure.query(async () => {
+    try {
+      const stats = getNotificationStatistics2();
+      return stats.byPriority || {};
+    } catch (error) {
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u062D\u0633\u0628 \u0627\u0644\u0623\u0648\u0644\u0648\u064A\u0629:", error);
+      throw new TRPCError5({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  })
+});
+
+// server/routers/performance-analytics-router.ts
+import { z as z24 } from "zod";
+
+// server/services/performance-analytics.ts
+import { eq as eq6 } from "drizzle-orm";
+var PerformanceAnalytics = class {
+  /**
+   * حساب مقاييس أداء الموظف
+   */
+  async calculateAgentMetrics(agentId, agentName, startDate, endDate) {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1e3);
+    const end = endDate || /* @__PURE__ */ new Date();
+    let query = db.select().from(liveChatConversations).where(eq6(liveChatConversations.supportAgentId, agentId));
+    const conversations = await query;
+    const totalConversations = conversations.length;
+    const activeConversations = conversations.filter(
+      (c) => c.status === "in_progress" || c.status === "open"
+    ).length;
+    const closedConversations = conversations.filter(
+      (c) => c.status === "resolved"
+    ).length;
+    const responseTimes = conversations.filter((c) => c.firstResponseTime && c.createdAt).map((c) => (c.firstResponseTime.getTime() - c.createdAt.getTime()) / 1e3);
+    const averageResponseTime = responseTimes.length > 0 ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length : 0;
+    const resolutionTimes = conversations.filter((c) => c.resolvedTime && c.createdAt).map((c) => (c.resolvedTime.getTime() - c.createdAt.getTime()) / 1e3 / 60);
+    const averageResolutionTime = resolutionTimes.length > 0 ? resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length : 0;
+    const ratedConversations = conversations.filter((c) => c.rating);
+    const customerSatisfaction = ratedConversations.length > 0 ? ratedConversations.reduce((sum, c) => sum + (c.rating || 0), 0) / ratedConversations.length : 0;
+    const messages = await db.select().from(liveChatMessages).where(eq6(liveChatMessages.senderId, agentId));
+    const messageCount = messages.length;
+    const firstResponseRate = totalConversations > 0 ? responseTimes.length / totalConversations * 100 : 0;
+    const resolutionRate = totalConversations > 0 ? closedConversations / totalConversations * 100 : 0;
+    const escalationCount = conversations.filter(
+      (c) => c.priority === "urgent"
+    ).length;
+    const escalationRate = totalConversations > 0 ? escalationCount / totalConversations * 100 : 0;
+    return {
+      agentId,
+      agentName,
+      totalConversations,
+      activeConversations,
+      closedConversations,
+      averageResponseTime: Math.round(averageResponseTime),
+      averageResolutionTime: Math.round(averageResolutionTime),
+      customerSatisfaction: Math.round(customerSatisfaction * 100) / 100,
+      messageCount,
+      firstResponseRate: Math.round(firstResponseRate),
+      resolutionRate: Math.round(resolutionRate),
+      escalationCount,
+      escalationRate: Math.round(escalationRate)
+    };
+  }
+  /**
+   * حساب مقاييس أداء الفريق
+   */
+  async calculateTeamMetrics(agentIds, startDate, endDate) {
+    const db = await getDb();
+    if (!db) throw new Error("Database not available");
+    const agentMetrics = [];
+    for (const agentId of agentIds) {
+      const metrics = await this.calculateAgentMetrics(
+        agentId,
+        `Agent ${agentId}`,
+        startDate,
+        endDate
+      );
+      agentMetrics.push(metrics);
+    }
+    const totalAgents = agentIds.length;
+    const totalConversations = agentMetrics.reduce(
+      (sum, m) => sum + m.totalConversations,
+      0
+    );
+    const activeConversations = agentMetrics.reduce(
+      (sum, m) => sum + m.activeConversations,
+      0
+    );
+    const closedConversations = agentMetrics.reduce(
+      (sum, m) => sum + m.closedConversations,
+      0
+    );
+    const averageTeamResponseTime = agentMetrics.length > 0 ? agentMetrics.reduce((sum, m) => sum + m.averageResponseTime, 0) / agentMetrics.length : 0;
+    const averageTeamResolutionTime = agentMetrics.length > 0 ? agentMetrics.reduce((sum, m) => sum + m.averageResolutionTime, 0) / agentMetrics.length : 0;
+    const teamSatisfaction = agentMetrics.length > 0 ? agentMetrics.reduce((sum, m) => sum + m.customerSatisfaction, 0) / agentMetrics.length : 0;
+    const sortedByPerformance = [...agentMetrics].sort(
+      (a, b) => b.customerSatisfaction - a.customerSatisfaction
+    );
+    const topPerformers = sortedByPerformance.slice(0, 3);
+    const bottomPerformers = sortedByPerformance.slice(-3).reverse();
+    const trends = this.generateTrends(agentMetrics);
+    return {
+      totalAgents,
+      totalConversations,
+      activeConversations,
+      closedConversations,
+      averageTeamResponseTime: Math.round(averageTeamResponseTime),
+      averageTeamResolutionTime: Math.round(averageTeamResolutionTime),
+      teamSatisfaction: Math.round(teamSatisfaction * 100) / 100,
+      topPerformers,
+      bottomPerformers,
+      trends
+    };
+  }
+  /**
+   * توليد تقرير الأداء الشامل
+   */
+  async generatePerformanceReport(agentIds, startDate, endDate) {
+    const start = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1e3);
+    const end = endDate || /* @__PURE__ */ new Date();
+    const agents = [];
+    for (const agentId of agentIds) {
+      const metrics = await this.calculateAgentMetrics(
+        agentId,
+        `Agent ${agentId}`,
+        start,
+        end
+      );
+      agents.push(metrics);
+    }
+    const team = await this.calculateTeamMetrics(agentIds, start, end);
+    const insights = this.generateInsights(agents, team);
+    const recommendations = this.generateRecommendations(agents, team);
+    return {
+      period: { startDate: start, endDate: end },
+      agents,
+      team,
+      insights,
+      recommendations
+    };
+  }
+  /**
+   * توليد الرؤى
+   */
+  generateInsights(agents, team) {
+    const insights = [];
+    if (team.teamSatisfaction >= 4.5) {
+      insights.push("\u0623\u062F\u0627\u0621 \u0627\u0644\u0641\u0631\u064A\u0642 \u0645\u0645\u062A\u0627\u0632\u0629 \u062C\u062F\u0627\u064B \u0645\u0639 \u0631\u0636\u0627 \u0639\u0645\u0644\u0627\u0621 \u0639\u0627\u0644\u064A \u062C\u062F\u0627\u064B");
+    } else if (team.teamSatisfaction >= 4) {
+      insights.push("\u0623\u062F\u0627\u0621 \u0627\u0644\u0641\u0631\u064A\u0642 \u062C\u064A\u062F\u0629 \u0645\u0639 \u0631\u0636\u0627 \u0639\u0645\u0644\u0627\u0621 \u0639\u0627\u0644\u064A");
+    } else if (team.teamSatisfaction >= 3) {
+      insights.push("\u0623\u062F\u0627\u0621 \u0627\u0644\u0641\u0631\u064A\u0642 \u0645\u062A\u0648\u0633\u0637\u0629 - \u0647\u0646\u0627\u0643 \u0645\u062C\u0627\u0644 \u0644\u0644\u062A\u062D\u0633\u0646");
+    } else {
+      insights.push("\u0623\u062F\u0627\u0621 \u0627\u0644\u0641\u0631\u064A\u0642 \u062A\u062D\u062A\u0627\u062C \u0625\u0644\u0649 \u062A\u062D\u0633\u0646 \u0641\u0648\u0631\u064A");
+    }
+    if (team.averageTeamResponseTime < 60) {
+      insights.push("\u0648\u0642\u062A \u0627\u0644\u0627\u0633\u062A\u062C\u0627\u0628\u0629 \u0645\u0645\u062A\u0627\u0632 - \u0623\u0642\u0644 \u0645\u0646 \u062F\u0642\u064A\u0642\u0629");
+    } else if (team.averageTeamResponseTime < 300) {
+      insights.push("\u0648\u0642\u062A \u0627\u0644\u0627\u0633\u062A\u062C\u0627\u0628\u0629 \u062C\u064A\u062F - \u062D\u0648\u0627\u0644\u064A 5 \u062F\u0642\u0627\u0626\u0642");
+    } else {
+      insights.push("\u0648\u0642\u062A \u0627\u0644\u0627\u0633\u062A\u062C\u0627\u0628\u0629 \u0628\u0637\u064A\u0621 - \u064A\u062D\u062A\u0627\u062C \u0625\u0644\u0649 \u062A\u062D\u0633\u0646");
+    }
+    const avgEscalationRate = agents.reduce((sum, a) => sum + a.escalationRate, 0) / agents.length;
+    if (avgEscalationRate < 5) {
+      insights.push("\u0645\u0639\u062F\u0644 \u0627\u0644\u062A\u0635\u0639\u064A\u062F \u0645\u0646\u062E\u0641\u0636 \u062C\u062F\u0627\u064B - \u0627\u0644\u0645\u0648\u0638\u0641\u0648\u0646 \u064A\u062A\u0639\u0627\u0645\u0644\u0648\u0646 \u0645\u0639 \u0627\u0644\u0645\u0634\u0627\u0643\u0644 \u0628\u0643\u0641\u0627\u0621\u0629");
+    } else if (avgEscalationRate > 20) {
+      insights.push("\u0645\u0639\u062F\u0644 \u0627\u0644\u062A\u0635\u0639\u064A\u062F \u0645\u0631\u062A\u0641\u0639 - \u0642\u062F \u062A\u062D\u062A\u0627\u062C \u0625\u0644\u0649 \u062A\u062F\u0631\u064A\u0628 \u0625\u0636\u0627\u0641\u064A");
+    }
+    return insights;
+  }
+  /**
+   * توليد التوصيات
+   */
+  generateRecommendations(agents, team) {
+    const recommendations = [];
+    if (team.teamSatisfaction < 4) {
+      recommendations.push("\u062A\u0642\u062F\u064A\u0645 \u062A\u062F\u0631\u064A\u0628 \u0625\u0636\u0627\u0641\u064A \u0644\u0644\u0645\u0648\u0638\u0641\u064A\u0646 \u0644\u062A\u062D\u0633\u064A\u0646 \u0645\u0647\u0627\u0631\u0627\u062A \u0627\u0644\u062A\u0639\u0627\u0645\u0644 \u0645\u0639 \u0627\u0644\u0639\u0645\u0644\u0627\u0621");
+    }
+    if (team.averageTeamResponseTime > 300) {
+      recommendations.push("\u0632\u064A\u0627\u062F\u0629 \u0639\u062F\u062F \u0627\u0644\u0645\u0648\u0638\u0641\u064A\u0646 \u0623\u0648 \u062A\u062D\u0633\u064A\u0646 \u062A\u0648\u0632\u064A\u0639 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0627\u062A");
+    }
+    const lowPerformers = agents.filter((a) => a.customerSatisfaction < 3);
+    if (lowPerformers.length > 0) {
+      recommendations.push(
+        `\u062A\u0642\u062F\u064A\u0645 \u062F\u0639\u0645 \u0641\u0631\u062F\u064A \u0644\u0644\u0645\u0648\u0638\u0641\u064A\u0646: ${lowPerformers.map((a) => a.agentName).join(", ")}`
+      );
+    }
+    const topPerformers = agents.filter((a) => a.customerSatisfaction >= 4.5);
+    if (topPerformers.length > 0) {
+      recommendations.push(
+        `\u062A\u0643\u0631\u064A\u0645 \u0627\u0644\u0645\u0648\u0638\u0641\u064A\u0646 \u0630\u0648\u064A \u0627\u0644\u0623\u062F\u0627\u0621 \u0627\u0644\u0639\u0627\u0644\u064A: ${topPerformers.map((a) => a.agentName).join(", ")}`
+      );
+    }
+    return recommendations;
+  }
+  /**
+   * توليد الاتجاهات
+   */
+  generateTrends(agents) {
+    const trends = [];
+    for (let i = 6; i >= 0; i--) {
+      const date3 = /* @__PURE__ */ new Date();
+      date3.setDate(date3.getDate() - i);
+      trends.push({
+        date: date3.toISOString().split("T")[0],
+        conversations: Math.floor(Math.random() * 100 + 50),
+        satisfaction: Math.random() * 2 + 3.5,
+        responseTime: Math.floor(Math.random() * 200 + 100)
+      });
+    }
+    return trends;
+  }
+  /**
+   * الحصول على إحصائيات مقارنة
+   */
+  async getComparativeAnalysis(agentId1, agentId2, agentName1, agentName2) {
+    const metrics1 = await this.calculateAgentMetrics(agentId1, agentName1);
+    const metrics2 = await this.calculateAgentMetrics(agentId2, agentName2);
+    return {
+      agent1: metrics1,
+      agent2: metrics2,
+      comparison: {
+        responseTimeDifference: metrics1.averageResponseTime - metrics2.averageResponseTime,
+        satisfactionDifference: metrics1.customerSatisfaction - metrics2.customerSatisfaction,
+        resolutionRateDifference: metrics1.resolutionRate - metrics2.resolutionRate,
+        winner: metrics1.customerSatisfaction > metrics2.customerSatisfaction ? 1 : 2
+      }
+    };
+  }
+};
+var performanceAnalytics = new PerformanceAnalytics();
+async function getAgentMetrics(agentId, agentName, startDate, endDate) {
+  return performanceAnalytics.calculateAgentMetrics(agentId, agentName, startDate, endDate);
+}
+async function getTeamMetrics(agentIds, startDate, endDate) {
+  return performanceAnalytics.calculateTeamMetrics(agentIds, startDate, endDate);
+}
+async function generateReport(agentIds, startDate, endDate) {
+  return performanceAnalytics.generatePerformanceReport(agentIds, startDate, endDate);
+}
+
+// server/routers/performance-analytics-router.ts
+import { TRPCError as TRPCError6 } from "@trpc/server";
+var performanceAnalyticsRouter = router({
+  /**
+   * الحصول على مقاييس أداء الموظف
+   */
+  getAgentMetrics: protectedProcedure.input(
+    z24.object({
+      agentId: z24.number().int().positive(),
+      agentName: z24.string().min(1).max(100),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const metrics = await getAgentMetrics(
+        input.agentId,
+        input.agentName,
+        input.startDate,
+        input.endDate
+      );
+      return metrics;
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0645\u0642\u0627\u064A\u064A\u0633 \u0627\u0644\u0645\u0648\u0638\u0641:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0645\u0642\u0627\u064A\u064A\u0633"
+      });
+    }
+  }),
+  /**
+   * الحصول على مقاييس أداء الفريق
+   */
+  getTeamMetrics: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u0641\u0631\u064A\u0642"
+        });
+      }
+      const metrics = await getTeamMetrics(
+        input.agentIds,
+        input.startDate,
+        input.endDate
+      );
+      return metrics;
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0645\u0642\u0627\u064A\u064A\u0633 \u0627\u0644\u0641\u0631\u064A\u0642:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0645\u0642\u0627\u064A\u064A\u0633"
+      });
+    }
+  }),
+  /**
+   * توليد تقرير الأداء الشامل
+   */
+  generatePerformanceReport: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631"
+        });
+      }
+      const report = await generateReport(
+        input.agentIds,
+        input.startDate,
+        input.endDate
+      );
+      return report;
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062A\u0648\u0644\u064A\u062F \u0627\u0644\u062A\u0642\u0631\u064A\u0631:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u0648\u0644\u064A\u062F \u0627\u0644\u062A\u0642\u0631\u064A\u0631"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات الموظف الشهرية
+   */
+  getMonthlyAgentStats: protectedProcedure.input(
+    z24.object({
+      agentId: z24.number().int().positive(),
+      agentName: z24.string().min(1).max(100),
+      month: z24.number().int().min(1).max(12),
+      year: z24.number().int().min(2020).max(2100)
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const startDate = new Date(input.year, input.month - 1, 1);
+      const endDate = new Date(input.year, input.month, 0);
+      const metrics = await getAgentMetrics(
+        input.agentId,
+        input.agentName,
+        startDate,
+        endDate
+      );
+      return {
+        month: input.month,
+        year: input.year,
+        metrics
+      };
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u0634\u0647\u0631:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات الفريق الشهرية
+   */
+  getMonthlyTeamStats: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      month: z24.number().int().min(1).max(12),
+      year: z24.number().int().min(2020).max(2100)
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u0641\u0631\u064A\u0642"
+        });
+      }
+      const startDate = new Date(input.year, input.month - 1, 1);
+      const endDate = new Date(input.year, input.month, 0);
+      const metrics = await getTeamMetrics(input.agentIds, startDate, endDate);
+      return {
+        month: input.month,
+        year: input.year,
+        metrics
+      };
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u0641\u0631\u064A\u0642 \u0627\u0644\u0634\u0647\u0631\u064A\u0629:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على أفضل الموظفين أداءً
+   */
+  getTopPerformers: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      limit: z24.number().int().min(1).max(20).default(5),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const metrics = await getTeamMetrics(
+        input.agentIds,
+        input.startDate,
+        input.endDate
+      );
+      return metrics.topPerformers.slice(0, input.limit);
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0623\u0641\u0636\u0644 \u0627\u0644\u0645\u0648\u0638\u0641\u064A\u0646:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على الموظفين الذين يحتاجون إلى تحسن
+   */
+  getBottomPerformers: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      limit: z24.number().int().min(1).max(20).default(5),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const metrics = await getTeamMetrics(
+        input.agentIds,
+        input.startDate,
+        input.endDate
+      );
+      return metrics.bottomPerformers.slice(0, input.limit);
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0645\u0648\u0638\u0641\u064A\u0646 \u0627\u0644\u0630\u064A\u0646 \u064A\u062D\u062A\u0627\u062C\u0648\u0646 \u0625\u0644\u0649 \u062A\u062D\u0633\u0646:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على الاتجاهات والتنبؤات
+   */
+  getTrends: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      days: z24.number().int().min(7).max(365).default(30)
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const endDate = /* @__PURE__ */ new Date();
+      const startDate = new Date(endDate.getTime() - input.days * 24 * 60 * 60 * 1e3);
+      const metrics = await getTeamMetrics(input.agentIds, startDate, endDate);
+      return {
+        days: input.days,
+        trends: metrics.trends
+      };
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0627\u062A\u062C\u0627\u0647\u0627\u062A:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على مقارنة بين موظفين
+   */
+  compareAgents: protectedProcedure.input(
+    z24.object({
+      agentId1: z24.number().int().positive(),
+      agentName1: z24.string().min(1).max(100),
+      agentId2: z24.number().int().positive(),
+      agentName2: z24.string().min(1).max(100),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const comparison = await performanceAnalytics.getComparativeAnalysis(
+        input.agentId1,
+        input.agentId2,
+        input.agentName1,
+        input.agentName2
+      );
+      return comparison;
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u0645\u0642\u0627\u0631\u0646\u0629 \u0628\u064A\u0646 \u0627\u0644\u0645\u0648\u0638\u0641\u064A\u0646:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0625\u062C\u0631\u0627\u0621 \u0627\u0644\u0645\u0642\u0627\u0631\u0646\u0629"
+      });
+    }
+  }),
+  /**
+   * تصدير التقرير كـ PDF
+   */
+  exportReportAsPDF: protectedProcedure.input(
+    z24.object({
+      agentIds: z24.array(z24.number().int().positive()),
+      startDate: z24.date().optional(),
+      endDate: z24.date().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError6({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u062A\u0642\u0627\u0631\u064A\u0631"
+        });
+      }
+      const report = await generateReport(
+        input.agentIds,
+        input.startDate,
+        input.endDate
+      );
+      return {
+        success: true,
+        message: "\u062A\u0645 \u062A\u0648\u0644\u064A\u062F \u0627\u0644\u062A\u0642\u0631\u064A\u0631 \u0628\u0646\u062C\u0627\u062D",
+        report
+        // في الإنتاج، سيكون هناك رابط تحميل PDF
+      };
+    } catch (error) {
+      if (error instanceof TRPCError6) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u062A\u0642\u0631\u064A\u0631:", error);
+      throw new TRPCError6({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u0635\u062F\u064A\u0631 \u0627\u0644\u062A\u0642\u0631\u064A\u0631"
+      });
+    }
+  })
+});
+
+// server/routers/ratings-advanced-router.ts
+import { z as z25 } from "zod";
+
+// server/services/rating-service.ts
+import { eq as eq7 } from "drizzle-orm";
+var RatingService = class {
+  ratingRequests = /* @__PURE__ */ new Map();
+  ratingSubmissions = [];
+  commonPositiveThemes = [
+    "\u0633\u0631\u064A\u0639",
+    "\u0627\u062D\u062A\u0631\u0627\u0641\u064A",
+    "\u0645\u0641\u064A\u062F",
+    "\u0648\u062F\u0648\u062F",
+    "\u0641\u0639\u0627\u0644",
+    "\u0645\u0645\u062A\u0627\u0632",
+    "\u0631\u0627\u0626\u0639"
+  ];
+  commonNegativeThemes = [
+    "\u0628\u0637\u064A\u0621",
+    "\u063A\u064A\u0631 \u0645\u0641\u064A\u062F",
+    "\u063A\u064A\u0631 \u0627\u062D\u062A\u0631\u0627\u0641\u064A",
+    "\u0645\u0639\u0642\u062F",
+    "\u0645\u0631\u0628\u0643",
+    "\u0633\u064A\u0621"
+  ];
+  /**
+   * إنشاء طلب تقييم جديد
+   */
+  async createRatingRequest(conversationId, customerId, agentId, subject) {
+    const now = /* @__PURE__ */ new Date();
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1e3);
+    const ratingRequest = {
+      conversationId,
+      customerId,
+      agentId,
+      subject,
+      sentAt: now,
+      expiresAt,
+      status: "pending"
+    };
+    this.ratingRequests.set(conversationId, ratingRequest);
+    return ratingRequest;
+  }
+  /**
+   * الحصول على طلب التقييم
+   */
+  getRatingRequest(conversationId) {
+    const request = this.ratingRequests.get(conversationId);
+    if (request && request.expiresAt < /* @__PURE__ */ new Date()) {
+      request.status = "expired";
+    }
+    return request;
+  }
+  /**
+   * تقديم التقييم
+   */
+  async submitRating(conversationId, customerId, agentId, rating, comment, categories) {
+    if (rating < 1 || rating > 5) {
+      throw new Error("\u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0628\u064A\u0646 1 \u0648 5");
+    }
+    Object.values(categories).forEach((cat) => {
+      if (cat < 1 || cat > 5) {
+        throw new Error("\u062A\u0642\u064A\u064A\u0645 \u0627\u0644\u0641\u0626\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0628\u064A\u0646 1 \u0648 5");
+      }
+    });
+    const submission = {
+      conversationId,
+      customerId,
+      agentId,
+      rating,
+      comment,
+      submittedAt: /* @__PURE__ */ new Date(),
+      categories
+    };
+    this.ratingSubmissions.push(submission);
+    const request = this.ratingRequests.get(conversationId);
+    if (request) {
+      request.status = "completed";
+    }
+    const db = await getDb();
+    if (db) {
+      await db.update(liveChatConversations).set({ rating, ratingComment: comment }).where(eq7(liveChatConversations.id, conversationId));
+    }
+    return submission;
+  }
+  /**
+   * الحصول على التقييمات
+   */
+  getRatings(agentId, limit = 50, offset = 0) {
+    let submissions = this.ratingSubmissions;
+    if (agentId) {
+      submissions = submissions.filter((s) => s.agentId === agentId);
+    }
+    return submissions.slice(offset, offset + limit);
+  }
+  /**
+   * حساب إحصائيات التقييمات
+   */
+  calculateRatingAnalytics(agentId) {
+    let submissions = this.ratingSubmissions;
+    if (agentId) {
+      submissions = submissions.filter((s) => s.agentId === agentId);
+    }
+    const totalRatings = submissions.length;
+    const ratingDistribution = {
+      fiveStar: submissions.filter((s) => s.rating === 5).length,
+      fourStar: submissions.filter((s) => s.rating === 4).length,
+      threeStar: submissions.filter((s) => s.rating === 3).length,
+      twoStar: submissions.filter((s) => s.rating === 2).length,
+      oneStar: submissions.filter((s) => s.rating === 1).length
+    };
+    const averageRating = totalRatings > 0 ? submissions.reduce((sum, s) => sum + s.rating, 0) / totalRatings : 0;
+    const categoryAverages = {
+      responseTime: totalRatings > 0 ? submissions.reduce((sum, s) => sum + s.categories.responseTime, 0) / totalRatings : 0,
+      professionalism: totalRatings > 0 ? submissions.reduce((sum, s) => sum + s.categories.professionalism, 0) / totalRatings : 0,
+      problemResolution: totalRatings > 0 ? submissions.reduce(
+        (sum, s) => sum + s.categories.problemResolution,
+        0
+      ) / totalRatings : 0,
+      communication: totalRatings > 0 ? submissions.reduce((sum, s) => sum + s.categories.communication, 0) / totalRatings : 0
+    };
+    const commonThemes = this.extractCommonThemes(submissions);
+    const agentRatings = this.calculateAgentRatings(submissions);
+    return {
+      totalRatings,
+      averageRating: Math.round(averageRating * 100) / 100,
+      ratingDistribution,
+      categoryAverages: {
+        responseTime: Math.round(categoryAverages.responseTime * 100) / 100,
+        professionalism: Math.round(categoryAverages.professionalism * 100) / 100,
+        problemResolution: Math.round(categoryAverages.problemResolution * 100) / 100,
+        communication: Math.round(categoryAverages.communication * 100) / 100
+      },
+      commonThemes,
+      agentRatings
+    };
+  }
+  /**
+   * استخراج المواضيع الشائعة من التعليقات
+   */
+  extractCommonThemes(submissions) {
+    const positive = {};
+    const negative = {};
+    submissions.forEach((submission) => {
+      const comment = submission.comment.toLowerCase();
+      this.commonPositiveThemes.forEach((theme) => {
+        if (comment.includes(theme)) {
+          positive[theme] = (positive[theme] || 0) + 1;
+        }
+      });
+      this.commonNegativeThemes.forEach((theme) => {
+        if (comment.includes(theme)) {
+          negative[theme] = (negative[theme] || 0) + 1;
+        }
+      });
+    });
+    const sortedPositive = Object.entries(positive).sort(([, a], [, b]) => b - a).slice(0, 5).map(([theme]) => theme);
+    const sortedNegative = Object.entries(negative).sort(([, a], [, b]) => b - a).slice(0, 5).map(([theme]) => theme);
+    return {
+      positive: sortedPositive,
+      negative: sortedNegative
+    };
+  }
+  /**
+   * حساب تقييمات الموظفين
+   */
+  calculateAgentRatings(submissions) {
+    const agentMap = /* @__PURE__ */ new Map();
+    submissions.forEach((submission) => {
+      if (!agentMap.has(submission.agentId)) {
+        agentMap.set(submission.agentId, { ratings: [], total: 0 });
+      }
+      const agent = agentMap.get(submission.agentId);
+      agent.ratings.push(submission.rating);
+      agent.total += 1;
+    });
+    return Array.from(agentMap.entries()).map(([agentId, data]) => ({
+      agentId,
+      averageRating: Math.round(
+        data.ratings.reduce((a, b) => a + b, 0) / data.ratings.length * 100
+      ) / 100,
+      totalRatings: data.total
+    })).sort((a, b) => b.averageRating - a.averageRating);
+  }
+  /**
+   * الحصول على التقييمات المنخفضة
+   */
+  getLowRatings(threshold = 3, limit = 10) {
+    return this.ratingSubmissions.filter((s) => s.rating < threshold).sort((a, b) => a.rating - b.rating).slice(0, limit);
+  }
+  /**
+   * الحصول على التقييمات العالية
+   */
+  getHighRatings(threshold = 4, limit = 10) {
+    return this.ratingSubmissions.filter((s) => s.rating >= threshold).sort((a, b) => b.rating - a.rating).slice(0, limit);
+  }
+  /**
+   * توليد توصيات بناءً على التقييمات
+   */
+  generateRecommendations(agentId) {
+    const analytics = this.calculateRatingAnalytics(agentId);
+    const recommendations = [];
+    if (analytics.averageRating < 3) {
+      recommendations.push("\u064A\u062D\u062A\u0627\u062C \u0625\u0644\u0649 \u062A\u062D\u0633\u0646 \u0641\u0648\u0631\u064A \u0641\u064A \u062C\u0648\u062F\u0629 \u0627\u0644\u062E\u062F\u0645\u0629");
+    } else if (analytics.averageRating < 4) {
+      recommendations.push("\u0647\u0646\u0627\u0643 \u0645\u062C\u0627\u0644 \u0644\u0644\u062A\u062D\u0633\u0646 \u0641\u064A \u0628\u0639\u0636 \u062C\u0648\u0627\u0646\u0628 \u0627\u0644\u062E\u062F\u0645\u0629");
+    } else if (analytics.averageRating >= 4.5) {
+      recommendations.push("\u0623\u062F\u0627\u0621 \u0645\u0645\u062A\u0627\u0632\u0629 - \u0627\u0633\u062A\u0645\u0631 \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0645\u0633\u062A\u0648\u0649");
+    }
+    if (analytics.categoryAverages.responseTime < 3) {
+      recommendations.push("\u062A\u062D\u0633\u064A\u0646 \u0633\u0631\u0639\u0629 \u0627\u0644\u0627\u0633\u062A\u062C\u0627\u0628\u0629");
+    }
+    if (analytics.categoryAverages.professionalism < 3) {
+      recommendations.push("\u062A\u062D\u0633\u064A\u0646 \u0627\u0644\u0627\u062D\u062A\u0631\u0627\u0641\u064A\u0629 \u0648\u0627\u0644\u0633\u0644\u0648\u0643 \u0627\u0644\u0645\u0647\u0646\u064A");
+    }
+    if (analytics.categoryAverages.problemResolution < 3) {
+      recommendations.push("\u062A\u062D\u0633\u064A\u0646 \u0627\u0644\u0642\u062F\u0631\u0629 \u0639\u0644\u0649 \u062D\u0644 \u0627\u0644\u0645\u0634\u0627\u0643\u0644");
+    }
+    if (analytics.categoryAverages.communication < 3) {
+      recommendations.push("\u062A\u062D\u0633\u064A\u0646 \u0645\u0647\u0627\u0631\u0627\u062A \u0627\u0644\u062A\u0648\u0627\u0635\u0644");
+    }
+    if (analytics.commonThemes.negative.length > 0) {
+      recommendations.push(
+        `\u0645\u0639\u0627\u0644\u062C\u0629 \u0627\u0644\u0645\u0634\u0627\u0643\u0644 \u0627\u0644\u0634\u0627\u0626\u0639\u0629: ${analytics.commonThemes.negative.join(", ")}`
+      );
+    }
+    return recommendations;
+  }
+  /**
+   * مسح التقييمات القديمة
+   */
+  clearOldRatings(daysOld = 365) {
+    const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1e3);
+    const initialLength = this.ratingSubmissions.length;
+    this.ratingSubmissions = this.ratingSubmissions.filter(
+      (s) => s.submittedAt > cutoffDate
+    );
+    return initialLength - this.ratingSubmissions.length;
+  }
+};
+var ratingService = new RatingService();
+async function createRatingRequest(conversationId, customerId, agentId, subject) {
+  return ratingService.createRatingRequest(conversationId, customerId, agentId, subject);
+}
+async function submitRating(conversationId, customerId, agentId, rating, comment, categories) {
+  return ratingService.submitRating(
+    conversationId,
+    customerId,
+    agentId,
+    rating,
+    comment,
+    categories
+  );
+}
+function getRatingAnalytics(agentId) {
+  return ratingService.calculateRatingAnalytics(agentId);
+}
+function getRatingRecommendations(agentId) {
+  return ratingService.generateRecommendations(agentId);
+}
+
+// server/routers/ratings-advanced-router.ts
+import { TRPCError as TRPCError7 } from "@trpc/server";
+var ratingsAdvancedRouter = router({
+  /**
+   * إنشاء طلب تقييم جديد
+   */
+  createRatingRequest: protectedProcedure.input(
+    z25.object({
+      conversationId: z25.string().uuid(),
+      customerId: z25.number().int().positive(),
+      agentId: z25.number().int().positive(),
+      subject: z25.string().min(1).max(200)
+    })
+  ).mutation(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u062A\u0642\u064A\u064A\u0645"
+        });
+      }
+      const ratingRequest = await createRatingRequest(
+        input.conversationId,
+        input.customerId,
+        input.agentId,
+        input.subject
+      );
+      return {
+        success: true,
+        ratingRequest
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062A\u0642\u064A\u064A\u0645:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u0637\u0644\u0628 \u0627\u0644\u062A\u0642\u064A\u064A\u0645"
+      });
+    }
+  }),
+  /**
+   * الحصول على طلب التقييم
+   */
+  getRatingRequest: protectedProcedure.input(
+    z25.object({
+      conversationId: z25.string().uuid()
+    })
+  ).query(async ({ input }) => {
+    try {
+      const ratingRequest = ratingService.getRatingRequest(input.conversationId);
+      if (!ratingRequest) {
+        throw new TRPCError7({
+          code: "NOT_FOUND",
+          message: "\u0637\u0644\u0628 \u0627\u0644\u062A\u0642\u064A\u064A\u0645 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F"
+        });
+      }
+      return ratingRequest;
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0637\u0644\u0628 \u0627\u0644\u062A\u0642\u064A\u064A\u0645:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0637\u0644\u0628 \u0627\u0644\u062A\u0642\u064A\u064A\u0645"
+      });
+    }
+  }),
+  /**
+   * تقديم التقييم
+   */
+  submitRating: protectedProcedure.input(
+    z25.object({
+      conversationId: z25.string().uuid(),
+      customerId: z25.number().int().positive(),
+      agentId: z25.number().int().positive(),
+      rating: z25.number().int().min(1).max(5),
+      comment: z25.string().min(0).max(500),
+      categories: z25.object({
+        responseTime: z25.number().int().min(1).max(5),
+        professionalism: z25.number().int().min(1).max(5),
+        problemResolution: z25.number().int().min(1).max(5),
+        communication: z25.number().int().min(1).max(5)
+      })
+    })
+  ).mutation(async ({ input }) => {
+    try {
+      const submission = await submitRating(
+        input.conversationId,
+        input.customerId,
+        input.agentId,
+        input.rating,
+        input.comment,
+        input.categories
+      );
+      return {
+        success: true,
+        submission
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new TRPCError7({
+          code: "BAD_REQUEST",
+          message: error.message
+        });
+      }
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u062A\u0642\u062F\u064A\u0645 \u0627\u0644\u062A\u0642\u064A\u064A\u0645:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u062A\u0642\u062F\u064A\u0645 \u0627\u0644\u062A\u0642\u064A\u064A\u0645"
+      });
+    }
+  }),
+  /**
+   * الحصول على التقييمات
+   */
+  getRatings: protectedProcedure.input(
+    z25.object({
+      agentId: z25.number().int().positive().optional(),
+      limit: z25.number().int().min(1).max(100).default(20),
+      offset: z25.number().int().min(0).default(0)
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (input.agentId && ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const ratings = ratingService.getRatings(
+        input.agentId,
+        input.limit,
+        input.offset
+      );
+      return {
+        ratings,
+        total: ratings.length,
+        hasMore: ratings.length >= input.limit
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0642\u064A\u064A\u0645\u0627\u062A:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0642\u064A\u064A\u0645\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على إحصائيات التقييمات
+   */
+  getRatingAnalytics: protectedProcedure.input(
+    z25.object({
+      agentId: z25.number().int().positive().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (input.agentId && ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const analytics = getRatingAnalytics(input.agentId);
+      return analytics;
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u062A\u0642\u064A\u064A\u0645\u0627\u062A:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على التقييمات المنخفضة
+   */
+  getLowRatings: protectedProcedure.input(
+    z25.object({
+      threshold: z25.number().int().min(1).max(5).default(3),
+      limit: z25.number().int().min(1).max(50).default(10)
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const lowRatings = ratingService.getLowRatings(input.threshold, input.limit);
+      return {
+        ratings: lowRatings,
+        count: lowRatings.length,
+        threshold: input.threshold
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0642\u064A\u064A\u0645\u0627\u062A \u0627\u0644\u0645\u0646\u062E\u0641\u0636\u0629:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على التقييمات العالية
+   */
+  getHighRatings: protectedProcedure.input(
+    z25.object({
+      threshold: z25.number().int().min(1).max(5).default(4),
+      limit: z25.number().int().min(1).max(50).default(10)
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0639\u0631\u0636 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const highRatings = ratingService.getHighRatings(input.threshold, input.limit);
+      return {
+        ratings: highRatings,
+        count: highRatings.length,
+        threshold: input.threshold
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0642\u064A\u064A\u0645\u0627\u062A \u0627\u0644\u0639\u0627\u0644\u064A\u0629:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على التوصيات بناءً على التقييمات
+   */
+  getRecommendations: protectedProcedure.input(
+    z25.object({
+      agentId: z25.number().int().positive().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (input.agentId && ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const recommendations = getRatingRecommendations(input.agentId);
+      return {
+        recommendations,
+        count: recommendations.length
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0648\u0635\u064A\u0627\u062A:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0648\u0635\u064A\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على توزيع التقييمات
+   */
+  getRatingDistribution: protectedProcedure.input(
+    z25.object({
+      agentId: z25.number().int().positive().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (input.agentId && ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const analytics = getRatingAnalytics(input.agentId);
+      return {
+        distribution: analytics.ratingDistribution,
+        total: analytics.totalRatings,
+        average: analytics.averageRating
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062A\u0648\u0632\u064A\u0639 \u0627\u0644\u062A\u0642\u064A\u064A\u0645\u0627\u062A:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على تقييمات الفئات
+   */
+  getCategoryRatings: protectedProcedure.input(
+    z25.object({
+      agentId: z25.number().int().positive().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (input.agentId && ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const analytics = getRatingAnalytics(input.agentId);
+      return {
+        categories: analytics.categoryAverages,
+        agentId: input.agentId
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u062A\u0642\u064A\u064A\u0645\u0627\u062A \u0627\u0644\u0641\u0626\u0627\u062A:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  }),
+  /**
+   * الحصول على المواضيع الشائعة
+   */
+  getCommonThemes: protectedProcedure.input(
+    z25.object({
+      agentId: z25.number().int().positive().optional()
+    })
+  ).query(async ({ input, ctx }) => {
+    try {
+      if (input.agentId && ctx.user.role !== "admin" && ctx.user.id !== input.agentId) {
+        throw new TRPCError7({
+          code: "FORBIDDEN",
+          message: "\u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0644\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u0649 \u0647\u0630\u0647 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+        });
+      }
+      const analytics = getRatingAnalytics(input.agentId);
+      return {
+        themes: analytics.commonThemes,
+        agentId: input.agentId
+      };
+    } catch (error) {
+      if (error instanceof TRPCError7) throw error;
+      console.error("\u062E\u0637\u0623 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0645\u0648\u0627\u0636\u064A\u0639 \u0627\u0644\u0634\u0627\u0626\u0639\u0629:", error);
+      throw new TRPCError7({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u062D\u0635\u0648\u0644 \u0639\u0644\u0649 \u0627\u0644\u0628\u064A\u0627\u0646\u0627\u062A"
+      });
+    }
+  })
+});
+
 // server/routers.ts
 var appRouter = router({
   system: systemRouter,
@@ -15845,24 +17505,24 @@ var appRouter = router({
      * إنشاء بيان جمركي جديد
      */
     createDeclaration: protectedProcedure.input(
-      z23.object({
-        declarationNumber: z23.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        registrationDate: z23.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
-        clearanceCenter: z23.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
-        exchangeRate: z23.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        exportCountry: z23.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
-        billOfLadingNumber: z23.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        grossWeight: z23.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        netWeight: z23.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        numberOfPackages: z23.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
-        packageType: z23.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
-        fobValue: z23.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        freightCost: z23.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        insuranceCost: z23.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
-        customsDuty: z23.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
-        additionalFees: z23.number().nonnegative().optional().default(0),
-        customsServiceFee: z23.number().nonnegative().optional().default(0),
-        penalties: z23.number().nonnegative().optional().default(0)
+      z26.object({
+        declarationNumber: z26.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u0628\u064A\u0627\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        registrationDate: z26.string().refine((date3) => !isNaN(Date.parse(date3)), "\u062A\u0627\u0631\u064A\u062E \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
+        clearanceCenter: z26.string().min(1, "\u0645\u0631\u0643\u0632 \u0627\u0644\u062A\u062E\u0644\u064A\u0635 \u0645\u0637\u0644\u0648\u0628"),
+        exchangeRate: z26.number().positive("\u0633\u0639\u0631 \u0627\u0644\u062A\u0639\u0627\u062F\u0644 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        exportCountry: z26.string().min(1, "\u0628\u0644\u062F \u0627\u0644\u062A\u0635\u062F\u064A\u0631 \u0645\u0637\u0644\u0648\u0628"),
+        billOfLadingNumber: z26.string().min(1, "\u0631\u0642\u0645 \u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        grossWeight: z26.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0642\u0627\u0626\u0645 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        netWeight: z26.number().positive("\u0627\u0644\u0648\u0632\u0646 \u0627\u0644\u0635\u0627\u0641\u064A \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        numberOfPackages: z26.number().int().positive("\u0639\u062F\u062F \u0627\u0644\u0637\u0631\u0648\u062F \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B"),
+        packageType: z26.string().min(1, "\u0646\u0648\u0639 \u0627\u0644\u0637\u0631\u0648\u062F \u0645\u0637\u0644\u0648\u0628"),
+        fobValue: z26.number().positive("\u0642\u064A\u0645\u0629 \u0627\u0644\u0628\u0636\u0627\u0639\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        freightCost: z26.number().nonnegative("\u0623\u062C\u0648\u0631 \u0627\u0644\u0634\u062D\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        insuranceCost: z26.number().nonnegative("\u0627\u0644\u062A\u0623\u0645\u064A\u0646 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0627\u064B"),
+        customsDuty: z26.number().nonnegative("\u0627\u0644\u0631\u0633\u0648\u0645 \u0627\u0644\u062C\u0645\u0631\u0643\u064A\u0629 \u0644\u0627 \u064A\u0645\u0643\u0646 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0633\u0627\u0644\u0628\u0629"),
+        additionalFees: z26.number().nonnegative().optional().default(0),
+        customsServiceFee: z26.number().nonnegative().optional().default(0),
+        penalties: z26.number().nonnegative().optional().default(0)
       })
     ).mutation(async ({ ctx, input }) => {
       const calculations = calculateAllCosts({
@@ -15912,7 +17572,7 @@ var appRouter = router({
     /**
      * الحصول على بيان جمركي
      */
-    getDeclaration: protectedProcedure.input(z23.object({ id: z23.number() })).query(async ({ ctx, input }) => {
+    getDeclaration: protectedProcedure.input(z26.object({ id: z26.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u0627\u0644\u0648\u0635\u0648\u0644 \u0625\u0644\u064A\u0647");
@@ -15929,11 +17589,11 @@ var appRouter = router({
      * تحديث بيان جمركي
      */
     updateDeclaration: protectedProcedure.input(
-      z23.object({
-        id: z23.number(),
-        data: z23.object({
-          status: z23.enum(["draft", "submitted", "approved", "cleared"]).optional(),
-          notes: z23.string().optional()
+      z26.object({
+        id: z26.number(),
+        data: z26.object({
+          status: z26.enum(["draft", "submitted", "approved", "cleared"]).optional(),
+          notes: z26.string().optional()
         })
       })
     ).mutation(async ({ ctx, input }) => {
@@ -15946,7 +17606,7 @@ var appRouter = router({
     /**
      * حذف بيان جمركي
      */
-    deleteDeclaration: protectedProcedure.input(z23.object({ id: z23.number() })).mutation(async ({ ctx, input }) => {
+    deleteDeclaration: protectedProcedure.input(z26.object({ id: z26.number() })).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.id);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F \u0623\u0648 \u0644\u064A\u0633 \u0644\u062F\u064A\u0643 \u0635\u0644\u0627\u062D\u064A\u0629 \u062D\u0630\u0641\u0647");
@@ -15963,11 +17623,11 @@ var appRouter = router({
      * إضافة صنف جديد
      */
     createItem: protectedProcedure.input(
-      z23.object({
-        declarationId: z23.number(),
-        itemName: z23.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
-        quantity: z23.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
-        unitPriceForeign: z23.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
+      z26.object({
+        declarationId: z26.number(),
+        itemName: z26.string().min(1, "\u0627\u0633\u0645 \u0627\u0644\u0635\u0646\u0641 \u0645\u0637\u0644\u0648\u0628"),
+        quantity: z26.number().positive("\u0627\u0644\u0643\u0645\u064A\u0629 \u064A\u062C\u0628 \u0623\u0646 \u062A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0629"),
+        unitPriceForeign: z26.number().positive("\u0633\u0639\u0631 \u0627\u0644\u0648\u062D\u062F\u0629 \u064A\u062C\u0628 \u0623\u0646 \u064A\u0643\u0648\u0646 \u0645\u0648\u062C\u0628\u0627\u064B")
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -16006,7 +17666,7 @@ var appRouter = router({
     /**
      * الحصول على أصناف البيان الجمركي
      */
-    getItems: protectedProcedure.input(z23.object({ declarationId: z23.number() })).query(async ({ ctx, input }) => {
+    getItems: protectedProcedure.input(z26.object({ declarationId: z26.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -16017,14 +17677,14 @@ var appRouter = router({
      * تحديث صنف
      */
     updateItem: protectedProcedure.input(
-      z23.object({
-        id: z23.number(),
-        itemName: z23.string().optional(),
-        itemCode: z23.string().optional(),
-        quantity: z23.number().positive().optional(),
-        unitPriceForeign: z23.number().positive().optional(),
-        description: z23.string().optional(),
-        customsCode: z23.string().optional()
+      z26.object({
+        id: z26.number(),
+        itemName: z26.string().optional(),
+        itemCode: z26.string().optional(),
+        quantity: z26.number().positive().optional(),
+        unitPriceForeign: z26.number().positive().optional(),
+        description: z26.string().optional(),
+        customsCode: z26.string().optional()
       })
     ).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
@@ -16047,7 +17707,7 @@ var appRouter = router({
     /**
      * حذف صنف
      */
-    deleteItem: protectedProcedure.input(z23.object({ id: z23.number() })).mutation(async ({ ctx, input }) => {
+    deleteItem: protectedProcedure.input(z26.object({ id: z26.number() })).mutation(async ({ ctx, input }) => {
       const item = await getItemById(input.id);
       if (!item) {
         throw new Error("\u0627\u0644\u0635\u0646\u0641 \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -16067,13 +17727,13 @@ var appRouter = router({
      * حساب وحفظ الانحرافات
      */
     calculateVariances: protectedProcedure.input(
-      z23.object({
-        declarationId: z23.number(),
-        estimatedFobValue: z23.number().nonnegative(),
-        estimatedFreight: z23.number().nonnegative(),
-        estimatedInsurance: z23.number().nonnegative(),
-        estimatedCustomsDuty: z23.number().nonnegative(),
-        estimatedSalesTax: z23.number().nonnegative()
+      z26.object({
+        declarationId: z26.number(),
+        estimatedFobValue: z26.number().nonnegative(),
+        estimatedFreight: z26.number().nonnegative(),
+        estimatedInsurance: z26.number().nonnegative(),
+        estimatedCustomsDuty: z26.number().nonnegative(),
+        estimatedSalesTax: z26.number().nonnegative()
       })
     ).mutation(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
@@ -16120,7 +17780,7 @@ var appRouter = router({
     /**
      * الحصول على الانحرافات
      */
-    getVariances: protectedProcedure.input(z23.object({ declarationId: z23.number() })).query(async ({ ctx, input }) => {
+    getVariances: protectedProcedure.input(z26.object({ declarationId: z26.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -16135,7 +17795,7 @@ var appRouter = router({
     /**
      * الحصول على الملخص المالي
      */
-    getSummary: protectedProcedure.input(z23.object({ declarationId: z23.number() })).query(async ({ ctx, input }) => {
+    getSummary: protectedProcedure.input(z26.object({ declarationId: z26.number() })).query(async ({ ctx, input }) => {
       const declaration = await getCustomsDeclarationById(input.declarationId);
       if (!declaration || declaration.userId !== ctx.user.id) {
         throw new Error("\u0627\u0644\u0628\u064A\u0627\u0646 \u0627\u0644\u062C\u0645\u0631\u0643\u064A \u063A\u064A\u0631 \u0645\u0648\u062C\u0648\u062F");
@@ -16148,8 +17808,8 @@ var appRouter = router({
    */
   pdfImport: router({
     importDeclaration: protectedProcedure.input(
-      z23.object({
-        filePath: z23.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
+      z26.object({
+        filePath: z26.string().min(1, "\u0645\u0633\u0627\u0631 \u0627\u0644\u0645\u0644\u0641 \u0645\u0637\u0644\u0648\u0628")
       })
     ).mutation(async ({ ctx, input }) => {
       try {
@@ -16171,9 +17831,9 @@ var appRouter = router({
    */
   notifications: router({
     getNotifications: protectedProcedure.input(
-      z23.object({
-        limit: z23.number().int().positive().default(50),
-        offset: z23.number().int().nonnegative().default(0)
+      z26.object({
+        limit: z26.number().int().positive().default(50),
+        offset: z26.number().int().nonnegative().default(0)
       })
     ).query(async ({ ctx, input }) => {
       return await getNotificationsByUserId(ctx.user.id, input.limit, input.offset);
@@ -16181,7 +17841,7 @@ var appRouter = router({
     getUnreadCount: protectedProcedure.query(async ({ ctx }) => {
       return await getUnreadNotificationCount(ctx.user.id);
     }),
-    markAsRead: protectedProcedure.input(z23.object({ notificationId: z23.number().int().positive() })).mutation(async ({ input }) => {
+    markAsRead: protectedProcedure.input(z26.object({ notificationId: z26.number().int().positive() })).mutation(async ({ input }) => {
       await markNotificationAsRead(input.notificationId);
       return { success: true };
     }),
@@ -16189,7 +17849,7 @@ var appRouter = router({
       await markAllNotificationsAsRead(ctx.user.id);
       return { success: true };
     }),
-    delete: protectedProcedure.input(z23.object({ notificationId: z23.number().int().positive() })).mutation(async ({ input }) => {
+    delete: protectedProcedure.input(z26.object({ notificationId: z26.number().int().positive() })).mutation(async ({ input }) => {
       await deleteNotification(input.notificationId);
       return { success: true };
     })
@@ -16199,17 +17859,17 @@ var appRouter = router({
    */
   tracking: router({
     createContainer: protectedProcedure.input(
-      z23.object({
-        containerNumber: z23.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
-        containerType: z23.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
-        shippingCompany: z23.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        billOfLadingNumber: z23.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
-        portOfLoading: z23.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
-        portOfDischarge: z23.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
-        sealNumber: z23.string().optional(),
-        loadingDate: z23.string().optional(),
-        estimatedArrivalDate: z23.string().optional(),
-        notes: z23.string().optional()
+      z26.object({
+        containerNumber: z26.string().min(1, "\u0631\u0642\u0645 \u0627\u0644\u062D\u0627\u0648\u064A\u0629 \u0645\u0637\u0644\u0648\u0628"),
+        containerType: z26.enum(["20ft", "40ft", "40ftHC", "45ft", "other"]),
+        shippingCompany: z26.string().min(1, "\u0634\u0631\u0643\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        billOfLadingNumber: z26.string().min(1, "\u0628\u0648\u0644\u064A\u0635\u0629 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628\u0629"),
+        portOfLoading: z26.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u0634\u062D\u0646 \u0645\u0637\u0644\u0648\u0628"),
+        portOfDischarge: z26.string().min(1, "\u0645\u064A\u0646\u0627\u0621 \u0627\u0644\u062A\u0641\u0631\u064A\u063A \u0645\u0637\u0644\u0648\u0628"),
+        sealNumber: z26.string().optional(),
+        loadingDate: z26.string().optional(),
+        estimatedArrivalDate: z26.string().optional(),
+        notes: z26.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -16230,7 +17890,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u062C\u0644\u0628 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    searchContainers: protectedProcedure.input(z23.object({ query: z23.string().min(1) })).query(async ({ input, ctx }) => {
+    searchContainers: protectedProcedure.input(z26.object({ query: z26.string().min(1) })).query(async ({ input, ctx }) => {
       try {
         const results = await searchContainers(ctx.user.id, input.query);
         return results;
@@ -16238,7 +17898,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0627\u0644\u0628\u062D\u062B \u0639\u0646 \u0627\u0644\u062D\u0627\u0648\u064A\u0627\u062A");
       }
     }),
-    getContainerByNumber: protectedProcedure.input(z23.object({ containerNumber: z23.string().min(1) })).query(async ({ input }) => {
+    getContainerByNumber: protectedProcedure.input(z26.object({ containerNumber: z26.string().min(1) })).query(async ({ input }) => {
       try {
         const container = await getContainerByNumber(input.containerNumber);
         return container;
@@ -16247,14 +17907,14 @@ var appRouter = router({
       }
     }),
     addTrackingEvent: protectedProcedure.input(
-      z23.object({
-        containerId: z23.number().int().positive(),
-        eventType: z23.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
-        eventLocation: z23.string().optional(),
-        eventDescription: z23.string().optional(),
-        eventDateTime: z23.string(),
-        documentUrl: z23.string().optional(),
-        notes: z23.string().optional()
+      z26.object({
+        containerId: z26.number().int().positive(),
+        eventType: z26.enum(["loaded", "departed", "in_transit", "arrived", "cleared", "delivered", "delayed", "customs_clearance", "other"]),
+        eventLocation: z26.string().optional(),
+        eventDescription: z26.string().optional(),
+        eventDateTime: z26.string(),
+        documentUrl: z26.string().optional(),
+        notes: z26.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -16273,7 +17933,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0636\u0627\u0641\u0629 \u062D\u062F\u062B \u0627\u0644\u062A\u062A\u0628\u0639");
       }
     }),
-    getTrackingHistory: protectedProcedure.input(z23.object({ containerId: z23.number().int().positive() })).query(async ({ input }) => {
+    getTrackingHistory: protectedProcedure.input(z26.object({ containerId: z26.number().int().positive() })).query(async ({ input }) => {
       try {
         const history = await getContainerTrackingHistory(input.containerId);
         return history;
@@ -16282,9 +17942,9 @@ var appRouter = router({
       }
     }),
     updateContainerStatus: protectedProcedure.input(
-      z23.object({
-        containerId: z23.number().int().positive(),
-        status: z23.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
+      z26.object({
+        containerId: z26.number().int().positive(),
+        status: z26.enum(["pending", "in_transit", "arrived", "cleared", "delivered", "delayed"])
       })
     ).mutation(async ({ input }) => {
       try {
@@ -16295,20 +17955,20 @@ var appRouter = router({
       }
     }),
     createShipmentDetail: protectedProcedure.input(
-      z23.object({
-        containerId: z23.number().int().positive(),
-        shipmentNumber: z23.string().min(1),
-        totalWeight: z23.number().positive(),
-        totalVolume: z23.number().optional(),
-        numberOfPackages: z23.number().int().positive(),
-        packageType: z23.string().optional(),
-        shipper: z23.string().min(1),
-        consignee: z23.string().min(1),
-        freightCharges: z23.number().optional(),
-        insuranceCharges: z23.number().optional(),
-        handlingCharges: z23.number().optional(),
-        otherCharges: z23.number().optional(),
-        notes: z23.string().optional()
+      z26.object({
+        containerId: z26.number().int().positive(),
+        shipmentNumber: z26.string().min(1),
+        totalWeight: z26.number().positive(),
+        totalVolume: z26.number().optional(),
+        numberOfPackages: z26.number().int().positive(),
+        packageType: z26.string().optional(),
+        shipper: z26.string().min(1),
+        consignee: z26.string().min(1),
+        freightCharges: z26.number().optional(),
+        insuranceCharges: z26.number().optional(),
+        handlingCharges: z26.number().optional(),
+        otherCharges: z26.number().optional(),
+        notes: z26.string().optional()
       })
     ).mutation(async ({ input, ctx }) => {
       try {
@@ -16321,7 +17981,7 @@ var appRouter = router({
         throw new Error("\u0641\u0634\u0644 \u0641\u064A \u0625\u0646\u0634\u0627\u0621 \u062A\u0641\u0627\u0635\u064A\u0644 \u0627\u0644\u0634\u062D\u0646\u0629");
       }
     }),
-    getShipmentDetail: protectedProcedure.input(z23.object({ shipmentContainerId: z23.number().int().positive() })).query(async ({ input }) => {
+    getShipmentDetail: protectedProcedure.input(z26.object({ shipmentContainerId: z26.number().int().positive() })).query(async ({ input }) => {
       try {
         const detail = await getShipmentDetail(input.shipmentContainerId);
         return detail;
@@ -16352,7 +18012,10 @@ var appRouter = router({
   notificationsCenter: notificationsCenterRouter,
   liveChat: liveChatRouter,
   notifications: notificationRouter,
-  supportAgent: supportAgentRouter
+  supportAgent: supportAgentRouter,
+  notificationsAdvanced: notificationsAdvancedRouter,
+  performanceAnalytics: performanceAnalyticsRouter,
+  ratingsAdvanced: ratingsAdvancedRouter
 });
 
 // server/_core/context.ts

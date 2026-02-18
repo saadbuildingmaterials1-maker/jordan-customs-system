@@ -59,6 +59,9 @@ import { advancedOperationsRouter } from "./routers/advanced-operations";
 import { notificationsCenterRouter } from "./routers/notifications-center";
 import { liveChatRouter, notificationRouter } from "./routers/live-chat-router";
 import { supportAgentRouter } from "./routers/support-agent-router";
+import { notificationsAdvancedRouter } from "./routers/notifications-advanced-router";
+import { performanceAnalyticsRouter } from "./routers/performance-analytics-router";
+import { ratingsAdvancedRouter } from "./routers/ratings-advanced-router";
 
 /**
  * Main Application Router
@@ -679,6 +682,9 @@ export const appRouter = router({
   liveChat: liveChatRouter,
   notifications: notificationRouter,
   supportAgent: supportAgentRouter,
+  notificationsAdvanced: notificationsAdvancedRouter,
+  performanceAnalytics: performanceAnalyticsRouter,
+  ratingsAdvanced: ratingsAdvancedRouter,
 });
 
 export type AppRouter = typeof appRouter;
