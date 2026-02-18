@@ -112,6 +112,9 @@ const AdvancedNotificationSystem = lazy(() => import('@/pages/AdvancedNotificati
 const TechnicalSupport = lazy(() => import('@/pages/TechnicalSupport'));
 const AdvancedSalesDashboard = lazy(() => import('@/pages/AdvancedSalesDashboard'));
 const ExternalSystemsIntegration = lazy(() => import('@/pages/ExternalSystemsIntegration'));
+const AdvancedHRSystem = lazy(() => import('@/pages/AdvancedHRSystem'));
+const SmartAnalyticsDashboard = lazy(() => import('@/pages/SmartAnalyticsDashboard'));
+const FinalAdvancedAlerts = lazy(() => import('@/pages/FinalAdvancedAlerts'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -225,6 +228,9 @@ function Router() {
         <Route path="/technical-support" component={TechnicalSupport} />
         <Route path="/advanced-sales-dashboard" component={AdvancedSalesDashboard} />
         <Route path="/external-systems-integration" component={ExternalSystemsIntegration} />
+        <Route path="/advanced-hr-system" component={AdvancedHRSystem} />
+        <Route path="/smart-analytics-dashboard" component={SmartAnalyticsDashboard} />
+        <Route path="/final-advanced-alerts" component={FinalAdvancedAlerts} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
