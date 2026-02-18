@@ -84,6 +84,11 @@ const ArchiveAndBackup = lazy(() => import('@/pages/ArchiveAndBackup'));
 const UserManagement = lazy(() => import('@/pages/UserManagement'));
 const ActivityLog = lazy(() => import('@/pages/ActivityLog'));
 const BranchManagement = lazy(() => import('@/pages/BranchManagement'));
+const SmartAlerts = lazy(() => import('@/pages/SmartAlerts'));
+const PerformanceDashboard = lazy(() => import('@/pages/PerformanceDashboard'));
+const ScheduledReports = lazy(() => import('@/pages/ScheduledReports'));
+const DocumentManagement = lazy(() => import('@/pages/DocumentManagement'));
+const ProjectManagement = lazy(() => import('@/pages/ProjectManagement'));
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
@@ -169,6 +174,11 @@ function Router() {
         <Route path="/user-management" component={UserManagement} />
         <Route path="/activity-log" component={ActivityLog} />
         <Route path="/branch-management" component={BranchManagement} />
+        <Route path="/smart-alerts" component={SmartAlerts} />
+        <Route path="/performance-dashboard" component={PerformanceDashboard} />
+        <Route path="/scheduled-reports" component={ScheduledReports} />
+        <Route path="/document-management" component={DocumentManagement} />
+        <Route path="/project-management" component={ProjectManagement} />
         <Route path="/payments-dashboard" component={PaymentsDashboard} />
         <Route path="/owner-dashboard" component={OwnerDashboard} />
         <Route path="/bank-accounts" component={BankAccountManagement} />
