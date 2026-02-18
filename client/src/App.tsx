@@ -133,6 +133,9 @@ const SMSWhatsAppNotifications = lazy(() => import('@/pages/SMSWhatsAppNotificat
 const PaymentsDashboard = lazy(() => import('@/pages/PaymentsDashboard'));
 const OwnerDashboard = lazy(() => import('@/pages/OwnerDashboard'));
 const Help = lazy(() => import('@/pages/Help'));
+const AdvancedLogin = lazy(() => import('@/pages/AdvancedLogin'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const InstantNotificationSystem = lazy(() => import('@/pages/InstantNotificationSystem'));
 
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -291,6 +294,9 @@ function Router() {
         
         {/* المساعدة والمعلومات */}
         <Route path="/login" component={Login} />
+        <Route path="/advanced-login" component={AdvancedLogin} />
+        <Route path="/forgot-password" component={ForgotPassword} />
+        <Route path="/instant-notifications" component={InstantNotificationSystem} />
         <Route path="/help" component={Help} />
         <Route path="/help-center" component={HelpCenter} />
         <Route path="/tutorials" component={VideoTutorials} />
