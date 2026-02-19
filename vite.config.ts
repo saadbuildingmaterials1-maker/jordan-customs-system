@@ -179,9 +179,25 @@ export default defineConfig({
       ".manus.space",
       "mp3-app.com",
       "www.mp3-app.com",
+      ".mp3-app.com", // wildcard for all subdomains
       "localhost",
       "127.0.0.1",
     ],
+    // Enable CORS for custom domains
+    cors: {
+      origin: [
+        "https://mp3-app.com",
+        "https://www.mp3-app.com",
+        "https://jordan-customs-system.manus.space",
+      ],
+      credentials: true,
+    },
+    // HMR configuration for custom domains
+    hmr: {
+      protocol: "wss",
+      host: process.env.CUSTOM_DOMAIN || undefined,
+      clientPort: 443,
+    },
     fs: {
       strict: true,
       deny: ["**/.*"],

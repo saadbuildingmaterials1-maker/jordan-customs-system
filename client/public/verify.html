@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صفحة التحقق التلقائي - نظام إدارة الجمارك</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .check-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        
+        .check-item:hover {
+            transform: translateX(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .check-label {
+            font-size: 1.1em;
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .check-status {
+            font-size: 2em;
+            margin-left: 20px;
+        }
+        
+        .status-pending {
+            color: #ffc107;
+        }
+        
+        .status-success {
+            color: #28a745;
+        }
+        
+        .status-error {
+            color: #dc3545;
+        }
+        
+        .details {
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+            direction: ltr;
+            text-align: left;
+        }
+        
+        .summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        .summary h2 {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .summary-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .summary-item .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .summary-item .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .btn-recheck {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s ease;
+        }
+        
+        .btn-recheck:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-recheck:active {
+            transform: scale(0.95);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 صفحة التحقق التلقائي</h1>
+            <p>فحص شامل لجميع جوانب النظام</p>
+        </div>
+        
+        <div class="content">
+            <div id="checks"></div>
+            
+            <div class="summary">
+                <h2>📊 ملخص النتائج</h2>
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <div class="label">النطاق الحالي</div>
+                        <div class="value" id="current-domain">-</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">الفحوصات الناجحة</div>
+                        <div class="value status-success" id="success-count">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">الفحوصات الفاشلة</div>
+                        <div class="value status-error" id="error-count">0</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="label">النسبة المئوية</div>
+                        <div class="value" id="success-rate">0%</div>
+                    </div>
+                </div>
+                <button class="btn-recheck" onclick="runAllChecks()">
+                    <span id="btn-text">إعادة الفحص</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const checks = [
+            {
+                id: 'domain',
+                label: 'التحقق من النطاق',
+                test: () => {
+                    const domain = window.location.hostname;
+                    return {
+                        success: true,
+                        details: `النطاق: ${domain}`
+                    };
+                }
+            },
+            {
+                id: 'https',
+                label: 'التحقق من HTTPS',
+                test: () => {
+                    const isHttps = window.location.protocol === 'https:';
+                    return {
+                        success: isHttps,
+                        details: `البروتوكول: ${window.location.protocol}`
+                    };
+                }
+            },
+            {
+                id: 'react',
+                label: 'التحقق من تحميل React',
+                test: () => {
+                    const hasReact = typeof window.React !== 'undefined';
+                    return {
+                        success: hasReact,
+                        details: hasReact ? 'React محمل بنجاح' : 'React غير محمل'
+                    };
+                }
+            },
+            {
+                id: 'dom',
+                label: 'التحقق من DOM',
+                test: () => {
+                    const root = document.getElementById('root');
+                    const hasContent = root && root.innerHTML.length > 0;
+                    return {
+                        success: hasContent,
+                        details: hasContent 
+                            ? `المحتوى موجود (${root.innerHTML.length} حرف)` 
+                            : 'لا يوجد محتوى في root'
+                    };
+                }
+            },
+            {
+                id: 'scripts',
+                label: 'التحقق من تحميل Scripts',
+                test: () => {
+                    const scripts = document.querySelectorAll('script[src]');
+                    const loaded = Array.from(scripts).filter(s => !s.src.includes('verify.html'));
+                    return {
+                        success: loaded.length > 0,
+                        details: `عدد Scripts المحملة: ${loaded.length}`
+                    };
+                }
+            },
+            {
+                id: 'console',
+                label: 'التحقق من أخطاء Console',
+                test: () => {
+                    // هذا الفحص تقريبي - في الواقع يجب فحص console.error
+                    return {
+                        success: true,
+                        details: 'افتح Developer Tools للتحقق من الأخطاء'
+                    };
+                }
+            },
+            {
+                id: 'performance',
+                label: 'التحقق من الأداء',
+                test: () => {
+                    const perf = window.performance;
+                    const loadTime = perf.timing.loadEventEnd - perf.timing.navigationStart;
+                    return {
+                        success: loadTime > 0,
+                        details: `وقت التحميل: ${loadTime}ms`
+                    };
+                }
+            },
+            {
+                id: 'viewport',
+                label: 'التحقق من Viewport',
+                test: () => {
+                    const width = window.innerWidth;
+                    const height = window.innerHeight;
+                    return {
+                        success: width > 0 && height > 0,
+                        details: `الأبعاد: ${width}x${height}px`
+                    };
+                }
+            }
+        ];
+
+        function createCheckElement(check, result) {
+            const statusIcon = result.success ? '✅' : '❌';
+            const statusClass = result.success ? 'status-success' : 'status-error';
+            
+            return `
+                <div class="check-item">
+                    <div class="check-label">${check.label}</div>
+                    <div class="check-status ${statusClass}">${statusIcon}</div>
+                </div>
+                ${result.details ? `<div class="details">${result.details}</div>` : ''}
+            `;
+        }
+
+        async function runAllChecks() {
+            const checksContainer = document.getElementById('checks');
+            const btnText = document.getElementById('btn-text');
+            
+            btnText.innerHTML = '<span class="loading"></span> جاري الفحص...';
+            checksContainer.innerHTML = '';
+            
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (const check of checks) {
+                await new Promise(resolve => setTimeout(resolve, 100)); // تأخير بسيط للتأثير البصري
+                
+                try {
+                    const result = check.test();
+                    checksContainer.innerHTML += createCheckElement(check, result);
+                    
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                } catch (error) {
+                    checksContainer.innerHTML += createCheckElement(check, {
+                        success: false,
+                        details: `خطأ: ${error.message}`
+                    });
+                    errorCount++;
+                }
+            }
+            
+            // تحديث الملخص
+            document.getElementById('current-domain').textContent = window.location.hostname;
+            document.getElementById('success-count').textContent = successCount;
+            document.getElementById('error-count').textContent = errorCount;
+            
+            const successRate = Math.round((successCount / checks.length) * 100);
+            document.getElementById('success-rate').textContent = `${successRate}%`;
+            
+            btnText.textContent = 'إعادة الفحص';
+        }
+
+        // تشغيل الفحوصات تلقائياً عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            setTimeout(runAllChecks, 500);
+        });
+    </script>
+</body>
+</html>

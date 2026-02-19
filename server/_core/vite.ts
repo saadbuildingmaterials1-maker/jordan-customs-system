@@ -22,12 +22,22 @@ export async function setupVite(app: Express, server: Server) {
   // Vite middleware MUST come first to handle source file transformations
   app.use(vite.middlewares);
   
+  // Serve static files from client/public directory
+  const publicPath = path.resolve(import.meta.dirname, "../..", "client", "public");
+  app.use(express.static(publicPath));
+  
   // Fallback to index.html for client-side routing (but NOT for source files)
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
-    // Skip if this is an API route or source file request
-    if (url.startsWith("/api/") || url.startsWith("/@") || url.includes(".")) {
+    // Skip if this is an API route, Vite internal, or file with extension
+    // Improved: match actual file extensions instead of any dot
+    if (
+      url.startsWith("/api/") || 
+      url.startsWith("/@") ||
+      url.startsWith("/__manus__/") ||
+      url.match(/\.(js|jsx|ts|tsx|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|mp4|webm|pdf|txt|html)$/)
+    ) {
       return next();
     }
 
