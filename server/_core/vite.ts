@@ -1,4 +1,5 @@
-import express, { type Express } from "express";
+import type { Express } from "express";
+import express from "express";
 import fs from "fs";
 import { type Server } from "http";
 import path from "path";
@@ -22,21 +23,19 @@ export async function setupVite(app: Express, server: Server) {
   // Vite middleware MUST come first to handle source file transformations
   app.use(vite.middlewares);
   
-  // Serve static files from client/public directory
+  // Serve static files from client/public directory BEFORE fallback
   const publicPath = path.resolve(import.meta.dirname, "../..", "client", "public");
-  app.use(express.static(publicPath));
+  app.use(express.static(publicPath, { index: false })); // Disable auto index.html serving
   
-  // Fallback to index.html for client-side routing (but NOT for source files)
+  // Fallback to index.html for client-side routing
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
-    // Skip if this is an API route, Vite internal, or file with extension
-    // Improved: match actual file extensions instead of any dot
+    // Skip API routes and Vite internals
     if (
       url.startsWith("/api/") || 
       url.startsWith("/@") ||
-      url.startsWith("/__manus__/") ||
-      url.match(/\.(js|jsx|ts|tsx|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|mp4|webm|pdf|txt|html)$/)
+      url.startsWith("/__manus__/")
     ) {
       return next();
     }
@@ -78,6 +77,6 @@ export function serveStatic(app: Express) {
 
   // fall through to index.html if the file doesn't exist
   app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.sendFile(path.join(distPath, "index.html"));
   });
 }
