@@ -1,20 +1,34 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
+import { lazy, Suspense } from "react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+
+// Lazy load pages for better code splitting
+const Home = lazy(() => import("./pages/Home"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+
+// Loading component for Suspense fallback
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+  );
+}
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path={"/"} component={Home} />
+        <Route path={"/404"} component={NotFound} />
+        {/* Final fallback route */}
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
   );
 }
 

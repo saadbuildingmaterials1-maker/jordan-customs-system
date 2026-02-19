@@ -167,6 +167,39 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Vendor libraries - split into separate chunks
+          if (id.includes("node_modules")) {
+            // Syntax highlighting (very large) - must come first
+            if (id.includes("shiki") || id.includes("@shikijs")) {
+              return "vendor-syntax";
+            }
+            // Mermaid diagrams (large)
+            if (id.includes("mermaid") || id.includes("cytoscape")) {
+              return "vendor-diagrams";
+            }
+            // React core libraries - must come after large libraries
+            if (id.includes("react") || id.includes("react-dom") || id.includes("scheduler")) {
+              return "vendor-react";
+            }
+            // tRPC and API libraries
+            if (id.includes("@trpc") || id.includes("@tanstack/react-query")) {
+              return "vendor-api";
+            }
+            // UI component libraries
+            if (id.includes("@radix-ui") || id.includes("class-variance-authority") || id.includes("clsx")) {
+              return "vendor-ui";
+            }
+            // All other vendor libraries
+            return "vendor";
+          }
+        },
+      },
+    },
+    // Increase chunk size warning limit for large vendor chunks
+    chunkSizeWarningLimit: 600,
   },
   server: {
     host: true,
