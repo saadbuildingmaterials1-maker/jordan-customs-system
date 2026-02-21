@@ -8,6 +8,10 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 // Lazy load pages for better code splitting
 const Home = lazy(() => import("./pages/Home"));
 const Calculator = lazy(() => import("./pages/Calculator"));
+const CustomsDeclaration = lazy(() => import("./pages/CustomsDeclaration"));
+const ContainerTracking = lazy(() => import("./pages/ContainerTracking"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Shipments = lazy(() => import("./pages/Shipments"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Loading component for Suspense fallback
@@ -26,6 +30,10 @@ function Router() {
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/calculator"} component={Calculator} />
+        <Route path={"/customs-declaration"} component={CustomsDeclaration} />
+        <Route path={"/container-tracking"} component={ContainerTracking} />
+        <Route path={"/dashboard"} component={Dashboard} />
+        <Route path={"/shipments"} component={Shipments} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />

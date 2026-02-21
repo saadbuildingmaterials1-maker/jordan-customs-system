@@ -29,24 +29,18 @@ export default function Home() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/calculator">
+            <Link href="/dashboard">
               <Button size="lg" className="text-lg px-8 py-6 w-full sm:w-auto">
-                <Calculator className="w-5 h-5 ml-2" />
-                احسب التكاليف الآن
+                <Package className="w-5 h-5 ml-2" />
+                لوحة التحكم
               </Button>
             </Link>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="text-lg px-8 py-6 w-full sm:w-auto"
-              onClick={() => {
-                const featuresSection = document.getElementById('features');
-                featuresSection?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              <Package className="w-5 h-5 ml-2" />
-              تعرف على النظام
-            </Button>
+            <Link href="/customs-declaration">
+              <Button size="lg" variant="outline" className="text-lg px-8 py-6 w-full sm:w-auto">
+                <Calculator className="w-5 h-5 ml-2" />
+                البيان الجمركي
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -152,10 +146,10 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Link href="/calculator">
+            <Link href="/container-tracking">
               <Button size="lg" className="text-lg px-8 py-6">
-                <Calculator className="w-5 h-5 ml-2" />
-                ابدأ الحساب الآن
+                <Package className="w-5 h-5 ml-2" />
+                تتبع الحاويات
               </Button>
             </Link>
           </div>
@@ -177,6 +171,12 @@ export default function Home() {
                 <Button size="lg" variant="secondary" className="text-lg px-8 py-6 w-full sm:w-auto">
                   <Calculator className="w-5 h-5 ml-2" />
                   احسب التكاليف
+                </Button>
+              </Link>
+              <Link href="/shipments">
+                <Button size="lg" variant="outline" className="text-lg px-8 py-6 w-full sm:w-auto bg-white text-blue-600 hover:bg-blue-50">
+                  <Package className="w-5 h-5 ml-2" />
+                  إدارة الشحنات
                 </Button>
               </Link>
             </div>
