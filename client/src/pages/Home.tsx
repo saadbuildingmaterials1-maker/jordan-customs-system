@@ -35,7 +35,15 @@ export default function Home() {
                 احسب التكاليف الآن
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6 w-full sm:w-auto">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="text-lg px-8 py-6 w-full sm:w-auto"
+              onClick={() => {
+                const featuresSection = document.getElementById('features');
+                featuresSection?.scrollIntoView({ behavior: 'smooth' });
+              }}
+            >
               <Package className="w-5 h-5 ml-2" />
               تعرف على النظام
             </Button>
@@ -44,7 +52,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-20">
+      <section id="features" className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-slate-900 dark:text-white mb-4">
             لماذا تختار نظامنا؟
