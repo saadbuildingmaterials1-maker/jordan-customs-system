@@ -186,13 +186,49 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-slate-900 text-white py-12">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-slate-400">
-            © 2026 نظام إدارة تكاليف الشحن والجمارك الأردنية. جميع الحقوق محفوظة.
-          </p>
-          <p className="text-slate-500 text-sm mt-2">
-            هذا النظام يوفر تقديرات تقريبية. للحصول على أرقام دقيقة، يرجى مراجعة دائرة الجمارك الأردنية.
-          </p>
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="font-bold text-lg mb-4">نظام الجمارك</h3>
+              <p className="text-slate-400 text-sm">
+                نظام متكامل لحساب تكاليف الشحن والجمارك الأردنية
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg mb-4">روابط سريعة</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/calculator" className="text-slate-400 hover:text-white transition-colors">حاسبة التكاليف</Link></li>
+                <li><Link href="/customs-declaration" className="text-slate-400 hover:text-white transition-colors">البيان الجمركي</Link></li>
+                <li><Link href="/container-tracking" className="text-slate-400 hover:text-white transition-colors">تتبع الحاويات</Link></li>
+                <li><Link href="/dashboard" className="text-slate-400 hover:text-white transition-colors">لوحة التحكم</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg mb-4">معلومات</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link href="/about" className="text-slate-400 hover:text-white transition-colors">من نحن</Link></li>
+                <li><Link href="/developer" className="text-slate-400 hover:text-white transition-colors">المطور</Link></li>
+                <li><Link href="/privacy" className="text-slate-400 hover:text-white transition-colors">سياسة الخصوصية</Link></li>
+                <li><Link href="/terms" className="text-slate-400 hover:text-white transition-colors">شروط الاستخدام</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg mb-4">تواصل معنا</h3>
+              <ul className="space-y-2 text-sm text-slate-400">
+                <li>سعد النابلسي</li>
+                <li dir="ltr">00962795917424</li>
+                <li className="break-all">saad.building.materials1@gmail.com</li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-slate-800 pt-8 text-center">
+            <p className="text-slate-400">
+              © 2026 نظام إدارة تكاليف الشحن والجمارك الأردنية. جميع الحقوق محفوظة.
+            </p>
+            <p className="text-slate-500 text-sm mt-2">
+              هذا النظام يوفر تقديرات تقريبية. للحصول على أرقام دقيقة، يرجى مراجعة دائرة الجمارك الأردنية.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
