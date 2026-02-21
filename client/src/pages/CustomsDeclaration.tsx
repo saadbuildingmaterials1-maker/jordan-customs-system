@@ -63,18 +63,11 @@ export default function CustomsDeclaration() {
   // Save declaration mutation
   const saveDeclarationMutation = trpc.customsDeclarations.create.useMutation({
     onSuccess: () => {
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ البيان الجمركي في قاعدة البيانات",
-      });
+      toast.success("تم حفظ البيان الجمركي في قاعدة البيانات");
       utils.customsDeclarations.list.invalidate();
     },
     onError: (error) => {
-      toast({
-        title: "خطأ في الحفظ",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`خطأ في الحفظ: ${error.message}`);
     },
   });
 
@@ -84,11 +77,7 @@ export default function CustomsDeclaration() {
     if (!file) return;
 
     if (file.type !== "application/pdf") {
-      toast({
-        title: "خطأ",
-        description: "يرجى رفع ملف PDF فقط",
-        variant: "destructive",
-      });
+      toast.error("يرجى رفع ملف PDF فقط");
       return;
     }
 
@@ -154,10 +143,7 @@ export default function CustomsDeclaration() {
 
       setAiProgress("اكتمل الاستخراج بنجاح! ✓");
       
-      toast({
-        title: "تم الاستيراد بنجاح",
-        description: "تم استخراج البيانات من البيان الجمركي تلقائياً باستخدام AI",
-      });
+      toast.success("تم استخراج البيانات من البيان الجمركي تلقائياً باستخدام AI");
 
       // Auto-calculate distribution
       setTimeout(() => {
@@ -166,11 +152,7 @@ export default function CustomsDeclaration() {
       }, 1000);
 
     } catch (error) {
-      toast({
-        title: "خطأ",
-        description: "فشل في معالجة الملف. يرجى المحاولة مرة أخرى.",
-        variant: "destructive",
-      });
+      toast.error("فشل في معالجة الملف. يرجى المحاولة مرة أخرى.");
       setAiProgress("");
     } finally {
       setIsUploading(false);
@@ -182,11 +164,7 @@ export default function CustomsDeclaration() {
 
   const calculateDistribution = () => {
     if (items.length === 0 || totalGoodsValue === 0) {
-      toast({
-        title: "خطأ",
-        description: "لا توجد أصناف لتوزيع التكاليف عليها",
-        variant: "destructive",
-      });
+      toast.error("لا توجد أصناف لتوزيع التكاليف عليها");
       return;
     }
 
@@ -212,45 +190,30 @@ export default function CustomsDeclaration() {
 
     setItems(distributedItems);
 
-    toast({
-      title: "تم توزيع التكاليف",
-      description: "تم توزيع التكاليف على الأصناف بنجاح",
-    });
+    toast.success("تم توزيع التكاليف على الأصناف بنجاح");
   };
 
   const handleSaveDeclaration = () => {
     if (!declarationNumber || !declarationDate || !importerName) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      });
+      toast.error("يرجى ملء جميع الحقول المطلوبة");
       return;
     }
 
     if (items.length === 0) {
-      toast({
-        title: "خطأ",
-        description: "يرجى إضافة صنف واحد على الأقل",
-        variant: "destructive",
-      });
+      toast.error("يرجى إضافة صنف واحد على الأقل");
       return;
     }
 
     saveDeclarationMutation.mutate({
       declarationNumber,
       declarationDate,
-      customsCenter,
       importerName,
       importerTaxId,
-      importerPhone,
-      containerNumber,
-      countryOfOrigin,
+      originCountry: countryOfOrigin,
       totalValue: totalGoodsValue,
       salesTax: salesTaxAmount,
       additionalFees,
       declarationFees,
-      totalCost: grandTotal,
       items: items.map(item => ({
         itemCode: item.itemCode,
         itemDescription: item.itemDescription,
@@ -270,10 +233,7 @@ export default function CustomsDeclaration() {
   };
 
   const handleExportPDF = () => {
-    toast({
-      title: "جاري التصدير",
-      description: "سيتم تحميل البيان كملف PDF قريباً",
-    });
+    toast.success("سيتم تحميل البيان كملف PDF قريباً");
     // TODO: Implement PDF export
   };
 

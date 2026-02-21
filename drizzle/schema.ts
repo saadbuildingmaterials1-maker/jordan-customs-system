@@ -73,6 +73,7 @@ export type InsertShipmentStatusHistory = typeof shipmentStatusHistory.$inferIns
 // Customs declarations table (based on Jordanian customs declaration)
 export const customsDeclarations = mysqlTable("customsDeclarations", {
   id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(), // link to user
   containerId: int("containerId"), // link to container (optional)
   declarationNumber: varchar("declarationNumber", { length: 100 }).notNull().unique(),
   declarationDate: timestamp("declarationDate").notNull(),

@@ -61,14 +61,22 @@ export default function Suppliers() {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
 
   // New supplier form
-  const [newSupplier, setNewSupplier] = useState({
+  const [newSupplier, setNewSupplier] = useState<{
+    name: string;
+    companyName: string;
+    phone: string;
+    email: string;
+    address: string;
+    totalAmount: number;
+    status: "active" | "inactive" | "blocked";
+  }>({
     name: "",
     companyName: "",
     phone: "",
     email: "",
     address: "",
     totalAmount: 0,
-    status: "active" as const
+    status: "active"
   });
 
   // New payment form
@@ -106,17 +114,10 @@ export default function Suppliers() {
         totalAmount: 0,
         status: "active"
       });
-      toast({
-        title: "تم بنجاح",
-        description: "تم إضافة المورد بنجاح",
-      });
+      toast.success("تم إضافة المورد بنجاح");
     },
     onError: (error) => {
-      toast({
-        title: "خطأ",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`خطأ: ${error.message}`);
     }
   });
 
@@ -124,20 +125,14 @@ export default function Suppliers() {
     onSuccess: () => {
       utils.suppliers.list.invalidate();
       setSelectedSupplier(null);
-      toast({
-        title: "تم بنجاح",
-        description: "تم تحديث المورد بنجاح",
-      });
+      toast.success("تم تحديث المورد بنجاح");
     }
   });
 
   const deleteSupplier = trpc.suppliers.delete.useMutation({
     onSuccess: () => {
       utils.suppliers.list.invalidate();
-      toast({
-        title: "تم بنجاح",
-        description: "تم حذف المورد بنجاح",
-      });
+      toast.success("تم حذف المورد بنجاح");
     }
   });
 
@@ -153,10 +148,7 @@ export default function Suppliers() {
         referenceNumber: "",
         notes: ""
       });
-      toast({
-        title: "تم بنجاح",
-        description: "تم تسجيل الدفعة بنجاح",
-      });
+      toast.success("تم تسجيل الدفعة بنجاح");
     }
   });
 
@@ -173,21 +165,14 @@ export default function Suppliers() {
         unit: "قطعة",
         category: ""
       });
-      toast({
-        title: "تم بنجاح",
-        description: "تم إضافة الصنف بنجاح",
-      });
+      toast.success("تم إضافة الصنف بنجاح");
     }
   });
 
   // Handlers
   const handleAddSupplier = () => {
     if (!newSupplier.name || !newSupplier.companyName || !newSupplier.phone) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      });
+      toast.error("خطأ: الرجاء ملء جميع الحقول المطلوبة");
       return;
     }
 
@@ -199,11 +184,7 @@ export default function Suppliers() {
 
   const handleAddPayment = () => {
     if (!newPayment.supplierId || newPayment.amount <= 0) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      });
+      toast.error("خطأ: الرجاء ملء جميع الحقول المطلوبة");
       return;
     }
 
@@ -215,11 +196,7 @@ export default function Suppliers() {
 
   const handleAddItem = () => {
     if (!newItem.supplierId || !newItem.itemName || newItem.unitPrice <= 0) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء ملء جميع الحقول المطلوبة",
-        variant: "destructive",
-      });
+      toast.error("خطأ: الرجاء ملء جميع الحقول المطلوبة");
       return;
     }
 
@@ -238,7 +215,7 @@ export default function Suppliers() {
   // Filter suppliers
   const filteredSuppliers = suppliers.filter(supplier => {
     const matchesSearch = supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         supplier.companyName.toLowerCase().includes(searchTerm.toLowerCase());
+                         (supplier.companyName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || supplier.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -375,7 +352,7 @@ export default function Suppliers() {
                   <Label htmlFor="status">الحالة</Label>
                   <Select 
                     value={newSupplier.status} 
-                    onValueChange={(value: "active" | "inactive" | "blocked") => setNewSupplier({...newSupplier, status: value})}
+                    onValueChange={(value) => setNewSupplier({...newSupplier, status: value as "active" | "inactive" | "blocked"})}
                   >
                     <SelectTrigger>
                       <SelectValue />

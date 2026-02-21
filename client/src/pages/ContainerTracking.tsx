@@ -19,11 +19,7 @@ export default function ContainerTracking() {
 
   const handleSearch = () => {
     if (!containerNumber.trim()) {
-      toast({
-        title: "خطأ",
-        description: "يرجى إدخال رقم الحاوية",
-        variant: "destructive",
-      });
+      toast.error("يرجى إدخال رقم الحاوية");
       return;
     }
 
@@ -121,10 +117,7 @@ export default function ContainerTracking() {
       });
       setIsSearching(false);
       
-      toast({
-        title: "تم العثور على الحاوية",
-        description: `تم تحميل معلومات الحاوية ${containerNumber.toUpperCase()}`,
-      });
+      toast.success(`تم تحميل معلومات الحاوية ${containerNumber.toUpperCase()}`);
     }, 1500);
   };
 
@@ -156,12 +149,9 @@ export default function ContainerTracking() {
 
   const toggleNotifications = () => {
     setNotifications(!notifications);
-    toast({
-      title: notifications ? "تم إيقاف الإشعارات" : "تم تفعيل الإشعارات",
-      description: notifications 
-        ? "لن تتلقى إشعارات عند تحديث حالة الحاوية" 
-        : "ستتلقى إشعارات فورية عند تحديث حالة الحاوية",
-    });
+    toast.success(notifications 
+      ? "لن تتلقى إشعارات عند تحديث حالة الحاوية" 
+      : "ستتلقى إشعارات فورية عند تحديث حالة الحاوية");
   };
 
   return (

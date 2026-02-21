@@ -135,13 +135,13 @@ export async function createShipment(data: Omit<InsertShipment, 'trackingNumber'
   
   // Add initial status
   await db.insert(shipmentStatusHistory).values({
-    shipmentId: Number(result.insertId),
+    shipmentId: Number((result as any).insertId),
     status: 'pending',
     location: data.senderCountry,
     notes: 'Shipment created',
   });
   
-  return { id: Number(result.insertId), trackingNumber };
+  return { id: Number((result as any).insertId), trackingNumber };
 }
 
 export async function updateShipmentStatus(
@@ -258,7 +258,7 @@ export async function createCustomsDeclaration(data: any) {
     totalCost,
   });
   
-  const declarationId = Number(result.insertId);
+  const declarationId = Number((result as any).insertId);
   
   // Insert items
   if (items && items.length > 0) {
@@ -301,7 +301,7 @@ export async function trackContainer(containerNumber: string) {
   const db = await getDb();
   if (!db) return null;
   
-  const { containers, containerTracking } = await import("../drizzle/schema");
+  const { containers, containerTrackingEvents } = await import("../drizzle/schema");
   
   const containerResult = await db.select().from(containers)
     .where(eq(containers.containerNumber, containerNumber))
@@ -312,9 +312,9 @@ export async function trackContainer(containerNumber: string) {
   const container = containerResult[0];
   
   // Get tracking history
-  const history = await db.select().from(containerTracking)
-    .where(eq(containerTracking.containerId, container.id))
-    .orderBy(desc(containerTracking.eventDate));
+  const history = await db.select().from(containerTrackingEvents)
+    .where(eq(containerTrackingEvents.containerId, container.id))
+    .orderBy(desc(containerTrackingEvents.eventDate));
   
   return { container, history };
 }
@@ -323,18 +323,19 @@ export async function createContainer(data: any) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const { containers, containerTracking } = await import("../drizzle/schema");
+  const { containers, containerTrackingEvents } = await import("../drizzle/schema");
   
   const result = await db.insert(containers).values(data);
   
-  const containerId = Number(result.insertId);
+  const containerId = Number((result as any).insertId);
   
   // Add initial tracking event
-  await db.insert(containerTracking).values({
+  await db.insert(containerTrackingEvents).values({
     containerId,
     eventType: 'container_created',
     location: data.originPort,
     description: 'Container registered in system',
+    eventDate: new Date(),
   });
   
   return { id: containerId };
@@ -372,7 +373,7 @@ export async function createSupplier(data: any) {
   
   const result = await db.insert(suppliers).values(data);
   
-  return { id: Number(result.insertId) };
+  return { id: Number((result as any).insertId) };
 }
 
 export async function updateSupplier(id: number, userId: number, data: any) {
@@ -448,7 +449,7 @@ export async function createSupplierPayment(data: any) {
       .where(eq(suppliers.id, data.supplierId));
   }
   
-  return { id: Number(result.insertId) };
+  return { id: Number((result as any).insertId) };
 }
 
 // Supplier Items helpers
@@ -475,7 +476,7 @@ export async function createSupplierItem(data: any) {
   
   const result = await db.insert(supplierItems).values(data);
   
-  return { id: Number(result.insertId) };
+  return { id: Number((result as any).insertId) };
 }
 
 export async function updateSupplierItem(id: number, userId: number, data: any) {

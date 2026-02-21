@@ -42,19 +42,12 @@ export default function Shipments() {
 
   const createMutation = trpc.shipments.create.useMutation({
     onSuccess: () => {
-      toast({
-        title: "تم إنشاء الشحنة بنجاح",
-        description: "تم إضافة الشحنة إلى النظام",
-      });
+      toast.success("تم إنشاء الشحنة بنجاح");
       setOpen(false);
       utils.shipments.list.invalidate();
     },
     onError: (error) => {
-      toast({
-        title: "خطأ",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error(`خطأ: ${error.message}`);
     },
   });
 
