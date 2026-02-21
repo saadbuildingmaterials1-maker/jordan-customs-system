@@ -402,3 +402,25 @@
 - [x] إضافة رسائل تأكيد للحذف
 - [x] إضافة loading states لجميع العمليات
 - [ ] إضافة pagination للموردين
+
+
+## نظام التجربة المجانية 7 أيام
+
+### تحديث قاعدة البيانات
+- [x] إضافة حقل trialStartDate إلى جدول user
+- [x] إضافة حقل trialEndDate إلى جدول user
+- [x] إضافة حقل subscriptionStatus (trial/active/expired)
+
+### منطق التحقق
+- [x] إضافة procedure للتحقق من صلاحية التجربة (auth.checkTrial)
+- [x] إضافة تحديث تلقائي لحالة التجربة عند انتهائها
+- [x] إضافة getUserById helper
+- [x] إضافة updateUserSubscriptionStatus helper
+- [x] إضافة initializeUserTrial helper
+
+### واجهة التجربة
+- [x] إضافة TrialBanner مع تنبيه بالأيام المتبقية
+- [x] إضافة تنبيه خاص عند انتهاء التجربة
+- [x] إضافة زر الاشتراك/الترقية
+- [x] إضافة ألوان مختلفة حسب حالة التجربة
+- [x] إضافة Banner في Dashboard

@@ -521,3 +521,42 @@ export async function deleteSupplierItem(id: number, userId: number) {
   
   return { success: true };
 }
+
+
+// Trial and subscription helpers
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return result[0] || null;
+}
+
+export async function updateUserSubscriptionStatus(
+  userId: number,
+  status: "trial" | "active" | "expired"
+) {
+  const db = await getDb();
+  if (!db) return;
+  
+  await db.update(users)
+    .set({ subscriptionStatus: status, updatedAt: new Date() })
+    .where(eq(users.id, userId));
+}
+
+export async function initializeUserTrial(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  
+  const trialStart = new Date();
+  const trialEnd = new Date(trialStart.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  
+  await db.update(users)
+    .set({ 
+      subscriptionStatus: "trial",
+      trialStartDate: trialStart,
+      trialEndDate: trialEnd,
+      updatedAt: new Date()
+    })
+    .where(eq(users.id, userId));
+}
