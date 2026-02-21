@@ -1,0 +1,124 @@
+{
+  "query": "SHOW TABLES;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user QB2fahn7CwkdyG9.root --database 5j9uG3pftfjEb3akdTmTAd --execute SHOW TABLES;",
+  "rows": [
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "__drizzle_migrations"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "analytics_dashboard"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "analytics_events"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "analytics_metrics"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "audit_log"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "bank_accounts"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "bank_notifications"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "bank_transactions"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "bank_verifications"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "chart_of_accounts"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "containerTrackingEvents"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "containers"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "customsDeclarations"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "customs_declarations"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "declarationItems"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "factories"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "financial_reports"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "financial_summaries"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "general_ledger"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "invoice_items"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "invoices"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "items"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "notification_log"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "notification_preferences"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "notifications"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "payments"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "refunds"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "shipmentStatusHistory"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "shipment_details"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "shipments"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "stripe_invoices"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "subscription_invoices"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "subscriptions"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "tracking_events"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "transactions"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "trial_balance"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "users"
+    },
+    {
+      "Tables_in_5j9uG3pftfjEb3akdTmTAd": "variances"
+    }
+  ],
+  "messages": [],
+  "stdout": "Tables_in_5j9uG3pftfjEb3akdTmTAd\n__drizzle_migrations\nanalytics_dashboard\nanalytics_events\nanalytics_metrics\naudit_log\nbank_accounts\nbank_notifications\nbank_transactions\nbank_verifications\nchart_of_accounts\ncontainerTrackingEvents\ncontainers\ncustomsDeclarations\ncustoms_declarations\ndeclarationItems\nfactories\nfinancial_reports\nfinancial_summaries\ngeneral_ledger\ninvoice_items\ninvoices\nitems\nnotification_log\nnotification_preferences\nnotifications\npayments\nrefunds\nshipmentStatusHistory\nshipment_details\nshipments\nstripe_invoices\nsubscription_invoices\nsubscriptions\ntracking_events\ntransactions\ntrial_balance\nusers\nvariances\n",
+  "stderr": "",
+  "execution_time_ms": 1592
+}

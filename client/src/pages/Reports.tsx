@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Download, FileText, TrendingUp, DollarSign, Package, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import * as XLSX from "xlsx";
 
 export default function Reports() {
   const [dateFrom, setDateFrom] = useState("");
@@ -76,13 +78,125 @@ export default function Reports() {
   ];
 
   const handleExportPDF = () => {
-    toast.success("جاري تصدير التقرير كملف PDF...");
-    // TODO: Implement PDF export
+    try {
+      const doc = new jsPDF();
+      
+      // Add Arabic font support (using default for now)
+      doc.setFont("helvetica");
+      doc.setFontSize(16);
+      doc.text("Jordan Customs System - Report", 105, 20, { align: "center" });
+      
+      doc.setFontSize(12);
+      doc.text(`Date Range: ${dateFrom || "N/A"} - ${dateTo || "N/A"}`, 20, 35);
+      
+      // KPIs
+      doc.setFontSize(14);
+      doc.text("Key Performance Indicators", 20, 50);
+      doc.setFontSize(10);
+      let yPos = 60;
+      kpis.forEach((kpi, index) => {
+        doc.text(`${index + 1}. ${kpi.title}: ${kpi.value} (${kpi.change})`, 20, yPos);
+        yPos += 8;
+      });
+      
+      // Monthly Data
+      yPos += 10;
+      doc.setFontSize(14);
+      doc.text("Monthly Costs", 20, yPos);
+      yPos += 10;
+      doc.setFontSize(10);
+      monthlyData.forEach((month) => {
+        doc.text(
+          `${month.month}: Customs ${month.customs} JD, Suppliers ${month.suppliers} JD, Shipments ${month.shipments} JD`,
+          20,
+          yPos
+        );
+        yPos += 8;
+      });
+      
+      // Top Suppliers
+      yPos += 10;
+      doc.setFontSize(14);
+      doc.text("Top Suppliers", 20, yPos);
+      yPos += 10;
+      doc.setFontSize(10);
+      topSuppliers.forEach((supplier, index) => {
+        doc.text(
+          `${index + 1}. ${supplier.name}: ${supplier.amount} JD (${supplier.shipments} shipments)`,
+          20,
+          yPos
+        );
+        yPos += 8;
+      });
+      
+      // Save PDF
+      doc.save(`customs-report-${Date.now()}.pdf`);
+      toast.success("تم تصدير التقرير كملف PDF بنجاح!");
+    } catch (error) {
+      console.error("Error exporting PDF:", error);
+      toast.error("حدث خطأ أثناء تصدير التقرير");
+    }
   };
 
   const handleExportExcel = () => {
-    toast.success("جاري تصدير التقرير كملف Excel...");
-    // TODO: Implement Excel export
+    try {
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      
+      // KPIs Sheet
+      const kpisData = kpis.map((kpi) => ({
+        "المؤشر": kpi.title,
+        "القيمة": kpi.value,
+        "التغيير": kpi.change,
+      }));
+      const kpisSheet = XLSX.utils.json_to_sheet(kpisData);
+      XLSX.utils.book_append_sheet(wb, kpisSheet, "KPIs");
+      
+      // Monthly Data Sheet
+      const monthlyDataFormatted = monthlyData.map((month) => ({
+        "الشهر": month.month,
+        "رسوم جمركية": month.customs,
+        "مدفوعات موردين": month.suppliers,
+        "تكاليف شحنات": month.shipments,
+        "الإجمالي": month.customs + month.suppliers + month.shipments,
+      }));
+      const monthlySheet = XLSX.utils.json_to_sheet(monthlyDataFormatted);
+      XLSX.utils.book_append_sheet(wb, monthlySheet, "Monthly Costs");
+      
+      // Top Suppliers Sheet
+      const suppliersData = topSuppliers.map((supplier, index) => ({
+        "الترتيب": index + 1,
+        "المورد": supplier.name,
+        "المبلغ (دينار)": supplier.amount,
+        "عدد الشحنات": supplier.shipments,
+      }));
+      const suppliersSheet = XLSX.utils.json_to_sheet(suppliersData);
+      XLSX.utils.book_append_sheet(wb, suppliersSheet, "Top Suppliers");
+      
+      // Cost Distribution Sheet
+      const costDistData = costDistribution.map((cost) => ({
+        "الفئة": cost.category,
+        "النسبة %": cost.value,
+      }));
+      const costDistSheet = XLSX.utils.json_to_sheet(costDistData);
+      XLSX.utils.book_append_sheet(wb, costDistSheet, "Cost Distribution");
+      
+      // Shipments by Status Sheet
+      const shipmentsData = shipmentsByStatus.map((shipment) => ({
+        "الحالة": shipment.status,
+        "العدد": shipment.count,
+        "النسبة %": shipment.percentage,
+      }));
+      const shipmentsSheet = XLSX.utils.json_to_sheet(shipmentsData);
+      XLSX.utils.book_append_sheet(wb, shipmentsSheet, "Shipments by Status");
+      
+      // Save Excel file
+      XLSX.writeFile(wb, `customs-report-${Date.now()}.xlsx`);
+      toast.success("تم تصدير التقرير كملف Excel بنجاح!");
+    } catch (error) {
+      console.error("Error exporting Excel:", error);
+      toast.error("حدث خطأ أثناء تصدير التقرير");
+    }
   };
 
   const maxMonthlyValue = Math.max(...monthlyData.flatMap(d => [d.customs, d.suppliers, d.shipments]));

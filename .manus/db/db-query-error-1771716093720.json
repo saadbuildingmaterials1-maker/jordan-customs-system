@@ -1,0 +1,8 @@
+{
+  "query": "ALTER TABLE user ADD COLUMN subscriptionStatus TEXT DEFAULT 'trial';\nALTER TABLE user ADD COLUMN trialStartDate INTEGER;\nALTER TABLE user ADD COLUMN trialEndDate INTEGER;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user QB2fahn7CwkdyG9.root --database 5j9uG3pftfjEb3akdTmTAd --execute ALTER TABLE user ADD COLUMN subscriptionStatus TEXT DEFAULT 'trial';\nALTER TABLE user ADD COLUMN trialStartDate INTEGER;\nALTER TABLE user ADD COLUMN trialEndDate INTEGER;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 1: Table '5j9ug3pftfjeb3akdtmtad.user' doesn't exist"
+  ]
+}
