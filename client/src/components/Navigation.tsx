@@ -33,6 +33,7 @@ export default function Navigation() {
   const secondaryNavItems = [
     { href: "/about", label: "من نحن", icon: Info },
     { href: "/developer", label: "المطور", icon: User },
+    { href: "/pricing", label: "الأسعار", icon: Calculator },
     { href: "/privacy", label: "الخصوصية", icon: Shield },
     { href: "/terms", label: "الشروط", icon: FileCheck },
   ];
