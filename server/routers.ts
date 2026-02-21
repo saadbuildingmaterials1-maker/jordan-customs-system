@@ -77,6 +77,81 @@ export const appRouter = router({
         return db.trackShipment(input.trackingNumber);
       }),
   }),
+
+  // Customs Declarations router
+  customsDeclarations: router({    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getUserCustomsDeclarations(ctx.user.id);
+    }),
+    
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return db.getCustomsDeclarationById(input.id, ctx.user.id);
+      }),
+    
+    create: protectedProcedure
+      .input(z.object({
+        declarationNumber: z.string().min(1),
+        declarationDate: z.string(),
+        importerName: z.string().min(1),
+        importerTaxId: z.string().optional(),
+        originCountry: z.string().min(1),
+        totalValue: z.number().positive(),
+        salesTax: z.number().nonnegative(),
+        additionalFees: z.number().nonnegative(),
+        declarationFees: z.number().nonnegative(),
+        items: z.array(z.object({
+          description: z.string().min(1),
+          quantity: z.number().positive(),
+          unitPrice: z.number().positive(),
+          totalValue: z.number().positive(),
+          customsDuty: z.number().nonnegative(),
+          salesTax: z.number().nonnegative(),
+          totalCost: z.number().nonnegative(),
+        })),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return db.createCustomsDeclaration({
+          ...input,
+          userId: ctx.user.id,
+        });
+      }),
+  }),
+
+  // Containers router
+  containers: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getUserContainers(ctx.user.id);
+    }),
+    
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return db.getContainerById(input.id, ctx.user.id);
+      }),
+    
+    track: publicProcedure
+      .input(z.object({ containerNumber: z.string() }))
+      .query(async ({ input }) => {
+        return db.trackContainer(input.containerNumber);
+      }),
+    
+    create: protectedProcedure
+      .input(z.object({
+        containerNumber: z.string().min(1),
+        shippingLine: z.string().min(1),
+        originPort: z.string().min(1),
+        destinationPort: z.string().min(1),
+        departureDate: z.string().optional(),
+        estimatedArrival: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return db.createContainer({
+          ...input,
+          userId: ctx.user.id,
+        });
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

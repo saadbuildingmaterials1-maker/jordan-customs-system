@@ -206,3 +206,136 @@ function getCustomsDutyRate(productType: string): number {
   
   return rates[productType] || 0.10;
 }
+
+// Customs Declarations helpers
+export async function getUserCustomsDeclarations(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { customsDeclarations } = await import("../drizzle/schema");
+  return db.select().from(customsDeclarations)
+    .where(eq(customsDeclarations.userId, userId))
+    .orderBy(desc(customsDeclarations.createdAt));
+}
+
+export async function getCustomsDeclarationById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { customsDeclarations, declarationItems } = await import("../drizzle/schema");
+  
+  const declarationResult = await db.select().from(customsDeclarations)
+    .where(and(eq(customsDeclarations.id, id), eq(customsDeclarations.userId, userId)))
+    .limit(1);
+  
+  if (declarationResult.length === 0) return null;
+  
+  const declaration = declarationResult[0];
+  
+  // Get items
+  const items = await db.select().from(declarationItems)
+    .where(eq(declarationItems.declarationId, id));
+  
+  return { ...declaration, items };
+}
+
+export async function createCustomsDeclaration(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { customsDeclarations, declarationItems } = await import("../drizzle/schema");
+  
+  const { items, ...declarationData } = data;
+  
+  // Calculate total cost
+  const totalCost = declarationData.totalValue + 
+                    declarationData.salesTax + 
+                    declarationData.additionalFees + 
+                    declarationData.declarationFees;
+  
+  const result = await db.insert(customsDeclarations).values({
+    ...declarationData,
+    totalCost,
+  });
+  
+  const declarationId = Number(result.insertId);
+  
+  // Insert items
+  if (items && items.length > 0) {
+    await db.insert(declarationItems).values(
+      items.map((item: any) => ({
+        declarationId,
+        ...item,
+      }))
+    );
+  }
+  
+  return { id: declarationId };
+}
+
+// Containers helpers
+export async function getUserContainers(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { containers } = await import("../drizzle/schema");
+  return db.select().from(containers)
+    .where(eq(containers.userId, userId))
+    .orderBy(desc(containers.createdAt));
+}
+
+export async function getContainerById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { containers } = await import("../drizzle/schema");
+  
+  const result = await db.select().from(containers)
+    .where(and(eq(containers.id, id), eq(containers.userId, userId)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function trackContainer(containerNumber: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { containers, containerTracking } = await import("../drizzle/schema");
+  
+  const containerResult = await db.select().from(containers)
+    .where(eq(containers.containerNumber, containerNumber))
+    .limit(1);
+  
+  if (containerResult.length === 0) return null;
+  
+  const container = containerResult[0];
+  
+  // Get tracking history
+  const history = await db.select().from(containerTracking)
+    .where(eq(containerTracking.containerId, container.id))
+    .orderBy(desc(containerTracking.eventDate));
+  
+  return { container, history };
+}
+
+export async function createContainer(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { containers, containerTracking } = await import("../drizzle/schema");
+  
+  const result = await db.insert(containers).values(data);
+  
+  const containerId = Number(result.insertId);
+  
+  // Add initial tracking event
+  await db.insert(containerTracking).values({
+    containerId,
+    eventType: 'container_created',
+    location: data.originPort,
+    description: 'Container registered in system',
+  });
+  
+  return { id: containerId };
+}
