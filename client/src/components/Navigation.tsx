@@ -16,7 +16,8 @@ import {
   FileCheck,
   ChevronRight,
   DollarSign,
-  Users
+  Users,
+  BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,7 @@ export default function Navigation() {
     { href: "/container-tracking", label: "تتبع الحاويات", icon: Ship },
     { href: "/shipments", label: "إدارة الشحنات", icon: Package },
     { href: "/suppliers", label: "إدارة الموردين", icon: Users },
+    { href: "/reports", label: "التقارير", icon: BarChart3 },
   ];
 
   const secondaryNavItems = [

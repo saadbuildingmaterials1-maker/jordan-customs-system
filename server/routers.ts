@@ -18,7 +18,11 @@ export const appRouter = router({
       } as const;
     }),
     
-    // Trial system temporarily disabled - will be enabled after schema migration
+    // Check trial status for authenticated user
+    checkTrial: protectedProcedure.query(async ({ ctx }) => {
+      const trialInfo = await db.checkUserTrial(ctx.user.id);
+      return trialInfo;
+    }),
   }),
 
   // System info router

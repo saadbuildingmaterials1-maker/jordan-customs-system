@@ -526,3 +526,97 @@ export async function deleteSupplierItem(id: number, userId: number) {
 
 // Trial and subscription helpers
 // Trial system functions temporarily disabled - will be enabled after schema migration
+
+/**
+ * Initialize trial for a new user (7 days)
+ */
+export async function initializeUserTrial(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const now = new Date();
+  const trialEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days from now
+
+  await db
+    .update(users)
+    .set({
+      subscriptionStatus: "trial",
+      trialStartDate: now,
+      trialEndDate: trialEnd,
+    })
+    .where(eq(users.id, userId));
+}
+
+/**
+ * Check user's trial status and return trial info
+ */
+export async function checkUserTrial(userId: number): Promise<{
+  status: "trial" | "active" | "expired";
+  daysRemaining: number | null;
+  trialEndDate: Date | null;
+}> {
+  const db = await getDb();
+  if (!db) {
+    return { status: "expired", daysRemaining: null, trialEndDate: null };
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  
+  if (!user) {
+    return { status: "expired", daysRemaining: null, trialEndDate: null };
+  }
+
+  // If user has active subscription
+  if (user.subscriptionStatus === "active") {
+    return { status: "active", daysRemaining: null, trialEndDate: null };
+  }
+
+  // If user is in trial
+  if (user.subscriptionStatus === "trial" && user.trialEndDate) {
+    const now = new Date();
+    const trialEnd = new Date(user.trialEndDate);
+    const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    // If trial expired, update status
+    if (daysRemaining <= 0) {
+      await db
+        .update(users)
+        .set({ subscriptionStatus: "expired" })
+        .where(eq(users.id, userId));
+      
+      return { status: "expired", daysRemaining: 0, trialEndDate: trialEnd };
+    }
+
+    return { status: "trial", daysRemaining, trialEndDate: trialEnd };
+  }
+
+  // Default: expired
+  return { status: "expired", daysRemaining: null, trialEndDate: null };
+}
+
+/**
+ * Update user subscription status
+ */
+export async function updateUserSubscriptionStatus(
+  userId: number,
+  status: "trial" | "active" | "expired"
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  await db
+    .update(users)
+    .set({ subscriptionStatus: status })
+    .where(eq(users.id, userId));
+}
+
+/**
+ * Get user by ID
+ */
+export async function getUserById(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+  return user || null;
+}

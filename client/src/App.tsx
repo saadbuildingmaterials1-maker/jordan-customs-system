@@ -20,6 +20,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
+const Reports = lazy(() => import("./pages/Reports"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Loading component for Suspense fallback
@@ -51,6 +52,7 @@ function Router() {
         <Route path={"/pricing"} component={Pricing} />
         <Route path={"/subscription"} component={Subscription} />
         <Route path={"/suppliers"} component={Suppliers} />
+        <Route path={"/reports"} component={Reports} />
         <Route path={"/404"} component={NotFound} />
         {/* Final fallback route */}
         <Route component={NotFound} />

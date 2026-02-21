@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Package, Ship, FileText, DollarSign, TrendingUp, Clock, Users, AlertCircle, ArrowUpRight, Calendar } from "lucide-react";
 import { Link } from "wouter";
-// TrialBanner temporarily disabled
+import TrialBanner from "@/components/TrialBanner";
 
 export default function Dashboard() {
   // Mock data
@@ -129,7 +129,7 @@ export default function Dashboard() {
   return (
     <div className="container mx-auto py-8 max-w-7xl">
       {/* Trial Banner */}
-      {/* TrialBanner temporarily disabled */}
+      <TrialBanner />
       
       <div className="mb-8">
         <h1 className="text-3xl font-bold">لوحة التحكم</h1>
