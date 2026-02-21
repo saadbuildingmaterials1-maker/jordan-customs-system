@@ -18,51 +18,7 @@ export const appRouter = router({
       } as const;
     }),
     
-    // Check trial status
-    checkTrial: protectedProcedure.query(async ({ ctx }) => {
-      const user = await db.getUserById(ctx.user.id);
-      if (!user) {
-        throw new Error("المستخدم غير موجود");
-      }
-
-      // If user has active subscription, return active
-      if (user.subscriptionStatus === "active") {
-        return {
-          status: "active" as const,
-          daysRemaining: null,
-          isExpired: false,
-        };
-      }
-
-      // If user is in trial
-      if (user.subscriptionStatus === "trial" && user.trialStartDate) {
-        const now = new Date();
-        const trialStart = new Date(user.trialStartDate);
-        const trialEnd = user.trialEndDate ? new Date(user.trialEndDate) : new Date(trialStart.getTime() + 7 * 24 * 60 * 60 * 1000);
-        
-        const daysRemaining = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        const isExpired = daysRemaining <= 0;
-
-        // Auto-update status if expired
-        if (isExpired && user.subscriptionStatus === "trial") {
-          await db.updateUserSubscriptionStatus(ctx.user.id, "expired");
-        }
-
-        return {
-          status: isExpired ? "expired" as const : "trial" as const,
-          daysRemaining: Math.max(0, daysRemaining),
-          isExpired,
-          trialEndDate: trialEnd,
-        };
-      }
-
-      // If expired
-      return {
-        status: "expired" as const,
-        daysRemaining: 0,
-        isExpired: true,
-      };
-    }),
+    // Trial system temporarily disabled - will be enabled after schema migration
   }),
 
   // System info router
