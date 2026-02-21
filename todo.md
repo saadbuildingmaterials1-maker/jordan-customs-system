@@ -341,3 +341,38 @@
 - [x] فحص Console للأخطاء - لا توجد أخطاء
 - [x] فحص حالة الخادم - يعمل بشكل صحيح
 - [ ] حفظ checkpoint نهائي
+
+
+## ربط Backend الكامل للموردين والدفعات
+
+### Database Helpers
+- [x] إضافة createSupplier في server/db.ts
+- [x] إضافة getUserSuppliers في server/db.ts
+- [x] إضافة getSupplierById في server/db.ts
+- [x] إضافة updateSupplier في server/db.ts
+- [x] إضافة deleteSupplier في server/db.ts
+- [x] إضافة createSupplierPayment في server/db.ts
+- [x] إضافة getSupplierPayments في server/db.ts
+- [x] إضافة createSupplierItem في server/db.ts
+- [x] إضافة getSupplierItems في server/db.ts
+- [x] إضافة updateSupplierItem في server/db.ts
+- [x] إضافة deleteSupplierItem في server/db.ts
+
+### tRPC Procedures
+- [x] إضافة suppliers.create procedure
+- [x] إضافة suppliers.list procedure
+- [x] إضافة suppliers.getById procedure
+- [x] إضافة suppliers.update procedure
+- [x] إضافة suppliers.delete procedure
+- [x] إضافة suppliers.addPayment procedure
+- [x] إضافة suppliers.getPayments procedure
+- [x] إضافة suppliers.addItem procedure
+- [x] إضافة suppliers.getItems procedure
+- [x] إضافة suppliers.updateItem procedure
+- [x] إضافة suppliers.deleteItem procedure
+
+### ربط الواجهة
+- [ ] تحديث Suppliers.tsx لاستخدام tRPC
+- [ ] استبدال البيانات التجريبية بـ useQuery
+- [ ] استخدام useMutation للإضافة والتعديل
+- [ ] اختبار جميع الوظائف

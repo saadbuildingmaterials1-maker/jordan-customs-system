@@ -339,3 +339,185 @@ export async function createContainer(data: any) {
   
   return { id: containerId };
 }
+
+// Suppliers helpers
+export async function getUserSuppliers(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { suppliers } = await import("../drizzle/schema");
+  return db.select().from(suppliers)
+    .where(eq(suppliers.userId, userId))
+    .orderBy(desc(suppliers.createdAt));
+}
+
+export async function getSupplierById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const { suppliers } = await import("../drizzle/schema");
+  
+  const result = await db.select().from(suppliers)
+    .where(and(eq(suppliers.id, id), eq(suppliers.userId, userId)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createSupplier(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { suppliers } = await import("../drizzle/schema");
+  
+  const result = await db.insert(suppliers).values(data);
+  
+  return { id: Number(result.insertId) };
+}
+
+export async function updateSupplier(id: number, userId: number, data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { suppliers } = await import("../drizzle/schema");
+  
+  // Verify ownership
+  const supplier = await getSupplierById(id, userId);
+  if (!supplier) throw new Error("Supplier not found");
+  
+  await db.update(suppliers)
+    .set(data)
+    .where(eq(suppliers.id, id));
+  
+  return { success: true };
+}
+
+export async function deleteSupplier(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { suppliers } = await import("../drizzle/schema");
+  
+  // Verify ownership
+  const supplier = await getSupplierById(id, userId);
+  if (!supplier) throw new Error("Supplier not found");
+  
+  await db.delete(suppliers).where(eq(suppliers.id, id));
+  
+  return { success: true };
+}
+
+// Supplier Payments helpers
+export async function getSupplierPayments(supplierId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { supplierPayments, suppliers } = await import("../drizzle/schema");
+  
+  // Verify supplier ownership
+  const supplier = await getSupplierById(supplierId, userId);
+  if (!supplier) return [];
+  
+  return db.select().from(supplierPayments)
+    .where(eq(supplierPayments.supplierId, supplierId))
+    .orderBy(desc(supplierPayments.paymentDate));
+}
+
+export async function createSupplierPayment(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { supplierPayments, suppliers } = await import("../drizzle/schema");
+  
+  const result = await db.insert(supplierPayments).values(data);
+  
+  // Update supplier paid amount
+  const supplier = await db.select().from(suppliers)
+    .where(eq(suppliers.id, data.supplierId))
+    .limit(1);
+  
+  if (supplier.length > 0) {
+    const newPaidAmount = supplier[0].paidAmount + data.amount;
+    const newRemainingAmount = supplier[0].totalAmount - newPaidAmount;
+    
+    await db.update(suppliers)
+      .set({ 
+        paidAmount: newPaidAmount,
+        remainingAmount: newRemainingAmount 
+      })
+      .where(eq(suppliers.id, data.supplierId));
+  }
+  
+  return { id: Number(result.insertId) };
+}
+
+// Supplier Items helpers
+export async function getSupplierItems(supplierId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { supplierItems, suppliers } = await import("../drizzle/schema");
+  
+  // Verify supplier ownership
+  const supplier = await getSupplierById(supplierId, userId);
+  if (!supplier) return [];
+  
+  return db.select().from(supplierItems)
+    .where(eq(supplierItems.supplierId, supplierId))
+    .orderBy(desc(supplierItems.createdAt));
+}
+
+export async function createSupplierItem(data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { supplierItems } = await import("../drizzle/schema");
+  
+  const result = await db.insert(supplierItems).values(data);
+  
+  return { id: Number(result.insertId) };
+}
+
+export async function updateSupplierItem(id: number, userId: number, data: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { supplierItems, suppliers } = await import("../drizzle/schema");
+  
+  // Verify ownership through supplier
+  const itemResult = await db.select().from(supplierItems)
+    .where(eq(supplierItems.id, id))
+    .limit(1);
+  
+  if (itemResult.length === 0) throw new Error("Item not found");
+  
+  const supplier = await getSupplierById(itemResult[0].supplierId, userId);
+  if (!supplier) throw new Error("Unauthorized");
+  
+  await db.update(supplierItems)
+    .set(data)
+    .where(eq(supplierItems.id, id));
+  
+  return { success: true };
+}
+
+export async function deleteSupplierItem(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { supplierItems, suppliers } = await import("../drizzle/schema");
+  
+  // Verify ownership through supplier
+  const itemResult = await db.select().from(supplierItems)
+    .where(eq(supplierItems.id, id))
+    .limit(1);
+  
+  if (itemResult.length === 0) throw new Error("Item not found");
+  
+  const supplier = await getSupplierById(itemResult[0].supplierId, userId);
+  if (!supplier) throw new Error("Unauthorized");
+  
+  await db.delete(supplierItems).where(eq(supplierItems.id, id));
+  
+  return { success: true };
+}
