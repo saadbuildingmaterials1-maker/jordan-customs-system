@@ -1,7 +1,9 @@
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
+import { z } from "zod";
+import * as db from "./db";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -17,12 +19,64 @@ export const appRouter = router({
     }),
   }),
 
-  // TODO: add feature routers here, e.g.
-  // todo: router({
-  //   list: protectedProcedure.query(({ ctx }) =>
-  //     db.getUserTodos(ctx.user.id)
-  //   ),
-  // }),
+  // System info router
+  info: router({
+    developer: publicProcedure.query(() => {
+      return {
+        name: process.env.DEVELOPER_NAME || "غير محدد",
+        email: process.env.DEVELOPER_EMAIL || "غير محدد",
+        phone: process.env.DEVELOPER_PHONE || "غير محدد",
+      };
+    }),
+  }),
+
+  // Shipments router
+  shipments: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getUserShipments(ctx.user.id);
+    }),
+    
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input, ctx }) => {
+        return db.getShipmentById(input.id, ctx.user.id);
+      }),
+    
+    create: protectedProcedure
+      .input(z.object({
+        senderName: z.string().min(1),
+        senderCountry: z.string().min(1),
+        recipientName: z.string().min(1),
+        recipientAddress: z.string().min(1),
+        recipientPhone: z.string().min(1),
+        productType: z.string().min(1),
+        productValue: z.number().positive(),
+        weight: z.number().positive(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return db.createShipment({
+          ...input,
+          userId: ctx.user.id,
+        });
+      }),
+    
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(['pending', 'in_transit', 'customs_clearance', 'out_for_delivery', 'delivered', 'cancelled']),
+        location: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        return db.updateShipmentStatus(input.id, input.status, ctx.user.id, input.location, input.notes);
+      }),
+    
+    track: publicProcedure
+      .input(z.object({ trackingNumber: z.string() }))
+      .query(async ({ input }) => {
+        return db.trackShipment(input.trackingNumber);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

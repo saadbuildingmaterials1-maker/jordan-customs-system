@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, shipments, InsertShipment, shipmentStatusHistory, InsertShipmentStatusHistory } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,120 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Shipment helpers
+export async function getUserShipments(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return db.select().from(shipments).where(eq(shipments.userId, userId)).orderBy(desc(shipments.createdAt));
+}
+
+export async function getShipmentById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const result = await db.select().from(shipments)
+    .where(and(eq(shipments.id, id), eq(shipments.userId, userId)))
+    .limit(1);
+  
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createShipment(data: Omit<InsertShipment, 'trackingNumber'>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Generate tracking number
+  const trackingNumber = `JO${Date.now()}${Math.floor(Math.random() * 1000)}`;
+  
+  // Calculate costs
+  const customsDutyRate = getCustomsDutyRate(data.productType);
+  const customsDuty = Math.round(data.productValue * customsDutyRate);
+  const salesTax = Math.round((data.productValue + customsDuty) * 0.16);
+  const shippingCost = Math.round((data.weight / 1000) * 3.5 * 100); // 3.5 JOD per kg, stored in fils
+  const totalCost = data.productValue + customsDuty + salesTax + shippingCost;
+  
+  const shipmentData: InsertShipment = {
+    ...data,
+    trackingNumber,
+    customsDuty,
+    salesTax,
+    shippingCost,
+    totalCost,
+  };
+  
+  const result = await db.insert(shipments).values(shipmentData);
+  
+  // Add initial status
+  await db.insert(shipmentStatusHistory).values({
+    shipmentId: Number(result.insertId),
+    status: 'pending',
+    location: data.senderCountry,
+    notes: 'Shipment created',
+  });
+  
+  return { id: Number(result.insertId), trackingNumber };
+}
+
+export async function updateShipmentStatus(
+  id: number,
+  status: string,
+  userId: number,
+  location?: string,
+  notes?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verify ownership
+  const shipment = await getShipmentById(id, userId);
+  if (!shipment) throw new Error("Shipment not found");
+  
+  // Update shipment status
+  await db.update(shipments)
+    .set({ status: status as any })
+    .where(eq(shipments.id, id));
+  
+  // Add status history
+  await db.insert(shipmentStatusHistory).values({
+    shipmentId: id,
+    status,
+    location,
+    notes,
+  });
+  
+  return { success: true };
+}
+
+export async function trackShipment(trackingNumber: string) {
+  const db = await getDb();
+  if (!db) return null;
+  
+  const shipmentResult = await db.select().from(shipments)
+    .where(eq(shipments.trackingNumber, trackingNumber))
+    .limit(1);
+  
+  if (shipmentResult.length === 0) return null;
+  
+  const shipment = shipmentResult[0];
+  
+  // Get status history
+  const history = await db.select().from(shipmentStatusHistory)
+    .where(eq(shipmentStatusHistory.shipmentId, shipment.id))
+    .orderBy(desc(shipmentStatusHistory.createdAt));
+  
+  return { shipment, history };
+}
+
+function getCustomsDutyRate(productType: string): number {
+  const rates: Record<string, number> = {
+    'إلكترونيات': 0.05,
+    'ملابس': 0.15,
+    'أحذية': 0.20,
+    'مجوهرات': 0.25,
+    'كتب': 0.00,
+    'أخرى': 0.10,
+  };
+  
+  return rates[productType] || 0.10;
+}
