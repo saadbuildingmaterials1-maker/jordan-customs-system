@@ -31,11 +31,13 @@ export async function setupVite(app: Express, server: Server) {
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 
-    // Skip API routes and Vite internals
+    // Skip API routes, Vite internals, and static files
     if (
       url.startsWith("/api/") || 
       url.startsWith("/@") ||
-      url.startsWith("/__manus__/")
+      url.startsWith("/__manus__/") ||
+      // Skip all static files (js, css, images, fonts, etc.)
+      url.match(/\.(js|jsx|ts|tsx|css|json|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|webp|mp4|webm|pdf|txt|html|xml|wasm)$/i)
     ) {
       return next();
     }
