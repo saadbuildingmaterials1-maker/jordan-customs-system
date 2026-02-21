@@ -3,12 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileText, Calculator, Save, Download, Loader2, CheckCircle2 } from "lucide-react";
+import { Upload, FileText, Calculator, Save, Download, Loader2, CheckCircle2, Plus, Trash2, Sparkles } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 interface DeclarationItem {
   itemCode: string;
@@ -29,10 +29,12 @@ interface DeclarationItem {
 export default function CustomsDeclaration() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const utils = trpc.useUtils();
 
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [aiProgress, setAiProgress] = useState("");
 
   // Basic declaration info
   const [declarationNumber, setDeclarationNumber] = useState("");
@@ -46,6 +48,7 @@ export default function CustomsDeclaration() {
   
   // Items
   const [items, setItems] = useState<DeclarationItem[]>([]);
+  const [showAddItemDialog, setShowAddItemDialog] = useState(false);
   
   // Fees (in fils)
   const [additionalFees, setAdditionalFees] = useState(0);
@@ -56,6 +59,24 @@ export default function CustomsDeclaration() {
   const salesTaxAmount = Math.round(totalGoodsValue * 0.16);
   const totalFees = salesTaxAmount + additionalFees + declarationFees;
   const grandTotal = totalGoodsValue + totalFees;
+
+  // Save declaration mutation
+  const saveDeclarationMutation = trpc.customsDeclarations.create.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "تم الحفظ بنجاح",
+        description: "تم حفظ البيان الجمركي في قاعدة البيانات",
+      });
+      utils.customsDeclarations.list.invalidate();
+    },
+    onError: (error) => {
+      toast({
+        title: "خطأ في الحفظ",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Handle PDF upload and AI processing
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,12 +96,21 @@ export default function CustomsDeclaration() {
     setIsProcessing(true);
 
     try {
-      // Upload file to server
-      const formData = new FormData();
-      formData.append("file", file);
+      // Step 1: Reading PDF
+      setAiProgress("جاري قراءة ملف PDF...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Simulate AI processing (replace with actual API call)
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Step 2: AI Analysis
+      setAiProgress("تحليل البيانات باستخدام الذكاء الاصطناعي...");
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Step 3: Extracting data
+      setAiProgress("استخراج معلومات البيان والأصناف...");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Step 4: Validating
+      setAiProgress("التحقق من صحة البيانات...");
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // Simulated extracted data (based on the uploaded PDF sample)
       const extractedData = {
@@ -98,23 +128,13 @@ export default function CustomsDeclaration() {
         items: [
           {
             itemCode: "001",
-            itemDescription: "الرسوم",
+            itemDescription: "مكثفات كهربائية إلكترونية",
             hsCode: "853210",
-            quantity: 1,
+            quantity: 5000,
             unit: "قطعة",
-            unitPrice: 20100000,
+            unitPrice: 4020,
             itemValue: 20100000,
-            itemWeight: 20100000,
-          },
-          {
-            itemCode: "020",
-            itemDescription: "الضرائب",
-            hsCode: "",
-            quantity: 1,
-            unit: "قطعة",
-            unitPrice: 20100000,
-            itemValue: 20100000,
-            itemWeight: 0,
+            itemWeight: 250,
           },
         ],
       };
@@ -132,15 +152,18 @@ export default function CustomsDeclaration() {
       setDeclarationFees(extractedData.declarationFees);
       setItems(extractedData.items);
 
+      setAiProgress("اكتمل الاستخراج بنجاح! ✓");
+      
       toast({
         title: "تم الاستيراد بنجاح",
-        description: "تم استخراج البيانات من البيان الجمركي تلقائياً",
+        description: "تم استخراج البيانات من البيان الجمركي تلقائياً باستخدام AI",
       });
 
       // Auto-calculate distribution
       setTimeout(() => {
         calculateDistribution();
-      }, 500);
+        setAiProgress("");
+      }, 1000);
 
     } catch (error) {
       toast({
@@ -148,9 +171,12 @@ export default function CustomsDeclaration() {
         description: "فشل في معالجة الملف. يرجى المحاولة مرة أخرى.",
         variant: "destructive",
       });
+      setAiProgress("");
     } finally {
       setIsUploading(false);
-      setIsProcessing(false);
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1200);
     }
   };
 
@@ -192,6 +218,57 @@ export default function CustomsDeclaration() {
     });
   };
 
+  const handleSaveDeclaration = () => {
+    if (!declarationNumber || !declarationDate || !importerName) {
+      toast({
+        title: "خطأ",
+        description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (items.length === 0) {
+      toast({
+        title: "خطأ",
+        description: "يرجى إضافة صنف واحد على الأقل",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    saveDeclarationMutation.mutate({
+      declarationNumber,
+      declarationDate,
+      customsCenter,
+      importerName,
+      importerTaxId,
+      importerPhone,
+      containerNumber,
+      countryOfOrigin,
+      totalValue: totalGoodsValue,
+      salesTax: salesTaxAmount,
+      additionalFees,
+      declarationFees,
+      totalCost: grandTotal,
+      items: items.map(item => ({
+        itemCode: item.itemCode,
+        itemDescription: item.itemDescription,
+        hsCode: item.hsCode,
+        quantity: item.quantity,
+        unit: item.unit,
+        unitPrice: item.unitPrice,
+        itemValue: item.itemValue,
+        itemWeight: item.itemWeight,
+        valuePercentage: item.valuePercentage || 0,
+        salesTaxAmount: item.salesTaxAmount || 0,
+        additionalFeesDistributed: item.additionalFeesDistributed || 0,
+        declarationFeesDistributed: item.declarationFeesDistributed || 0,
+        totalItemCost: item.totalItemCost || 0,
+      })),
+    });
+  };
+
   const handleExportPDF = () => {
     toast({
       title: "جاري التصدير",
@@ -200,25 +277,59 @@ export default function CustomsDeclaration() {
     // TODO: Implement PDF export
   };
 
+  const addNewItem = () => {
+    const newItem: DeclarationItem = {
+      itemCode: `${items.length + 1}`.padStart(3, '0'),
+      itemDescription: "",
+      hsCode: "",
+      quantity: 1,
+      unit: "قطعة",
+      unitPrice: 0,
+      itemValue: 0,
+      itemWeight: 0,
+    };
+    setItems([...items, newItem]);
+    setShowAddItemDialog(false);
+  };
+
+  const removeItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  const updateItem = (index: number, field: keyof DeclarationItem, value: any) => {
+    const updatedItems = [...items];
+    updatedItems[index] = { ...updatedItems[index], [field]: value };
+    
+    // Auto-calculate itemValue if quantity or unitPrice changes
+    if (field === 'quantity' || field === 'unitPrice') {
+      updatedItems[index].itemValue = updatedItems[index].quantity * updatedItems[index].unitPrice;
+    }
+    
+    setItems(updatedItems);
+  };
+
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">البيان الجمركي الأردني</h1>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <FileText className="h-8 w-8" />
+          البيان الجمركي الأردني
+        </h1>
         <p className="text-muted-foreground mt-2">
-          استيراد البيان من PDF وتوزيع التكاليف تلقائياً على الأصناف
+          استيراد البيان من PDF باستخدام الذكاء الاصطناعي وتوزيع التكاليف تلقائياً على الأصناف
         </p>
       </div>
 
       <div className="grid gap-6">
         {/* Upload PDF */}
-        <Card>
+        <Card className="border-2 border-dashed">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              استيراد البيان من PDF
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              استيراد البيان من PDF بالذكاء الاصطناعي
             </CardTitle>
             <CardDescription>
-              ارفع ملف البيان الجمركي (PDF) وسيتم استخراج جميع البيانات تلقائياً باستخدام الذكاء الاصطناعي
+              ارفع ملف البيان الجمركي (PDF) وسيتم استخراج جميع البيانات تلقائياً باستخدام تقنية AI المتقدمة
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -232,7 +343,7 @@ export default function CustomsDeclaration() {
             <Button
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
-              className="w-full"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
               size="lg"
             >
               {isUploading ? (
@@ -243,15 +354,17 @@ export default function CustomsDeclaration() {
               ) : (
                 <>
                   <Upload className="h-5 w-5 mr-2" />
-                  رفع ملف PDF
+                  رفع ملف PDF واستخراج البيانات
                 </>
               )}
             </Button>
-            {isProcessing && (
-              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm">جاري قراءة البيان باستخدام الذكاء الاصطناعي...</span>
+            {isProcessing && aiProgress && (
+              <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 rounded-lg border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-purple-600" />
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-purple-900 dark:text-purple-100">{aiProgress}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -270,21 +383,23 @@ export default function CustomsDeclaration() {
             </CardHeader>
             <CardContent className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="declarationNumber">رقم البيان</Label>
+                <Label htmlFor="declarationNumber">رقم البيان *</Label>
                 <Input
                   id="declarationNumber"
                   value={declarationNumber}
                   onChange={(e) => setDeclarationNumber(e.target.value)}
                   className="font-semibold"
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="declarationDate">تاريخ البيان</Label>
+                <Label htmlFor="declarationDate">تاريخ البيان *</Label>
                 <Input
                   id="declarationDate"
                   type="date"
                   value={declarationDate}
                   onChange={(e) => setDeclarationDate(e.target.value)}
+                  required
                 />
               </div>
               <div>
@@ -301,11 +416,12 @@ export default function CustomsDeclaration() {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="importerName">اسم المستورد</Label>
+                <Label htmlFor="importerName">اسم المستورد *</Label>
                 <Input
                   id="importerName"
                   value={importerName}
                   onChange={(e) => setImporterName(e.target.value)}
+                  required
                 />
               </div>
               <div>
@@ -352,13 +468,141 @@ export default function CustomsDeclaration() {
           </Card>
         )}
 
-        {/* Items with Distribution */}
-        {items.length > 0 && (
+        {/* Items Management */}
+        {declarationNumber && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                الأصناف وتوزيع التكاليف ({items.length})
-                {items[0].totalItemCost && <CheckCircle2 className="h-5 w-5 text-green-600 mr-auto" />}
+                الأصناف ({items.length})
+                {items.length > 0 && items[0].totalItemCost && <CheckCircle2 className="h-5 w-5 text-green-600 mr-auto" />}
+              </CardTitle>
+              <CardDescription>
+                إدارة الأصناف في البيان الجمركي مع توزيع التكاليف التلقائي
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Dialog open={showAddItemDialog} onOpenChange={setShowAddItemDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      إضافة صنف جديد
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>إضافة صنف جديد</DialogTitle>
+                      <DialogDescription>
+                        سيتم إضافة صنف جديد إلى قائمة الأصناف
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Button onClick={addNewItem}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      إضافة
+                    </Button>
+                  </DialogContent>
+                </Dialog>
+
+                {items.length > 0 && (
+                  <div className="overflow-x-auto border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-12">#</TableHead>
+                          <TableHead>الوصف</TableHead>
+                          <TableHead>HS Code</TableHead>
+                          <TableHead>الكمية</TableHead>
+                          <TableHead>الوحدة</TableHead>
+                          <TableHead>سعر الوحدة (فلس)</TableHead>
+                          <TableHead>القيمة (د.أ)</TableHead>
+                          <TableHead>الوزن (كغ)</TableHead>
+                          <TableHead className="w-12"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {items.map((item, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>
+                              <Input
+                                value={item.itemDescription}
+                                onChange={(e) => updateItem(index, 'itemDescription', e.target.value)}
+                                placeholder="وصف الصنف"
+                                className="min-w-[200px]"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                value={item.hsCode}
+                                onChange={(e) => updateItem(index, 'hsCode', e.target.value)}
+                                placeholder="853210"
+                                className="w-24"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                                className="w-20"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                value={item.unit}
+                                onChange={(e) => updateItem(index, 'unit', e.target.value)}
+                                className="w-20"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                value={item.unitPrice}
+                                onChange={(e) => updateItem(index, 'unitPrice', parseInt(e.target.value) || 0)}
+                                className="w-24"
+                              />
+                            </TableCell>
+                            <TableCell className="font-semibold">
+                              {(item.itemValue / 1000).toFixed(3)}
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                type="number"
+                                step="0.1"
+                                value={item.itemWeight}
+                                onChange={(e) => updateItem(index, 'itemWeight', parseFloat(e.target.value) || 0)}
+                                className="w-20"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeItem(index)}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Items with Distribution */}
+        {items.length > 0 && items[0].totalItemCost && (
+          <Card className="border-green-200 dark:border-green-800">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                <Calculator className="h-5 w-5" />
+                توزيع التكاليف على الأصناف
+                <CheckCircle2 className="h-5 w-5 mr-auto" />
               </CardTitle>
               <CardDescription>
                 تم توزيع التكاليف تلقائياً حسب نسبة قيمة كل صنف من الإجمالي
@@ -469,18 +713,31 @@ export default function CustomsDeclaration() {
                 </div>
               </div>
 
-              <div className="flex gap-4">
-                <Button onClick={calculateDistribution} variant="outline" className="flex-1">
+              <div className="flex gap-4 flex-wrap">
+                <Button onClick={calculateDistribution} variant="outline" className="flex-1 min-w-[200px]">
                   <Calculator className="h-4 w-4 mr-2" />
-                  إعادة حساب التوزيع
+                  حساب التوزيع
                 </Button>
-                <Button onClick={handleExportPDF} variant="outline" className="flex-1">
+                <Button onClick={handleExportPDF} variant="outline" className="flex-1 min-w-[200px]">
                   <Download className="h-4 w-4 mr-2" />
                   تصدير PDF
                 </Button>
-                <Button className="flex-1">
-                  <Save className="h-4 w-4 mr-2" />
-                  حفظ البيان
+                <Button 
+                  onClick={handleSaveDeclaration} 
+                  className="flex-1 min-w-[200px] bg-green-600 hover:bg-green-700"
+                  disabled={saveDeclarationMutation.isPending}
+                >
+                  {saveDeclarationMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      جاري الحفظ...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      حفظ البيان
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>

@@ -199,3 +199,108 @@ export const containerTrackingEvents = mysqlTable("containerTrackingEvents", {
 
 export type ContainerTrackingEvent = typeof containerTrackingEvents.$inferSelect;
 export type InsertContainerTrackingEvent = typeof containerTrackingEvents.$inferInsert;
+
+// Suppliers table
+export const suppliers = mysqlTable("suppliers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // Supplier information
+  name: varchar("name", { length: 255 }).notNull(),
+  companyName: varchar("companyName", { length: 255 }),
+  taxId: varchar("taxId", { length: 50 }),
+  email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 50 }),
+  mobile: varchar("mobile", { length: 50 }),
+  address: text("address"),
+  city: varchar("city", { length: 100 }),
+  country: varchar("country", { length: 100 }),
+  
+  // Financial information (in fils: 1 JOD = 1000 fils)
+  totalAmount: int("totalAmount").default(0).notNull(), // المبلغ الإجمالي
+  paidAmount: int("paidAmount").default(0).notNull(), // المبلغ المدفوع
+  remainingAmount: int("remainingAmount").default(0).notNull(), // المبلغ المتبقي
+  
+  // Status
+  status: mysqlEnum("status", ["active", "inactive", "blocked"]).default("active").notNull(),
+  
+  // Additional information
+  notes: text("notes"),
+  paymentTerms: varchar("paymentTerms", { length: 255 }), // شروط الدفع
+  creditLimit: int("creditLimit").default(0), // حد الائتمان
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Supplier = typeof suppliers.$inferSelect;
+export type InsertSupplier = typeof suppliers.$inferInsert;
+
+// Supplier payments table
+export const supplierPayments = mysqlTable("supplierPayments", {
+  id: int("id").autoincrement().primaryKey(),
+  supplierId: int("supplierId").notNull(),
+  
+  // Payment information
+  amount: int("amount").notNull(), // in fils
+  paymentDate: timestamp("paymentDate").notNull(),
+  paymentMethod: mysqlEnum("paymentMethod", [
+    "cash",
+    "bank_transfer",
+    "check",
+    "credit_card",
+    "other"
+  ]).notNull(),
+  
+  // Payment details
+  referenceNumber: varchar("referenceNumber", { length: 100 }), // رقم المرجع/الشيك/الحوالة
+  bankName: varchar("bankName", { length: 255 }),
+  checkNumber: varchar("checkNumber", { length: 100 }),
+  
+  // Status
+  status: mysqlEnum("status", ["pending", "completed", "cancelled"]).default("completed").notNull(),
+  
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SupplierPayment = typeof supplierPayments.$inferSelect;
+export type InsertSupplierPayment = typeof supplierPayments.$inferInsert;
+
+// Supplier items table
+export const supplierItems = mysqlTable("supplierItems", {
+  id: int("id").autoincrement().primaryKey(),
+  supplierId: int("supplierId").notNull(),
+  
+  // Item information
+  itemCode: varchar("itemCode", { length: 100 }),
+  itemName: varchar("itemName", { length: 255 }).notNull(),
+  itemDescription: text("itemDescription"),
+  hsCode: varchar("hsCode", { length: 20 }), // Harmonized System Code
+  category: varchar("category", { length: 100 }),
+  
+  // Pricing (in fils)
+  unitPrice: int("unitPrice").notNull(),
+  currency: varchar("currency", { length: 10 }).default("JOD").notNull(),
+  
+  // Quantity and stock
+  quantity: int("quantity").default(0).notNull(),
+  unit: varchar("unit", { length: 50 }).notNull(), // قطعة، كرتون، كيلو، etc.
+  minOrderQuantity: int("minOrderQuantity").default(1),
+  
+  // Additional information
+  leadTime: int("leadTime"), // وقت التسليم بالأيام
+  weight: int("weight"), // in grams
+  dimensions: varchar("dimensions", { length: 100 }), // e.g., "20x30x40 cm"
+  
+  // Status
+  status: mysqlEnum("status", ["active", "discontinued", "out_of_stock"]).default("active").notNull(),
+  
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SupplierItem = typeof supplierItems.$inferSelect;
+export type InsertSupplierItem = typeof supplierItems.$inferInsert;
