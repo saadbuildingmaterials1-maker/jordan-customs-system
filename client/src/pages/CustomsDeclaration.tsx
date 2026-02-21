@@ -214,7 +214,7 @@ export default function CustomsDeclaration() {
 
     toast({
       title: "تم توزيع التكاليف",
-      description: `تم توزيع ${(totalFees / 1000).toFixed(3)} د.أ على ${items.length} صنف`,
+      description: "تم توزيع التكاليف على الأصناف بنجاح",
     });
   };
 
