@@ -54,12 +54,7 @@ export default function Navigation() {
             {/* Logo */}
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-                  <Package className="h-6 w-6 text-white" />
-                </div>
-                <span className="font-bold text-lg text-slate-900 dark:text-white">
-                  تكلفتي
-                </span>
+                <img src="/logo.webp" alt="تكلفتي" className="h-12 w-auto object-contain" />
               </div>
             </Link>
 
@@ -111,12 +106,7 @@ export default function Navigation() {
             {/* Logo */}
             <Link href="/">
               <div className="flex items-center gap-2 cursor-pointer">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
-                  <Package className="h-6 w-6 text-white" />
-                </div>
-                <span className="font-bold text-lg text-slate-900 dark:text-white">
-                  تكلفتي
-                </span>
+                <img src="/logo.webp" alt="تكلفتي" className="h-12 w-auto object-contain" />
               </div>
             </Link>
 
