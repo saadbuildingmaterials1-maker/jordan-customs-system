@@ -296,6 +296,40 @@ export const appRouter = router({
         return db.deleteSupplierItem(input.id, ctx.user.id);
       }),
   }),
+  
+  // Notifications router
+  notifications: router({
+    list: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }).optional())
+      .query(async ({ input, ctx }) => {
+        return db.getUserNotifications(ctx.user.id, input?.limit);
+      }),
+    
+    unreadCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        return db.getUnreadNotificationsCount(ctx.user.id);
+      }),
+    
+    markAsRead: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.markNotificationAsRead(input.id);
+        return { success: true };
+      }),
+    
+    markAllAsRead: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.markAllNotificationsAsRead(ctx.user.id);
+        return { success: true };
+      }),
+    
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteNotification(input.id);
+        return { success: true };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

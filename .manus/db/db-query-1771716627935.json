@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE users ADD COLUMN subscriptionStatus VARCHAR(20) DEFAULT 'trial';\nALTER TABLE users ADD COLUMN trialStartDate BIGINT;\nALTER TABLE users ADD COLUMN trialEndDate BIGINT;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user QB2fahn7CwkdyG9.root --database 5j9uG3pftfjEb3akdTmTAd --execute ALTER TABLE users ADD COLUMN subscriptionStatus VARCHAR(20) DEFAULT 'trial';\nALTER TABLE users ADD COLUMN trialStartDate BIGINT;\nALTER TABLE users ADD COLUMN trialEndDate BIGINT;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 4023
+}

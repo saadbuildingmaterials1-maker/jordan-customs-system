@@ -620,3 +620,91 @@ export async function getUserById(userId: number) {
   const [user] = await db.select().from(users).where(eq(users.id, userId)).limit(1);
   return user || null;
 }
+
+
+// ==================== Notifications ====================
+
+export async function createNotification(data: {
+  userId: number;
+  title: string;
+  message: string;
+  type?: "info" | "success" | "warning" | "error";
+  relatedType?: string;
+  relatedId?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { notifications } = await import("../drizzle/schema");
+  
+  const [result] = await db.insert(notifications).values({
+    userId: data.userId,
+    title: data.title,
+    message: data.message,
+    type: data.type || "info",
+    relatedType: data.relatedType,
+    relatedId: data.relatedId,
+  });
+  return result;
+}
+
+export async function getUserNotifications(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const { notifications } = await import("../drizzle/schema");
+  
+  return await db
+    .select()
+    .from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit);
+}
+
+export async function getUnreadNotificationsCount(userId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  
+  const { notifications } = await import("../drizzle/schema");
+  const { sql } = await import("drizzle-orm");
+  
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, 0)));
+  return result[0]?.count || 0;
+}
+
+export async function markNotificationAsRead(notificationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { notifications } = await import("../drizzle/schema");
+  
+  await db
+    .update(notifications)
+    .set({ isRead: 1, readAt: new Date() })
+    .where(eq(notifications.id, notificationId));
+}
+
+export async function markAllNotificationsAsRead(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { notifications } = await import("../drizzle/schema");
+  
+  await db
+    .update(notifications)
+    .set({ isRead: 1, readAt: new Date() })
+    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, 0)));
+}
+
+export async function deleteNotification(notificationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const { notifications } = await import("../drizzle/schema");
+  
+  await db.delete(notifications).where(eq(notifications.id, notificationId));
+}

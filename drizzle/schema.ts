@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -311,3 +311,27 @@ export const supplierItems = mysqlTable("supplierItems", {
 
 export type SupplierItem = typeof supplierItems.$inferSelect;
 export type InsertSupplierItem = typeof supplierItems.$inferInsert;
+
+// Notifications table
+export const notifications = mysqlTable("notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  
+  // Notification content
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  type: mysqlEnum("type", ["info", "success", "warning", "error"]).default("info").notNull(),
+  
+  // Related entity (optional)
+  relatedType: varchar("relatedType", { length: 50 }), // shipment, container, declaration, etc.
+  relatedId: int("relatedId"),
+  
+  // Status
+  isRead: int("isRead").default(0).notNull(), // 0 = unread, 1 = read
+  readAt: timestamp("readAt"),
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;

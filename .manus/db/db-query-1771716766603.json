@@ -1,0 +1,9 @@
+{
+  "query": "CREATE TABLE IF NOT EXISTS suppliers (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  companyName VARCHAR(255) NOT NULL,\n  contactPerson VARCHAR(255),\n  email VARCHAR(255),\n  phone VARCHAR(50),\n  address TEXT,\n  country VARCHAR(100),\n  status VARCHAR(20) DEFAULT 'active',\n  createdAt BIGINT NOT NULL,\n  updatedAt BIGINT\n);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway03.us-east-1.prod.aws.tidbcloud.com --port 4000 --user QB2fahn7CwkdyG9.root --database 5j9uG3pftfjEb3akdTmTAd --execute CREATE TABLE IF NOT EXISTS suppliers (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  companyName VARCHAR(255) NOT NULL,\n  contactPerson VARCHAR(255),\n  email VARCHAR(255),\n  phone VARCHAR(50),\n  address TEXT,\n  country VARCHAR(100),\n  status VARCHAR(20) DEFAULT 'active',\n  createdAt BIGINT NOT NULL,\n  updatedAt BIGINT\n);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1834
+}
