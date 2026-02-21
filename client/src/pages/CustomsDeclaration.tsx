@@ -72,6 +72,47 @@ export default function CustomsDeclaration() {
   });
 
   // Handle PDF upload and AI processing
+  // Fill with demo data
+  const fillDemoData = () => {
+    setDeclarationNumber("JO-2026-" + Math.floor(Math.random() * 10000));
+    setDeclarationDate(new Date().toISOString().split('T')[0]);
+    setImporterName("شركة الاستيراد الأردنية");
+    setImporterTaxId("200123456");
+    setImporterPhone("00962795917424");
+    setContainerNumber("MSCU1234567");
+    setCountryOfOrigin("CN");
+    
+    // Add demo items
+    const demoItems: DeclarationItem[] = [
+      {
+        itemCode: "ITEM001",
+        itemDescription: "هواتف ذكية",
+        hsCode: "851712",
+        quantity: 100,
+        unit: "قطعة",
+        unitPrice: 150000,
+        itemValue: 15000,
+        itemWeight: 50,
+      },
+      {
+        itemCode: "ITEM002",
+        itemDescription: "أجهزة لوحية",
+        hsCode: "847130",
+        quantity: 50,
+        unit: "قطعة",
+        unitPrice: 200000,
+        itemValue: 10000,
+        itemWeight: 30,
+      },
+    ];
+    
+    setItems(demoItems);
+    setAdditionalFees(5000);
+    setDeclarationFees(2000);
+    
+    toast.success("تم ملء البيانات التجريبية بنجاح");
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -317,6 +358,14 @@ export default function CustomsDeclaration() {
                   رفع ملف PDF واستخراج البيانات
                 </>
               )}
+            </Button>
+            <Button
+              onClick={fillDemoData}
+              variant="outline"
+              className="w-full mt-3"
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              ملء بيانات تجريبية للاختبار
             </Button>
             {isProcessing && aiProgress && (
               <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 rounded-lg border border-purple-200 dark:border-purple-800">
