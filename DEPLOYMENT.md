@@ -209,6 +209,17 @@ sudo ufw allow 443/tcp   # HTTPS
 sudo ufw status
 ```
 
+## الخطوة 11: إضافة Stripe للمدفوعات (اختياري)
+
+لإضافة نظام الدفع Stripe، راجع ملف `STRIPE_INTEGRATION.md` للتعليمات الكاملة.
+
+باختصار:
+1. أنشئ حساب Stripe على https://stripe.com
+2. احصل على API keys من Stripe Dashboard
+3. أضف المفاتيح عبر Management UI → Settings → Payment
+4. أنشئ المنتجات والأسعار في Stripe Dashboard
+5. اختبر باستخدام بطاقة الاختبار: 4242 4242 4242 4242
+
 ## الصيانة والتحديثات
 
 ### إعادة تشغيل التطبيق
