@@ -21,6 +21,8 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const Suppliers = lazy(() => import("./pages/Suppliers"));
 const Reports = lazy(() => import("./pages/Reports"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Loading component for Suspense fallback
@@ -39,6 +41,8 @@ function Router() {
       <Navigation />
       <Suspense fallback={<PageLoader />}>
         <Switch>
+        <Route path={"/login"} component={Login} />
+        <Route path={"/register"} component={Register} />
         <Route path={"/"} component={Home} />
         <Route path={"/calculator"} component={Calculator} />
         <Route path={"/customs-declaration"} component={CustomsDeclaration} />
